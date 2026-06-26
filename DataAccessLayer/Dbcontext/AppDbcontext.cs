@@ -61,5 +61,6 @@ namespace DataAccessLayer.Dbcontext
             base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbcontext).Assembly);
         }
+        //
     }
 }
