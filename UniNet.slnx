@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="Application/Application.csproj" />
+  <Project Path="Contracts/Contracts.csproj" />
+  <Project Path="DataAccessLayer/DataAccessLayer.csproj" />
+  <Project Path="Domain/Domain.csproj" />
+  <Project Path="UniNet/UniNet.csproj" />
+</Solution>
