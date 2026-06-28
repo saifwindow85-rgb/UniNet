@@ -15,6 +15,7 @@ namespace Domain.Entities.Academic_Structure
         public int BatchYear { get; set; }
 
         public string? Description { get; set; }
-        public ICollection<Student> Students { get; set; } = new List<Student>(); 
+        public ICollection<Student> Students { get; set; } = new List<Student>();
+        public ICollection<Section> Sections { get; set; } = new List<Section>();
     }
 }

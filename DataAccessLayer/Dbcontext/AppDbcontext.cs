@@ -1,4 +1,5 @@
 ﻿using Domain.Entities.Academic_Structure;
+using Domain.Entities.Common;
 using Domain.Entities.Content;
 using Domain.Entities.Employees;
 using Domain.Entities.Identity;
@@ -60,6 +61,36 @@ namespace DataAccessLayer.Dbcontext
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbcontext).Assembly);
+            ConfigureBaseEntity(modelBuilder);
+        }
+
+        private static void ConfigureBaseEntity(ModelBuilder modelBuilder)
+        {
+            var entityTypes = modelBuilder.Model.GetEntityTypes();
+
+            foreach(var entityType in entityTypes)
+            {
+                if (!typeof(BaseEntity).IsAssignableFrom(entityType.ClrType))
+                    continue;
+
+                var builder = modelBuilder.Entity(entityType.ClrType);
+
+                builder.Property(nameof(BaseEntity.CreatedAt))
+                       .HasDefaultValueSql("GETUTCDATE()");
+
+                builder.Property(nameof(BaseEntity.UpdatedAt))
+                       .IsRequired(false);
+
+                builder.HasOne(typeof(User), nameof(BaseEntity.CreatedByUser))
+                       .WithMany()
+                       .HasForeignKey(nameof(BaseEntity.CreatedByUserId))
+                       .OnDelete(DeleteBehavior.Restrict);
+
+                builder.HasOne(typeof(User), nameof(BaseEntity.UpdatedByUser))
+                       .WithMany()
+                       .HasForeignKey(nameof(BaseEntity.UpdatedByUserId))
+                       .OnDelete(DeleteBehavior.Restrict);
+            }
         }
         //
     }
