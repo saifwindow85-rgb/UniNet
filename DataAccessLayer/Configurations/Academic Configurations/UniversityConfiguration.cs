@@ -21,6 +21,8 @@ namespace DataAccessLayer.Configurations.Academic_Structure
 
             builder.Property(u => u.Description).HasColumnType("NVARCHAR(MAX)").IsRequired(false);
 
+            builder.ToTable("Universities");
+
             builder.HasData(new University
             {
                 UniversityId = 1,

@@ -19,6 +19,8 @@ namespace DataAccessLayer.Configurations.Academic_Configurations.Identity_Config
             builder.Property(r => r.Name).HasColumnType("NVARCHAR").HasMaxLength(250).IsRequired();
             builder.HasIndex(r => r.Name).IsUnique();
 
+            builder.ToTable("Roles");
+
             builder.HasData(new Role
             {
                 RoleId = 1,

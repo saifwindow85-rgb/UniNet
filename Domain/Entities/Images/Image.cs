@@ -14,6 +14,7 @@ namespace Domain.Entities.Images
         public string FileName { get; set; } = null!;
 
         public long FileSize { get; set; }
+        public string FilePath { get; set; } = null!;
 
         public DateTime UploadedAt { get; set; }
         public int UploadedByUserId { get; set; }

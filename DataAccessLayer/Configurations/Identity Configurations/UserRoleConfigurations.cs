@@ -29,6 +29,8 @@ namespace DataAccessLayer.Configurations.Identity_Configurations
             builder.HasOne(u=>u.Role).WithMany(r=>r.UserRoles)
                 .HasForeignKey(u=>u.RoleId).IsRequired().OnDelete(DeleteBehavior.Restrict);
 
+            builder.ToTable("UserRoles");
+
             builder.HasData(new UserRole
             {
                 UserId = 1,

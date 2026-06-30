@@ -23,6 +23,8 @@ namespace DataAccessLayer.Configurations.Academic_Structure
             builder.HasOne(s=>s.Batch).WithMany(b=>b.Sections)
                 .HasForeignKey(s=>s.BatchId).IsRequired().OnDelete(DeleteBehavior.Restrict);
 
+            builder.ToTable("Sections");
+
             builder.HasData(new Section
             {
                 BatchId = 1,

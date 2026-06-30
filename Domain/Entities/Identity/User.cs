@@ -1,5 +1,6 @@
 ﻿using Domain.Entities.Content;
 using Domain.Entities.Employees;
+using Domain.Entities.Images;
 using Domain.Entities.Students;
 using System;
 using System.Collections.Generic;
@@ -44,6 +45,8 @@ namespace Domain.Entities.Identity
 
         public ICollection<Announcement> Announcements { get; set; }
             = new List<Announcement>();
+        public ICollection<Image> UploadedImages { get; set; } = new List<Image>();
+        public ICollection<Image> UpdatedImages { get; set; } = new List<Image>();
 
     }
 }

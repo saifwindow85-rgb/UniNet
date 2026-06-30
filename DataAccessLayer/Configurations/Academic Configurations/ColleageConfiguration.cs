@@ -25,6 +25,8 @@ namespace DataAccessLayer.Configurations.Academic_Structure
             builder.HasOne(c=>c.University).WithMany(u=>u.Colleges)
                 .HasForeignKey(c=>c.UniversityId) .OnDelete(DeleteBehavior.Restrict);
 
+            builder.ToTable("Colleges");
+
             builder.HasData(new College
             {
                 CollegeId = 1,

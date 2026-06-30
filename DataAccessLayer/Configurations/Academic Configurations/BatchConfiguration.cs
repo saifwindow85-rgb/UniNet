@@ -27,6 +27,8 @@ namespace DataAccessLayer.Configurations.Academic_Structure
             builder.HasOne(b => b.Department).WithMany(d => d.Batches)
                 .HasForeignKey(b => b.DepartmentId).IsRequired().OnDelete(DeleteBehavior.Restrict);
 
+            builder.ToTable("Batches");
+
             builder.HasData(new Batch
             {
                 DepartmentId = 1,

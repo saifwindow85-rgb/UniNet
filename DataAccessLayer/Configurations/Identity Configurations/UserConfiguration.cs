@@ -25,7 +25,6 @@ namespace DataAccessLayer.Configurations.Identity_Configurations
             builder.Property(u => u.PhoneNumber).HasColumnType("NVARCHAR(25)").IsRequired(false);
 
             builder.Property(u => u.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
-            builder.Property(u => u.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
 
             builder.HasIndex(u => u.UserName).IsUnique();
             builder.HasIndex(r => r.Email).IsUnique().HasFilter("[Email IS NO NULL]");
@@ -35,7 +34,9 @@ namespace DataAccessLayer.Configurations.Identity_Configurations
                 .HasForeignKey(u => u.CreatedByUserId).OnDelete(DeleteBehavior.Restrict);
             //Releation : one User Updated by One User & Many Users Updated By One User
             builder.HasOne(u => u.UpdatedByUser).WithMany(u => u.UpdatedUsers)
-                .HasForeignKey(u => u.UpdatedByUserId).OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(u => u.UpdatedByUserId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
+
+            builder.ToTable("Users");
 
             builder.HasData(new User
             {
