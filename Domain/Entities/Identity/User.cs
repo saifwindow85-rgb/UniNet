@@ -24,7 +24,15 @@ namespace Domain.Entities.Identity
         public string? PhoneNumber { get; set; }
 
         public bool IsActive { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public int ?CreatedByUserId {  get; set; }
+        public User?CreatedByUser { get; set; }
+        public DateTime UpdatedAt {  get; set; }
+        public int ?UpdatedByUserId { get; set; }
+        public User? UpdatedByUser { get; set; }
 
+        public ICollection<User> CreatedUsers { get; set; } = new List<User>();
+        public ICollection<User> UpdatedUsers { get; set; } = new List<User>();
 
         public ICollection<UserRole> UserRoles { get; set; }
             = new List<UserRole>();
