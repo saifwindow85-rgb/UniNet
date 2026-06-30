@@ -46,7 +46,8 @@ namespace DataAccessLayer.Configurations.Academic_Structure
                  "applied in system-level kernel processes or data-intensive application tasks," +
                  "the Batch model ensures consistent, high-performance execution of repetitive " +
                  "operations, critical for building scalable and robust software architectures.",
-                CreatedAt = new DateTime(2026, 1, 1)
+                CreatedAt = new DateTime(2026, 1, 1),
+                CreatedByUserId = 1
             });
         }
     }

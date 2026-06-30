@@ -5,7 +5,7 @@ namespace Domain.Entities.Study
 {
     public class StudentResult
     {
-        public int ResultId { get; set; }
+        public int StudentResultId { get; set; }
 
         public int StudentId { get; set; }
         public Student Student { get; set; } = null!;
@@ -18,9 +18,8 @@ namespace Domain.Entities.Study
 
         public decimal Final { get; set; }
 
-        public decimal Total { get; set; }
+        public decimal Total { get; private set; }
 
-        public string Grade { get; set; } = null!;
 
         public int EnteredByUserId { get; set; }
         public User EnterdByUser { get; set; } = null!;

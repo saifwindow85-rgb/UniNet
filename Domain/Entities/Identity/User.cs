@@ -2,6 +2,7 @@
 using Domain.Entities.Employees;
 using Domain.Entities.Images;
 using Domain.Entities.Students;
+using Domain.Entities.Study;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -47,6 +48,7 @@ namespace Domain.Entities.Identity
             = new List<Announcement>();
         public ICollection<Image> UploadedImages { get; set; } = new List<Image>();
         public ICollection<Image> UpdatedImages { get; set; } = new List<Image>();
-
+        public ICollection<StudentResult> EnteredByStudentResults { get; set; } = new List<StudentResult>();
+        public ICollection<StudentResult> UpdatedStudentResults { get; set; } = new List<StudentResult>();
     }
 }

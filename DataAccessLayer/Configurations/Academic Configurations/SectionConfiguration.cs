@@ -30,7 +30,8 @@ namespace DataAccessLayer.Configurations.Academic_Structure
                 BatchId = 1,
                 SectionId = 1,
                 Name = "A",
-                CreatedAt = new DateTime(2026, 1, 1)
+                CreatedAt = new DateTime(2026, 1, 1),
+                CreatedByUserId = 1
 
             });
         }

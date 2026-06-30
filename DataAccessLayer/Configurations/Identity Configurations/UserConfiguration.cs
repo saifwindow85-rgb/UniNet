@@ -27,7 +27,7 @@ namespace DataAccessLayer.Configurations.Identity_Configurations
             builder.Property(u => u.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
 
             builder.HasIndex(u => u.UserName).IsUnique();
-            builder.HasIndex(r => r.Email).IsUnique().HasFilter("[Email IS NO NULL]");
+            builder.HasIndex(r => r.Email).IsUnique().HasFilter("[Email IS NOT NULL]");
 
             //Releation : one User Created by One User & Many Users Created By One User
             builder.HasOne(u => u.CreatedByUser).WithMany(u => u.CreatedUsers)

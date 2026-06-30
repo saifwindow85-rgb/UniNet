@@ -44,7 +44,9 @@ namespace DataAccessLayer.Configurations.Academic_Structure
                      "industry, we foster a creative environment. Our goal is to graduate leaders  " +
                      "capable of driving technological progress and contributing significantly to  " +
                      "the advancement of the national and international digital economy.",
-                CreatedAt = new DateTime(2026, 1, 1)
+                CreatedAt = new DateTime(2026, 1, 1)    ,
+                CreatedByUserId = 1
+
 
             });
         }
