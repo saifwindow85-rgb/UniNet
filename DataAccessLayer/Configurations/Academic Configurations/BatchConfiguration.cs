@@ -43,7 +43,8 @@ namespace DataAccessLayer.Configurations.Academic_Structure
                  "memory management by reducing the frequency of context switching. Whether    " +
                  "applied in system-level kernel processes or data-intensive application tasks," +
                  "the Batch model ensures consistent, high-performance execution of repetitive " +
-                 "operations, critical for building scalable and robust software architectures."
+                 "operations, critical for building scalable and robust software architectures.",
+                CreatedAt = DateTime.UtcNow,
             });
         }
     }

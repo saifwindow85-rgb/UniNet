@@ -28,6 +28,8 @@ namespace DataAccessLayer.Configurations.Academic_Structure
                 BatchId = 1,
                 SectionId = 1,
                 Name = "A",
+                CreatedAt = DateTime.UtcNow,
+
             });
         }
     }

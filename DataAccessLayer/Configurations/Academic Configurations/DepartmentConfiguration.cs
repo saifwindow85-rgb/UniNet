@@ -41,7 +41,9 @@ namespace DataAccessLayer.Configurations.Academic_Structure
                  "our students to become the architects of tomorrow's infrastructure. We are   " +
                  "committed to maintaining high technical standards, fostering industry-ready  " +
                  "skills, and encouraging the strategic application of technology to solve     " +
-                 "organizational challenges in an increasingly interconnected global market."
+                 "organizational challenges in an increasingly interconnected global market.",
+                CreatedAt = DateTime.UtcNow,
+
             });
         }
     }

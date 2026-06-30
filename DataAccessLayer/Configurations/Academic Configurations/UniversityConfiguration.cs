@@ -40,6 +40,7 @@ namespace DataAccessLayer.Configurations.Academic_Structure
                     "practical application, Hadhramout University plays a pivotal role in shaping " +
                     "the future leaders and professionals of Yemen, contributing significantly to " +
                     "the social and economic progress of the nation.",
+                CreatedAt = DateTime.UtcNow,
 
             });
         }

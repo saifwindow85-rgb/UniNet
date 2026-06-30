@@ -44,7 +44,7 @@ namespace DataAccessLayer.Configurations.Identity_Configurations
                 PhoneNumber = "+967 770434808",
                 PasswordHash = "dsdjsakfjkdjfhjashfjjfk",// just for now because Hashing Algorthim Not Ready Yet
                 IsActive = true,
-
+                CreatedAt = DateTime.UtcNow,
             });
         }
 
