@@ -27,7 +27,9 @@ namespace DataAccessLayer.Configurations.Identity_Configurations
             builder.Property(u => u.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
             builder.Property(u => u.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
 
-            builder.HasIndex(r => r.UserName).IsUnique().HasFilter("[Email IS NO NULL]");
+            builder.HasIndex(u => u.UserName).IsUnique();
+            builder.HasIndex(r => r.Email).IsUnique().HasFilter("[Email IS NO NULL]");
+
             //Releation : one User Created by One User & Many Users Created By One User
             builder.HasOne(u => u.CreatedByUser).WithMany(u => u.CreatedUsers)
                 .HasForeignKey(u => u.CreatedByUserId).OnDelete(DeleteBehavior.Restrict);
@@ -44,7 +46,7 @@ namespace DataAccessLayer.Configurations.Identity_Configurations
                 PhoneNumber = "+967 770434808",
                 PasswordHash = "dsdjsakfjkdjfhjashfjjfk",// just for now because Hashing Algorthim Not Ready Yet
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = new DateTime(2026, 1, 1)
             });
         }
 

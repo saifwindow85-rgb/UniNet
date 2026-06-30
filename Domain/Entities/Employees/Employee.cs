@@ -13,13 +13,13 @@ namespace Domain.Entities.Employees
         public int EmployeeId { get; set; }
 
         public int UserId { get; set; }
+        public User User { get; set; } = null!;
 
         public int UniversityId { get; set; }
 
         public int? CollegeId { get; set; }
 
         public int? DepartmentId { get; set; }
-        public User User { get; set; } = null!;
 
         public University University { get; set; } = null!;
 

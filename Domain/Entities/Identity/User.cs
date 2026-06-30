@@ -30,6 +30,9 @@ namespace Domain.Entities.Identity
         public DateTime UpdatedAt {  get; set; }
         public int ?UpdatedByUserId { get; set; }
         public User? UpdatedByUser { get; set; }
+        public Student? Student { get; set; }
+
+        public Employee? Employee { get; set; }
 
         public ICollection<User> CreatedUsers { get; set; } = new List<User>();
         public ICollection<User> UpdatedUsers { get; set; } = new List<User>();

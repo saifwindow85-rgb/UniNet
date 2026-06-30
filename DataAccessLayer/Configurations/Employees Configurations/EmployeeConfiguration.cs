@@ -17,7 +17,12 @@ namespace DataAccessLayer.Configurations.Employees_Configurations
             builder.Property(e => e.EmployeeId).ValueGeneratedOnAdd();
 
             builder.HasIndex(e => e.UserId).IsUnique();
-            
+
+
+            //Releation : User(1) => Employee(1)
+            builder.HasOne(e => e.User).WithOne(u=>u.Employee)
+                .HasForeignKey<Employee>(e=>e.UserId).OnDelete(DeleteBehavior.Restrict);
+
             //Releation : University(1) => Employees(*)
             builder.HasOne(e=>e.University).WithMany(u=>u.Employees)
                 .HasForeignKey(e=>e.UniversityId).IsRequired().OnDelete(DeleteBehavior.Restrict);

@@ -20,8 +20,8 @@ namespace Domain.Entities.Students
 
         public int BatchId { get; set; }
         public Batch Batch { get; set; } = null!;
-        public int SectionId { get; set; }
-        public Section Section { get; set; } = null!;
+        public int ?SectionId { get; set; }
+        public Section? Section { get; set; } = null!;
         public int StatusId { get; set; }
         public StudentStatus Status { get; set; } = null!;
 

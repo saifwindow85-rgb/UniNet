@@ -42,7 +42,7 @@ namespace DataAccessLayer.Configurations.Academic_Structure
                  "committed to maintaining high technical standards, fostering industry-ready  " +
                  "skills, and encouraging the strategic application of technology to solve     " +
                  "organizational challenges in an increasingly interconnected global market.",
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = new DateTime(2026, 1, 1)
 
             });
         }
