@@ -47,11 +47,14 @@ DataAccessLayer/Configurations/Academic Configurations/ColleageConfiguration.cs
 DataAccessLayer/Configurations/Academic Configurations/DepartmentConfiguration.cs
 DataAccessLayer/Configurations/Academic Configurations/SectionConfiguration.cs
 DataAccessLayer/Configurations/Academic Configurations/UniversityConfiguration.cs
+DataAccessLayer/Configurations/ContentConfigurations/Announcement Configuration.cs
+DataAccessLayer/Configurations/ContentConfigurations/PostConfiguration.cs
 DataAccessLayer/Configurations/Employees Configurations/EmployeeConfiguration.cs
 DataAccessLayer/Configurations/Employees Configurations/LecturerConfiguration.cs
 DataAccessLayer/Configurations/Identity Configurations/RoleConfiguration.cs
 DataAccessLayer/Configurations/Identity Configurations/UserConfiguration.cs
 DataAccessLayer/Configurations/Identity Configurations/UserRoleConfigurations.cs
+DataAccessLayer/Configurations/Image Configuration/ImageConfiguration.cs
 DataAccessLayer/Configurations/Student Configuration/StatusConfiguration.cs
 DataAccessLayer/Configurations/Student Configuration/StudentConfiguration.cs
 DataAccessLayer/Dbcontext/AppDbcontext.cs
@@ -65,6 +68,7 @@ Domain/Entities/Content/Announcement.cs
 Domain/Entities/Content/Post.cs
 Domain/Entities/Employees/Employee.cs
 Domain/Entities/Employees/Lecturer.cs
+Domain/Entities/Enums/ContentEnum.cs
 Domain/Entities/Identity/Role.cs
 Domain/Entities/Identity/User.cs
 Domain/Entities/Identity/UserRole.cs
@@ -80,6 +84,69 @@ UniNet/Program.cs
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="DataAccessLayer/Configurations/ContentConfigurations/Announcement Configuration.cs">
+using Domain.Entities.Content;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataAccessLayer.Configurations.ContentConfigurations
+{
+    public class Announcement_Configuration : IEntityTypeConfiguration<Announcement>
+    {
+        public void Configure(EntityTypeBuilder<Announcement> builder)
+        {
+            builder.HasKey(a => a.AnnouncementId);
+            builder.Property(a => a.AnnouncementId).ValueGeneratedOnAdd();
+
+            builder.Property(a => a.Title).HasColumnType("NVARCHAR(500)").IsRequired();
+            builder.Property(a => a.Content).HasColumnType("NVARCHAR(MAX)").IsRequired();
+            builder.Property(a => a.Type).HasConversion<byte>().HasColumnType("TINYINT").IsRequired();
+
+            //Releation Image(1) => Post(1)
+            builder.HasOne(a => a.Image).WithOne(i => i.Announcement)
+                .IsRequired(false).HasForeignKey<Post>(p => p.ImageId).OnDelete(DeleteBehavior.Restrict);
+        }
+    }
+}
+</file>
+
+<file path="DataAccessLayer/Configurations/ContentConfigurations/PostConfiguration.cs">
+using Domain.Entities.Content;
+using Domain.Entities.Enums;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataAccessLayer.Configurations.ContentConfigurations
+{
+    public class PostConfiguration : IEntityTypeConfiguration<Post>
+    {
+        public void Configure(EntityTypeBuilder<Post> builder)
+        {
+            builder.HasKey(p => p.PostId);
+            builder.Property(p => p.PostId).ValueGeneratedOnAdd();
+
+            builder.Property(p => p.Title).HasColumnType("NVARCHAR(500)").IsRequired();
+            builder.Property(p => p.Content).HasColumnType("NVARCHAR(MAX)").IsRequired();
+            builder.Property(p => p.Type).HasConversion<byte>().HasColumnType("TINYINT").IsRequired();
+
+            //Releation Image(1) => Post(1)
+            builder.HasOne(p => p.Image).WithOne(i => i.Post)
+                .IsRequired(false).HasForeignKey<Post>(p => p.ImageId).OnDelete(DeleteBehavior.Restrict);
+        }
+    }
+}
+</file>
 
 <file path="DataAccessLayer/Configurations/Employees Configurations/LecturerConfiguration.cs">
 using Domain.Entities.Employees;
@@ -118,8 +185,8 @@ namespace DataAccessLayer.Configurations.Employees_Configurations
 }
 </file>
 
-<file path="DataAccessLayer/Configurations/Identity Configurations/RoleConfiguration.cs">
-using Domain.Entities.Identity;
+<file path="DataAccessLayer/Configurations/Image Configuration/ImageConfiguration.cs">
+using Domain.Entities.Images;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -128,65 +195,32 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataAccessLayer.Configurations.Academic_Configurations.Identity_Configurations
+namespace DataAccessLayer.Configurations.Image_Configuration
 {
-    public class RoleConfiguration : IEntityTypeConfiguration<Role>
+    internal class ImageConfiguration : IEntityTypeConfiguration<Image>
     {
-        public void Configure(EntityTypeBuilder<Role> builder)
+        public void Configure(EntityTypeBuilder<Image> builder)
         {
-            builder.HasKey(r => r.RoleId);
-            builder.Property(r => r.RoleId).ValueGeneratedOnAdd();
+            builder.HasKey(i => i.ImageId);
+            builder.Property(i => i.ImageId).ValueGeneratedOnAdd();
 
-            builder.Property(r => r.Name).HasColumnType("NVARCHAR").HasMaxLength(250).IsRequired();
-            builder.HasIndex(r => r.Name).IsUnique();
+            builder.Property(i => i.FileName).HasColumnType("NVARCHAR(250)").IsRequired();
+            builder.Property(i => i.FilePath).HasColumnType("NVARCHAR(500)").IsRequired();
 
-            builder.HasData(new Role
-            {
-                RoleId = 1,
-                Name = "Super Admin"
-            });
-        }
-    }
-}
-</file>
+            builder.Property(i => i.UploadedAt).HasDefaultValueSql("GETUTCDATE()");
 
-<file path="DataAccessLayer/Configurations/Identity Configurations/UserRoleConfigurations.cs">
-using Domain.Entities.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+ 
 
-namespace DataAccessLayer.Configurations.Identity_Configurations
-{
-    public class UserRoleConfigurations : IEntityTypeConfiguration<UserRole>
-    {
-        public void Configure(EntityTypeBuilder<UserRole> builder)
-        {
-            builder.HasKey(ur => new
-            {
-                ur.UserId,
-                ur.RoleId
-            });
-            builder.HasIndex(u => new { u.UserId, u.RoleId }).IsUnique();
+            //Relealtion : UploadedByUser(1) => Images(*)
+            builder.HasOne(i => i.UploadedByUser).WithMany(u => u.UploadedImages)
+                .HasForeignKey(i => i.UploadedByUserId).IsRequired().OnDelete(DeleteBehavior.Restrict);
 
+            //Releation : UpdatedByUser(1) => Images(*)
+            builder.HasOne(i => i.UpdatedByUser).WithMany(u => u.UpdatedImages)
+                .HasForeignKey(i => i.UpdatedByUserId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
 
-            //Releation : User(1) => (*)UserRole
-            builder.HasOne(u => u.User).WithMany(u => u.UserRoles)
-                .HasForeignKey(u => u.UserId).IsRequired().OnDelete(DeleteBehavior.Restrict);
+            builder.ToTable("Images");
 
-            // Releation : Role(1) => UserRole(*)
-            builder.HasOne(u=>u.Role).WithMany(r=>r.UserRoles)
-                .HasForeignKey(u=>u.RoleId).IsRequired().OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasData(new UserRole
-            {
-                UserId = 1,
-                RoleId = 1,
-            });
         }
     }
 }
@@ -406,52 +440,6 @@ namespace Domain.Entities.Common
 }
 </file>
 
-<file path="Domain/Entities/Content/Announcement.cs">
-using Domain.Entities.Common;
-using Domain.Entities.Images;
-
-namespace Domain.Entities.Content
-{
-    public class Announcement : BaseEntity
-    {
-        public int AnnouncementId { get; set; }
-
-        public string Title { get; set; } = null!;
-
-        public string Content { get; set; } = null!;
-        public int? ImageId { get; set; }
-        public Image? Image { get; set; }
-    }
-}
-</file>
-
-<file path="Domain/Entities/Content/Post.cs">
-using Domain.Entities.Common;
-using Domain.Entities.Images;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Domain.Entities.Content
-{
-    public class Post : BaseEntity
-    {
-        public int PostId { get; set; }
-
-
-        public string Title { get; set; } = null!;
-
-        public string Content { get; set; } = null!;
-        public int ?ImageId { get; set; }
-        public Image?Image { get; set; }
-    }
-
-
-}
-</file>
-
 <file path="Domain/Entities/Employees/Lecturer.cs">
 using Domain.Entities.Common;
 using Domain.Entities.Study;
@@ -470,6 +458,19 @@ namespace Domain.Entities.Employees
         public ICollection<SectionSubject> SectionSubjects { get; set; } = new List<SectionSubject>();
 
     }
+}
+</file>
+
+<file path="Domain/Entities/Enums/ContentEnum.cs">
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Domain.Entities.Enums
+{
+   public enum EnContentType { Public =1 , Batch =2,Department = 3,College =4,University =5}
 }
 </file>
 
@@ -498,35 +499,6 @@ namespace Domain.Entities.Identity
 
         public int RoleId { get; set; }
         public Role Role { get; set; } = null!;
-    }
-}
-</file>
-
-<file path="Domain/Entities/Images/Image.cs">
-using Domain.Entities.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Domain.Entities.Images
-{
-    public class Image
-    {
-        public int ImageId { get; set; }
-
-        public string FileName { get; set; } = null!;
-
-        public long FileSize { get; set; }
-
-        public DateTime UploadedAt { get; set; }
-        public int UploadedByUserId { get; set; }
-        public User UploadedByUser { get; set; } = null!;
-
-       public  DateTime UpdatedAt { get; set; }
-        public int ?UpdatedByUserId { get; set; }
-        public User ?UpdatedByUser { get; set; }
     }
 }
 </file>
@@ -734,6 +706,84 @@ namespace DataAccessLayer.Configurations.Employees_Configurations
 }
 </file>
 
+<file path="DataAccessLayer/Configurations/Identity Configurations/RoleConfiguration.cs">
+using Domain.Entities.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataAccessLayer.Configurations.Academic_Configurations.Identity_Configurations
+{
+    public class RoleConfiguration : IEntityTypeConfiguration<Role>
+    {
+        public void Configure(EntityTypeBuilder<Role> builder)
+        {
+            builder.HasKey(r => r.RoleId);
+            builder.Property(r => r.RoleId).ValueGeneratedOnAdd();
+
+            builder.Property(r => r.Name).HasColumnType("NVARCHAR").HasMaxLength(250).IsRequired();
+            builder.HasIndex(r => r.Name).IsUnique();
+
+            builder.ToTable("Roles");
+
+            builder.HasData(new Role
+            {
+                RoleId = 1,
+                Name = "Super Admin"
+            });
+        }
+    }
+}
+</file>
+
+<file path="DataAccessLayer/Configurations/Identity Configurations/UserRoleConfigurations.cs">
+using Domain.Entities.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataAccessLayer.Configurations.Identity_Configurations
+{
+    public class UserRoleConfigurations : IEntityTypeConfiguration<UserRole>
+    {
+        public void Configure(EntityTypeBuilder<UserRole> builder)
+        {
+            builder.HasKey(ur => new
+            {
+                ur.UserId,
+                ur.RoleId
+            });
+            builder.HasIndex(u => new { u.UserId, u.RoleId }).IsUnique();
+
+
+            //Releation : User(1) => (*)UserRole
+            builder.HasOne(u => u.User).WithMany(u => u.UserRoles)
+                .HasForeignKey(u => u.UserId).IsRequired().OnDelete(DeleteBehavior.Restrict);
+
+            // Releation : Role(1) => UserRole(*)
+            builder.HasOne(u=>u.Role).WithMany(r=>r.UserRoles)
+                .HasForeignKey(u=>u.RoleId).IsRequired().OnDelete(DeleteBehavior.Restrict);
+
+            builder.ToTable("UserRoles");
+
+            builder.HasData(new UserRole
+            {
+                UserId = 1,
+                RoleId = 1,
+            });
+        }
+    }
+}
+</file>
+
 <file path="Domain/Entities/Academic Structure/Batch.cs">
 using Domain.Entities.Common;
 using Domain.Entities.Students;
@@ -755,6 +805,56 @@ namespace Domain.Entities.Academic_Structure
         public ICollection<Student> Students { get; set; } = new List<Student>();
         public ICollection<Section> Sections { get; set; } = new List<Section>();
     }
+}
+</file>
+
+<file path="Domain/Entities/Content/Announcement.cs">
+using Domain.Entities.Common;
+using Domain.Entities.Enums;
+using Domain.Entities.Images;
+
+namespace Domain.Entities.Content
+{
+    public class Announcement : BaseEntity
+    {
+        public int AnnouncementId { get; set; }
+
+        public string Title { get; set; } = null!;
+
+        public string Content { get; set; } = null!;
+        public EnContentType Type { get; set; }
+        public int? ImageId { get; set; }
+        public Image? Image { get; set; }
+    }
+}
+</file>
+
+<file path="Domain/Entities/Content/Post.cs">
+using Domain.Entities.Common;
+using Domain.Entities.Enums;
+using Domain.Entities.Images;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Domain.Entities.Content
+{
+    public class Post : BaseEntity
+    {
+        public int PostId { get; set; }
+
+
+        public string Title { get; set; } = null!;
+
+        public string Content { get; set; } = null!;
+        public EnContentType Type {  get; set; }
+        public int ?ImageId { get; set; }
+        public Image?Image { get; set; }
+    }
+
+
 }
 </file>
 
@@ -787,6 +887,39 @@ namespace Domain.Entities.Employees
         public College? College { get; set; }
 
         public Department? Department { get; set; }
+    }
+}
+</file>
+
+<file path="Domain/Entities/Images/Image.cs">
+using Domain.Entities.Content;
+using Domain.Entities.Identity;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Domain.Entities.Images
+{
+    public class Image
+    {
+        public int ImageId { get; set; }
+
+        public string FileName { get; set; } = null!;
+
+        public long FileSize { get; set; }
+        public string FilePath { get; set; } = null!;
+
+        public DateTime UploadedAt { get; set; }
+        public int UploadedByUserId { get; set; }
+        public User UploadedByUser { get; set; } = null!;
+
+       public  DateTime UpdatedAt { get; set; }
+        public int ?UpdatedByUserId { get; set; }
+        public User ?UpdatedByUser { get; set; }
+        public Post? Post { get; set; }
+        public Announcement? Announcement { get; set; }
     }
 }
 </file>
@@ -836,313 +969,6 @@ namespace Domain.Entities.Students
 
         public string? Description { get; set; }
         public ICollection<Student>Students { get; set; } = new List<Student>();
-    }
-}
-</file>
-
-<file path="DataAccessLayer/Configurations/Academic Configurations/BatchConfiguration.cs">
-using Domain.Entities.Academic_Structure;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DataAccessLayer.Configurations.Academic_Structure
-{
-    public class BatchConfiguration : IEntityTypeConfiguration<Batch>
-    {
-        public void Configure(EntityTypeBuilder<Batch> builder)
-        {
-            builder.HasKey(b => b.BatchId);
-            builder.Property(b => b.BatchId).ValueGeneratedOnAdd();
-
-            builder.Property(b => b.Name).HasColumnType("NVARCHAR(250)").IsRequired();
-            builder.HasIndex(b => new {b.DepartmentId,b.Name}).IsUnique();
-
-            builder.Property(b => b.Description).HasColumnType("NVARCHAR(MAX)").IsRequired(false);
-
-            builder.Property(b => b.BatchYear).IsRequired();
-
-            //Releation : One Department => Many Batches
-            builder.HasOne(b => b.Department).WithMany(d => d.Batches)
-                .HasForeignKey(b => b.DepartmentId).IsRequired().OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasData(new Batch
-            {
-                DepartmentId = 1,
-                BatchId = 1,
-                BatchYear = 2025,
-                Name = "Kernel",
-                Description = "In computer science, a Batch (or Kernel-level batching) refers to the         " +
-                 "processing of a collection of tasks or data sets in a single sequence without " +
-                 "manual intervention. By grouping operations, the system minimizes overhead   " +
-                 "and maximizes throughput, allowing the kernel to handle resource allocation  " +
-                 "more efficiently.                                                            " +
-                 "                                                                             " +
-                 "This approach is fundamental to modern computing, optimizing CPU cycles and  " +
-                 "memory management by reducing the frequency of context switching. Whether    " +
-                 "applied in system-level kernel processes or data-intensive application tasks," +
-                 "the Batch model ensures consistent, high-performance execution of repetitive " +
-                 "operations, critical for building scalable and robust software architectures.",
-                CreatedAt = new DateTime(2026, 1, 1)
-            });
-        }
-    }
-}
-</file>
-
-<file path="DataAccessLayer/Configurations/Academic Configurations/ColleageConfiguration.cs">
-using Domain.Entities.Academic_Structure;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DataAccessLayer.Configurations.Academic_Structure
-{
-    public class ColleageConfiguration : IEntityTypeConfiguration<College>
-    {
-        public void Configure(EntityTypeBuilder<College> builder)
-        {
-            builder.HasKey(c => c.CollegeId);
-            builder.Property(c => c.CollegeId).ValueGeneratedOnAdd();
-
-            builder.Property(c => c.Name).HasColumnType("NVARCHAR(250)").IsRequired();
-            builder.HasIndex(c => new { c.UniversityId, c.Name }).IsUnique();
-
-            builder.Property(c => c.Description).HasColumnType("NVARCHAR(MAX)").IsRequired(false);
-
-            //Releation : One University => Many Colleges
-            builder.HasOne(c=>c.University).WithMany(u=>u.Colleges)
-                .HasForeignKey(c=>c.UniversityId) .OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasData(new College
-            {
-                CollegeId = 1,
-                UniversityId = 1,
-                Name = "The Faculty of Computer Science and Information Technology",
-                Description = "The Faculty of Computer Science and Information Technology is a center for    " +
-                     "innovation and academic excellence, dedicated to preparing students for the   " +
-                     "digital era. The curriculum covers essential fields such as Software         " +
-                     "Engineering, Artificial Intelligence, Cybersecurity, and Data Science.       " +
-                     "                                                                             " +
-                     "By bridging the gap between theoretical computing principles and real-world  " +
-                     "applications, the faculty empowers students with the analytical and          " +
-                     "technical skills needed to solve complex problems. Through state-of-the-art  " +
-                     "labs, collaborative research projects, and partnerships with the tech        " +
-                     "industry, we foster a creative environment. Our goal is to graduate leaders  " +
-                     "capable of driving technological progress and contributing significantly to  " +
-                     "the advancement of the national and international digital economy.",
-                CreatedAt = new DateTime(2026, 1, 1)
-
-            });
-        }
-    }
-}
-</file>
-
-<file path="DataAccessLayer/Configurations/Academic Configurations/DepartmentConfiguration.cs">
-using Domain.Entities.Academic_Structure;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DataAccessLayer.Configurations.Academic_Structure
-{
-    public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
-    {
-        public void Configure(EntityTypeBuilder<Department> builder)
-        {
-            builder.HasKey(d => d.DepartmentId);
-            builder.Property(d => d.DepartmentId).ValueGeneratedOnAdd();
-
-            builder.Property(d => d.Name).HasColumnType("NVARCHAR(250)").IsRequired();
-            builder.HasIndex(d => new {d.CollegeId, d.Name}).IsUnique();
-
-            builder.Property(d => d.Description).HasColumnType("NVARCHAR(MAX)").IsRequired(false);
-
-            //Releation : One College => Many Departments
-            builder.HasOne(d => d.College).WithMany(c => c.Departments)
-                .HasForeignKey(d => d.CollegeId).IsRequired().OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasData(new Department
-            {
-                CollegeId = 1,
-                DepartmentId = 1,
-                Name = "IT Department",
-                Description = "The Department of Information Technology focuses on the intersection of       " +
-                 "computing, infrastructure, and human-centric design. We equip students with  " +
-                 "the core competencies in network administration, database management, web    " +
-                 "development, and system security. The department emphasizes a hands-on       " +
-                 "approach to learning, ensuring that graduates are proficient in managing     " +
-                 "modern enterprise environments and digital workflows.                        " +
-                 "                                                                             " +
-                 "Through our rigorous training and focus on emerging technologies, we prepare " +
-                 "our students to become the architects of tomorrow's infrastructure. We are   " +
-                 "committed to maintaining high technical standards, fostering industry-ready  " +
-                 "skills, and encouraging the strategic application of technology to solve     " +
-                 "organizational challenges in an increasingly interconnected global market.",
-                CreatedAt = new DateTime(2026, 1, 1)
-
-            });
-        }
-    }
-}
-</file>
-
-<file path="DataAccessLayer/Configurations/Academic Configurations/SectionConfiguration.cs">
-using Domain.Entities.Academic_Structure;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DataAccessLayer.Configurations.Academic_Structure
-{
-    public class SectionConfiguration : IEntityTypeConfiguration<Section>
-    {
-        public void Configure(EntityTypeBuilder<Section> builder)
-        {
-            builder.HasKey(s => s.SectionId);
-            builder.Property(s => s.SectionId).ValueGeneratedOnAdd();
-
-            builder.Property(s => s.Name).HasColumnType("NVARCHAR(250)").IsRequired();
-            builder.HasIndex(s => new { s.BatchId, s.Name }).IsUnique();
-            
-            //Releation : One Batch => Many Sections 
-            builder.HasOne(s=>s.Batch).WithMany(b=>b.Sections)
-                .HasForeignKey(s=>s.BatchId).IsRequired().OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasData(new Section
-            {
-                BatchId = 1,
-                SectionId = 1,
-                Name = "A",
-                CreatedAt = new DateTime(2026, 1, 1)
-
-            });
-        }
-    }
-}
-</file>
-
-<file path="DataAccessLayer/Configurations/Academic Configurations/UniversityConfiguration.cs">
-using Domain.Entities.Academic_Structure;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DataAccessLayer.Configurations.Academic_Structure
-{
-    public class UniversityConfiguration : IEntityTypeConfiguration<University>
-    {
-        public void Configure(EntityTypeBuilder<University> builder)
-        {
-            builder.HasKey(u => u.UniversityId);
-            builder.Property(u => u.UniversityId).ValueGeneratedOnAdd();
-
-            builder.Property(u => u.Name).HasColumnType("NVARCHAR(250)").IsRequired();
-            builder.HasIndex(u => u.Name).IsUnique();
-
-            builder.Property(u => u.Description).HasColumnType("NVARCHAR(MAX)").IsRequired(false);
-
-            builder.HasData(new University
-            {
-                UniversityId = 1,
-                Name = "Hadhramout University",
-                Description = "Hadhramout University (HU), established in 1993 in Mukalla, Yemen, stands as a  " +
-                    "cornerstone of higher education and academic excellence in the region. Since " +
-                    "its inception, the university has been dedicated to fostering intellectual   " +
-                    "growth, scientific research, and community development. It offers a diverse  " +
-                    "array of undergraduate and postgraduate programs across various disciplines, " +
-                    "including Engineering, Petroleum, Medicine, Sciences, Arts, and Humanities.  " +
-                    "                                                                            " +
-                    "The university serves as a vital hub for students from across Hadhramout and " +
-                    "beyond, striving to prepare them with the skills and knowledge required to   " +
-                    "meet the demands of a changing global landscape. HU is committed to          " +
-                    "maintaining high academic standards and encouraging innovation through its   " +
-                    "research centers and laboratories. By integrating theoretical knowledge with " +
-                    "practical application, Hadhramout University plays a pivotal role in shaping " +
-                    "the future leaders and professionals of Yemen, contributing significantly to " +
-                    "the social and economic progress of the nation.",
-                CreatedAt = new DateTime(2026, 1, 1)
-
-            });
-        }
-    }
-}
-</file>
-
-<file path="DataAccessLayer/Configurations/Identity Configurations/UserConfiguration.cs">
-using Domain.Entities.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DataAccessLayer.Configurations.Identity_Configurations
-{
-    public class UserConfiguration : IEntityTypeConfiguration<User>
-    {
-        public void Configure(EntityTypeBuilder<User> builder)
-        {
-            builder.HasKey(u => u.UserId);
-            builder.Property(u => u.UserId).ValueGeneratedOnAdd();
-
-            builder.Property(u => u.FullName).HasColumnType("NVARCHAR(250)").IsRequired();//No Unique Constraint For Name
-            builder.Property(u => u.UserName).HasColumnType("NVARCHAR(250)").IsRequired();
-
-            builder.Property(r => r.PasswordHash).HasColumnType("NVARCHAR(MAX)").IsRequired();
-
-            builder.Property(u => u.Email).HasColumnType("NVARCHAR(256)").IsRequired(false);
-            builder.Property(u => u.PhoneNumber).HasColumnType("NVARCHAR(25)").IsRequired(false);
-
-            builder.Property(u => u.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
-            builder.Property(u => u.UpdatedAt).HasDefaultValueSql("GETUTCDATE()");
-
-            builder.HasIndex(u => u.UserName).IsUnique();
-            builder.HasIndex(r => r.Email).IsUnique().HasFilter("[Email IS NO NULL]");
-
-            //Releation : one User Created by One User & Many Users Created By One User
-            builder.HasOne(u => u.CreatedByUser).WithMany(u => u.CreatedUsers)
-                .HasForeignKey(u => u.CreatedByUserId).OnDelete(DeleteBehavior.Restrict);
-            //Releation : one User Updated by One User & Many Users Updated By One User
-            builder.HasOne(u => u.UpdatedByUser).WithMany(u => u.UpdatedUsers)
-                .HasForeignKey(u => u.UpdatedByUserId).OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasData(new User
-            {
-                UserId = 1,
-                FullName = "Saif BunSumida",
-                UserName = "Saif716",
-                Email = "saifwindow85@gmail.com",
-                PhoneNumber = "+967 770434808",
-                PasswordHash = "dsdjsakfjkdjfhjashfjjfk",// just for now because Hashing Algorthim Not Ready Yet
-                IsActive = true,
-                CreatedAt = new DateTime(2026, 1, 1)
-            });
-        }
-
     }
 }
 </file>
@@ -1247,9 +1073,328 @@ namespace DataAccessLayer.Dbcontext
 }
 </file>
 
+<file path="DataAccessLayer/Configurations/Academic Configurations/BatchConfiguration.cs">
+using Domain.Entities.Academic_Structure;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataAccessLayer.Configurations.Academic_Structure
+{
+    public class BatchConfiguration : IEntityTypeConfiguration<Batch>
+    {
+        public void Configure(EntityTypeBuilder<Batch> builder)
+        {
+            builder.HasKey(b => b.BatchId);
+            builder.Property(b => b.BatchId).ValueGeneratedOnAdd();
+
+            builder.Property(b => b.Name).HasColumnType("NVARCHAR(250)").IsRequired();
+            builder.HasIndex(b => new {b.DepartmentId,b.Name}).IsUnique();
+
+            builder.Property(b => b.Description).HasColumnType("NVARCHAR(MAX)").IsRequired(false);
+
+            builder.Property(b => b.BatchYear).IsRequired();
+
+            //Releation : One Department => Many Batches
+            builder.HasOne(b => b.Department).WithMany(d => d.Batches)
+                .HasForeignKey(b => b.DepartmentId).IsRequired().OnDelete(DeleteBehavior.Restrict);
+
+            builder.ToTable("Batches");
+
+            builder.HasData(new Batch
+            {
+                DepartmentId = 1,
+                BatchId = 1,
+                BatchYear = 2025,
+                Name = "Kernel",
+                Description = "In computer science, a Batch (or Kernel-level batching) refers to the         " +
+                 "processing of a collection of tasks or data sets in a single sequence without " +
+                 "manual intervention. By grouping operations, the system minimizes overhead   " +
+                 "and maximizes throughput, allowing the kernel to handle resource allocation  " +
+                 "more efficiently.                                                            " +
+                 "                                                                             " +
+                 "This approach is fundamental to modern computing, optimizing CPU cycles and  " +
+                 "memory management by reducing the frequency of context switching. Whether    " +
+                 "applied in system-level kernel processes or data-intensive application tasks," +
+                 "the Batch model ensures consistent, high-performance execution of repetitive " +
+                 "operations, critical for building scalable and robust software architectures.",
+                CreatedAt = new DateTime(2026, 1, 1)
+            });
+        }
+    }
+}
+</file>
+
+<file path="DataAccessLayer/Configurations/Academic Configurations/ColleageConfiguration.cs">
+using Domain.Entities.Academic_Structure;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataAccessLayer.Configurations.Academic_Structure
+{
+    public class ColleageConfiguration : IEntityTypeConfiguration<College>
+    {
+        public void Configure(EntityTypeBuilder<College> builder)
+        {
+            builder.HasKey(c => c.CollegeId);
+            builder.Property(c => c.CollegeId).ValueGeneratedOnAdd();
+
+            builder.Property(c => c.Name).HasColumnType("NVARCHAR(250)").IsRequired();
+            builder.HasIndex(c => new { c.UniversityId, c.Name }).IsUnique();
+
+            builder.Property(c => c.Description).HasColumnType("NVARCHAR(MAX)").IsRequired(false);
+
+            //Releation : One University => Many Colleges
+            builder.HasOne(c=>c.University).WithMany(u=>u.Colleges)
+                .HasForeignKey(c=>c.UniversityId) .OnDelete(DeleteBehavior.Restrict);
+
+            builder.ToTable("Colleges");
+
+            builder.HasData(new College
+            {
+                CollegeId = 1,
+                UniversityId = 1,
+                Name = "The Faculty of Computer Science and Information Technology",
+                Description = "The Faculty of Computer Science and Information Technology is a center for    " +
+                     "innovation and academic excellence, dedicated to preparing students for the   " +
+                     "digital era. The curriculum covers essential fields such as Software         " +
+                     "Engineering, Artificial Intelligence, Cybersecurity, and Data Science.       " +
+                     "                                                                             " +
+                     "By bridging the gap between theoretical computing principles and real-world  " +
+                     "applications, the faculty empowers students with the analytical and          " +
+                     "technical skills needed to solve complex problems. Through state-of-the-art  " +
+                     "labs, collaborative research projects, and partnerships with the tech        " +
+                     "industry, we foster a creative environment. Our goal is to graduate leaders  " +
+                     "capable of driving technological progress and contributing significantly to  " +
+                     "the advancement of the national and international digital economy.",
+                CreatedAt = new DateTime(2026, 1, 1)
+
+            });
+        }
+    }
+}
+</file>
+
+<file path="DataAccessLayer/Configurations/Academic Configurations/DepartmentConfiguration.cs">
+using Domain.Entities.Academic_Structure;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataAccessLayer.Configurations.Academic_Structure
+{
+    public class DepartmentConfiguration : IEntityTypeConfiguration<Department>
+    {
+        public void Configure(EntityTypeBuilder<Department> builder)
+        {
+            builder.HasKey(d => d.DepartmentId);
+            builder.Property(d => d.DepartmentId).ValueGeneratedOnAdd();
+
+            builder.Property(d => d.Name).HasColumnType("NVARCHAR(250)").IsRequired();
+            builder.HasIndex(d => new {d.CollegeId, d.Name}).IsUnique();
+
+            builder.Property(d => d.Description).HasColumnType("NVARCHAR(MAX)").IsRequired(false);
+
+            //Releation : One College => Many Departments
+            builder.HasOne(d => d.College).WithMany(c => c.Departments)
+                .HasForeignKey(d => d.CollegeId).IsRequired().OnDelete(DeleteBehavior.Restrict);
+
+            builder.ToTable("Departments");
+
+            builder.HasData(new Department
+            {
+                CollegeId = 1,
+                DepartmentId = 1,
+                Name = "IT Department",
+                Description = "The Department of Information Technology focuses on the intersection of       " +
+                 "computing, infrastructure, and human-centric design. We equip students with  " +
+                 "the core competencies in network administration, database management, web    " +
+                 "development, and system security. The department emphasizes a hands-on       " +
+                 "approach to learning, ensuring that graduates are proficient in managing     " +
+                 "modern enterprise environments and digital workflows.                        " +
+                 "                                                                             " +
+                 "Through our rigorous training and focus on emerging technologies, we prepare " +
+                 "our students to become the architects of tomorrow's infrastructure. We are   " +
+                 "committed to maintaining high technical standards, fostering industry-ready  " +
+                 "skills, and encouraging the strategic application of technology to solve     " +
+                 "organizational challenges in an increasingly interconnected global market.",
+                CreatedAt = new DateTime(2026, 1, 1)
+
+            });
+        }
+    }
+}
+</file>
+
+<file path="DataAccessLayer/Configurations/Academic Configurations/SectionConfiguration.cs">
+using Domain.Entities.Academic_Structure;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataAccessLayer.Configurations.Academic_Structure
+{
+    public class SectionConfiguration : IEntityTypeConfiguration<Section>
+    {
+        public void Configure(EntityTypeBuilder<Section> builder)
+        {
+            builder.HasKey(s => s.SectionId);
+            builder.Property(s => s.SectionId).ValueGeneratedOnAdd();
+
+            builder.Property(s => s.Name).HasColumnType("NVARCHAR(250)").IsRequired();
+            builder.HasIndex(s => new { s.BatchId, s.Name }).IsUnique();
+            
+            //Releation : One Batch => Many Sections 
+            builder.HasOne(s=>s.Batch).WithMany(b=>b.Sections)
+                .HasForeignKey(s=>s.BatchId).IsRequired().OnDelete(DeleteBehavior.Restrict);
+
+            builder.ToTable("Sections");
+
+            builder.HasData(new Section
+            {
+                BatchId = 1,
+                SectionId = 1,
+                Name = "A",
+                CreatedAt = new DateTime(2026, 1, 1)
+
+            });
+        }
+    }
+}
+</file>
+
+<file path="DataAccessLayer/Configurations/Academic Configurations/UniversityConfiguration.cs">
+using Domain.Entities.Academic_Structure;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataAccessLayer.Configurations.Academic_Structure
+{
+    public class UniversityConfiguration : IEntityTypeConfiguration<University>
+    {
+        public void Configure(EntityTypeBuilder<University> builder)
+        {
+            builder.HasKey(u => u.UniversityId);
+            builder.Property(u => u.UniversityId).ValueGeneratedOnAdd();
+
+            builder.Property(u => u.Name).HasColumnType("NVARCHAR(250)").IsRequired();
+            builder.HasIndex(u => u.Name).IsUnique();
+
+            builder.Property(u => u.Description).HasColumnType("NVARCHAR(MAX)").IsRequired(false);
+
+            builder.ToTable("Universities");
+
+            builder.HasData(new University
+            {
+                UniversityId = 1,
+                Name = "Hadhramout University",
+                Description = "Hadhramout University (HU), established in 1993 in Mukalla, Yemen, stands as a  " +
+                    "cornerstone of higher education and academic excellence in the region. Since " +
+                    "its inception, the university has been dedicated to fostering intellectual   " +
+                    "growth, scientific research, and community development. It offers a diverse  " +
+                    "array of undergraduate and postgraduate programs across various disciplines, " +
+                    "including Engineering, Petroleum, Medicine, Sciences, Arts, and Humanities.  " +
+                    "                                                                            " +
+                    "The university serves as a vital hub for students from across Hadhramout and " +
+                    "beyond, striving to prepare them with the skills and knowledge required to   " +
+                    "meet the demands of a changing global landscape. HU is committed to          " +
+                    "maintaining high academic standards and encouraging innovation through its   " +
+                    "research centers and laboratories. By integrating theoretical knowledge with " +
+                    "practical application, Hadhramout University plays a pivotal role in shaping " +
+                    "the future leaders and professionals of Yemen, contributing significantly to " +
+                    "the social and economic progress of the nation.",
+                CreatedAt = new DateTime(2026, 1, 1)
+
+            });
+        }
+    }
+}
+</file>
+
+<file path="DataAccessLayer/Configurations/Identity Configurations/UserConfiguration.cs">
+using Domain.Entities.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataAccessLayer.Configurations.Identity_Configurations
+{
+    public class UserConfiguration : IEntityTypeConfiguration<User>
+    {
+        public void Configure(EntityTypeBuilder<User> builder)
+        {
+            builder.HasKey(u => u.UserId);
+            builder.Property(u => u.UserId).ValueGeneratedOnAdd();
+
+            builder.Property(u => u.FullName).HasColumnType("NVARCHAR(250)").IsRequired();//No Unique Constraint For Name
+            builder.Property(u => u.UserName).HasColumnType("NVARCHAR(250)").IsRequired();
+
+            builder.Property(r => r.PasswordHash).HasColumnType("NVARCHAR(MAX)").IsRequired();
+
+            builder.Property(u => u.Email).HasColumnType("NVARCHAR(256)").IsRequired(false);
+            builder.Property(u => u.PhoneNumber).HasColumnType("NVARCHAR(25)").IsRequired(false);
+
+            builder.Property(u => u.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+            builder.HasIndex(u => u.UserName).IsUnique();
+            builder.HasIndex(r => r.Email).IsUnique().HasFilter("[Email IS NO NULL]");
+
+            //Releation : one User Created by One User & Many Users Created By One User
+            builder.HasOne(u => u.CreatedByUser).WithMany(u => u.CreatedUsers)
+                .HasForeignKey(u => u.CreatedByUserId).OnDelete(DeleteBehavior.Restrict);
+            //Releation : one User Updated by One User & Many Users Updated By One User
+            builder.HasOne(u => u.UpdatedByUser).WithMany(u => u.UpdatedUsers)
+                .HasForeignKey(u => u.UpdatedByUserId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
+
+            builder.ToTable("Users");
+
+            builder.HasData(new User
+            {
+                UserId = 1,
+                FullName = "Saif BunSumida",
+                UserName = "Saif716",
+                Email = "saifwindow85@gmail.com",
+                PhoneNumber = "+967 770434808",
+                PasswordHash = "dsdjsakfjkdjfhjashfjjfk",// just for now because Hashing Algorthim Not Ready Yet
+                IsActive = true,
+                CreatedAt = new DateTime(2026, 1, 1)
+            });
+        }
+
+    }
+}
+</file>
+
 <file path="Domain/Entities/Identity/User.cs">
 using Domain.Entities.Content;
 using Domain.Entities.Employees;
+using Domain.Entities.Images;
 using Domain.Entities.Students;
 using System;
 using System.Collections.Generic;
@@ -1294,6 +1439,8 @@ namespace Domain.Entities.Identity
 
         public ICollection<Announcement> Announcements { get; set; }
             = new List<Announcement>();
+        public ICollection<Image> UploadedImages { get; set; } = new List<Image>();
+        public ICollection<Image> UpdatedImages { get; set; } = new List<Image>();
 
     }
 }

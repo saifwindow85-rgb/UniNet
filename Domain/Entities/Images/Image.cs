@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Identity;
+﻿using Domain.Entities.Content;
+using Domain.Entities.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,5 +24,7 @@ namespace Domain.Entities.Images
        public  DateTime UpdatedAt { get; set; }
         public int ?UpdatedByUserId { get; set; }
         public User ?UpdatedByUser { get; set; }
+        public Post? Post { get; set; }
+        public Announcement? Announcement { get; set; }
     }
 }
