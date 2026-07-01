@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Students;
+﻿using DataAccessLayer.Seeds;
+using Domain.Entities.Students;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -20,13 +21,9 @@ namespace DataAccessLayer.Configurations.Student_Configuration
             builder.Property(s => s.Description).HasColumnType("NVARCHAR(300)").IsRequired(false);
 
             builder.HasIndex(s => s.Name).IsUnique();
+            builder.ToTable("StudentStatuses");
 
-            builder.HasData(new StudentStatus
-            {
-                StatusId = 1,
-                Name = "Enrolled",
-                Description = "The student is currently enrolled and making normal progress in their academic curriculum.",
-            });
+            builder.HasData(SeedData.GetStudentStatuses());
         }
     }
 }

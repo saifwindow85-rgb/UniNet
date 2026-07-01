@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Content;
+﻿using DataAccessLayer.Seeds;
+using Domain.Entities.Content;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -23,6 +24,7 @@ namespace DataAccessLayer.Configurations.ContentConfigurations
             //Releation Image(1) => Post(1)
             builder.HasOne(a => a.Image).WithOne(i => i.Announcement)
                 .IsRequired(false).HasForeignKey<Announcement>(p => p.ImageId).OnDelete(DeleteBehavior.Restrict);
+            builder.ToTable("Announcements");
         }
     }
 }

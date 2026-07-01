@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Identity;
+﻿using DataAccessLayer.Seeds;
+using Domain.Entities.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -27,7 +28,7 @@ namespace DataAccessLayer.Configurations.Identity_Configurations
             builder.Property(u => u.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
 
             builder.HasIndex(u => u.UserName).IsUnique();
-            builder.HasIndex(r => r.Email).IsUnique().HasFilter("[Email IS NOT NULL]");
+            builder.HasIndex(r => r.Email).IsUnique().HasFilter("[Email] IS NOT NULL");
 
             //Releation : one User Created by One User & Many Users Created By One User
             builder.HasOne(u => u.CreatedByUser).WithMany(u => u.CreatedUsers)
@@ -38,17 +39,7 @@ namespace DataAccessLayer.Configurations.Identity_Configurations
 
             builder.ToTable("Users");
 
-            builder.HasData(new User
-            {
-                UserId = 1,
-                FullName = "Saif BunSumida",
-                UserName = "Saif716",
-                Email = "saifwindow85@gmail.com",
-                PhoneNumber = "+967 770434808",
-                PasswordHash = "dsdjsakfjkdjfhjashfjjfk",// just for now because Hashing Algorthim Not Ready Yet
-                IsActive = true,
-                CreatedAt = new DateTime(2026, 1, 1)
-            });
+            builder.HasData(SeedData.GetUsers());
         }
 
     }

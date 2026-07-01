@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Academic_Structure;
+﻿using DataAccessLayer.Seeds;
+using Domain.Entities.Academic_Structure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -29,26 +30,7 @@ namespace DataAccessLayer.Configurations.Academic_Structure
 
             builder.ToTable("Batches");
 
-            builder.HasData(new Batch
-            {
-                DepartmentId = 1,
-                BatchId = 1,
-                BatchYear = 2025,
-                Name = "Kernel",
-                Description = "In computer science, a Batch (or Kernel-level batching) refers to the         " +
-                 "processing of a collection of tasks or data sets in a single sequence without " +
-                 "manual intervention. By grouping operations, the system minimizes overhead   " +
-                 "and maximizes throughput, allowing the kernel to handle resource allocation  " +
-                 "more efficiently.                                                            " +
-                 "                                                                             " +
-                 "This approach is fundamental to modern computing, optimizing CPU cycles and  " +
-                 "memory management by reducing the frequency of context switching. Whether    " +
-                 "applied in system-level kernel processes or data-intensive application tasks," +
-                 "the Batch model ensures consistent, high-performance execution of repetitive " +
-                 "operations, critical for building scalable and robust software architectures.",
-                CreatedAt = new DateTime(2026, 1, 1),
-                CreatedByUserId = 1
-            });
+            builder.HasData(SeedData.GetBatches());
         }
     }
 }

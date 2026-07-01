@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Study;
+﻿using DataAccessLayer.Seeds;
+using Domain.Entities.Study;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -28,11 +29,9 @@ namespace DataAccessLayer.Configurations.Study_Configuration
             builder.HasOne(s => s.Semester).WithMany(s => s.SectionSubjects)
               .HasForeignKey(s => s.SemesterId).IsRequired().OnDelete(DeleteBehavior.Restrict);
 
-            // Lecturer(1) => SectionSubjects(*)
-            builder.HasOne(s => s.Lecturer).WithMany(s => s.SectionSubjects)
-              .HasForeignKey(s => s.LecturerId).IsRequired().OnDelete(DeleteBehavior.Restrict);
 
             builder.ToTable("SectionSubjects");
+            builder.HasData(SeedData.GetSectionSubjects());
         }
     }
 }

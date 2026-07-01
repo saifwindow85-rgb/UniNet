@@ -33,7 +33,6 @@ namespace DataAccessLayer.Dbcontext
         public DbSet<Announcement> Announcements { get; set; }
         //Employees
         public DbSet<Employee> Employees { get; set; }
-        public DbSet<Lecturer> Lecturer { get; set; }
         //Images
         public DbSet<Image> Images { get; set; }
         //Students

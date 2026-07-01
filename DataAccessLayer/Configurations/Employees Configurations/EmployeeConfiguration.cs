@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Employees;
+﻿using DataAccessLayer.Seeds;
+using Domain.Entities.Employees;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -34,15 +35,9 @@ namespace DataAccessLayer.Configurations.Employees_Configurations
             //Releation : Department(1) => Employees(*)
             builder.HasOne(e => e.Department).WithMany(d => d.Employees)
                 .HasForeignKey(e => e.DepartmentId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
+            builder.ToTable("Employees");
 
-            builder.HasData(new Employee
-            {
-                EmployeeId = 1,
-                UserId = 1,
-                UniversityId = 1,
-                CollegeId = 1,
-                DepartmentId = 1,
-            });
+            builder.HasData(SeedData.GetEmployees());
         }
     }
 }

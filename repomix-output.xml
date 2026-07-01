@@ -89,207 +89,6 @@ UniNet/Program.cs
 <files>
 This section contains the contents of the repository's files.
 
-<file path="DataAccessLayer/Configurations/Study Configuration/SectionSubjectConfiguration.cs">
-using Domain.Entities.Study;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DataAccessLayer.Configurations.Study_Configuration
-{
-    public class SectionSubjectConfiguration : IEntityTypeConfiguration<SectionSubject>
-    {
-        public void Configure(EntityTypeBuilder<SectionSubject> builder)
-        {
-            builder.HasKey(s => s.SectionSubjectId);
-            builder.Property(s => s.SectionSubjectId).ValueGeneratedOnAdd();
-
-            //Releation : Section(1) => SectionSubjects(*)
-            builder.HasOne(s => s.Section).WithMany(s => s.SectionSubjects)
-                .HasForeignKey(s => s.SectionId).IsRequired().OnDelete(DeleteBehavior.Restrict);
-
-            //Releation Subject(1) => SectionSubjects(*)
-            builder.HasOne(s=>s.Subject).WithMany(s=>s.SectionSubjects)
-                .HasForeignKey(s=>s.SubjectId).IsRequired().OnDelete(DeleteBehavior.Restrict);
-
-            // Semester => SectionSubjects(*)
-            builder.HasOne(s => s.Semester).WithMany(s => s.SectionSubjects)
-              .HasForeignKey(s => s.SemesterId).IsRequired().OnDelete(DeleteBehavior.Restrict);
-
-            // Lecturer(1) => SectionSubjects(*)
-            builder.HasOne(s => s.Lecturer).WithMany(s => s.SectionSubjects)
-              .HasForeignKey(s => s.LecturerId).IsRequired().OnDelete(DeleteBehavior.Restrict);
-
-            builder.ToTable("SectionSubjects");
-        }
-    }
-}
-</file>
-
-<file path="DataAccessLayer/Configurations/Study Configuration/SemesterConfiguration.cs">
-using Domain.Entities.Study;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DataAccessLayer.Configurations.Study_Configuration
-{
-    public class SemesterConfiguration : IEntityTypeConfiguration<Semester>
-    {
-        public void Configure(EntityTypeBuilder<Semester> builder)
-        {
-            builder.HasKey(s => s.SemesterId);
-            builder.Property(s => s.SemesterId).ValueGeneratedOnAdd();
-
-            builder.Property(s => s.Name).HasColumnType("NVARCHAR(200)").IsRequired();
-
-            builder.Property(s => s.StartDate).IsRequired();
-            builder.Property(s => s.EndDate).IsRequired();
-
-            builder.Property(s => s.IsCurrent).IsRequired();
-
-            builder.ToTable("Semesters");
-            builder.HasData(new Semester
-            {
-                SemesterId = 1,
-                Name = "Term1",
-                StartDate = new DateTime(2026, 06, 30),
-                EndDate = new DateTime(2026, 06, 30),
-                IsCurrent = true,
-                CreatedByUserId = 1
-            });
-        }
-    }
-}
-</file>
-
-<file path="DataAccessLayer/Configurations/Study Configuration/StudentResultConfiguration.cs">
-using Domain.Entities.Study;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DataAccessLayer.Configurations.Study_Configuration
-{
-    public class StudentResultConfiguration : IEntityTypeConfiguration<StudentResult>
-    {
-        public void Configure(EntityTypeBuilder<StudentResult> builder)
-        {
-            builder.HasKey(s => s.StudentResultId);
-            builder.Property(s => s.StudentResultId).ValueGeneratedOnAdd();
-
-            builder.Property(s => s.CreatedAt).HasDefaultValueSql("GETUTCDATE()").IsRequired();
-
-            builder.Property(s => s.Total).HasComputedColumnSql("[Midterm] + [Practical] + [Final]", stored: true);
-
-            // Releation : Student(1) => StudentResults(*)
-            builder.HasOne(s => s.Student).WithMany(s => s.StudentResults)
-                .HasForeignKey(s => s.StudentId).IsRequired().OnDelete(DeleteBehavior.Restrict);
-
-            //Releation : SectionSubject(1) => StudentResults(*)
-            builder.HasOne(s => s.SectionSubject).WithMany(s => s.StudentResults)
-                .HasForeignKey(s => s.SectionSubjectId).IsRequired().OnDelete(DeleteBehavior.Restrict);
-
-            // EnterdByUser(1) => StudentResults(*)
-            builder.HasOne(s => s.EnterdByUser).WithMany(e => e.EnterdStudentResults)
-                .HasForeignKey(s => s.EnteredByUserId).IsRequired().OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasOne(s => s.UpdatedByUser).WithMany(e => e.UpdatedStudentResults)
-                .HasForeignKey(s => s.UpdatedByUserId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
-        }
-    }
-}
-</file>
-
-<file path="DataAccessLayer/Configurations/Study Configuration/SubjectConfiguration.cs">
-using Domain.Entities.Study;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DataAccessLayer.Configurations.Study_Configuration
-{
-    public class SubjectConfiguration : IEntityTypeConfiguration<Subject>
-    {
-        public void Configure(EntityTypeBuilder<Subject> builder)
-        {
-            builder.HasKey(s => s.SubjectId);
-            builder.Property(s => s.SubjectId).ValueGeneratedOnAdd();
-
-            builder.Property(s => s.Code).HasColumnType("NVARCHAR(25)").IsRequired();
-            builder.Property(s => s.Name).HasColumnType("NVARCHAR(200)").IsRequired();
-            builder.Property(s => s.Description).HasColumnType("NVARCHAR(MAX)").IsRequired(false);
-
-            builder.HasIndex(s => new { s.DepartmentId, s.Code }).IsUnique();
-            builder.HasIndex(s => new { s.DepartmentId, s.Name }).IsUnique();
-
-            //Releation : Department(1) => Subjects(*)
-            builder.HasOne(s => s.Department).WithMany(d => d.Subjects)
-                 .HasForeignKey(s => s.DepartmentId).IsRequired().OnDelete(DeleteBehavior.Restrict);
-            builder.ToTable("Subjects");
-
-            builder.HasData(new Subject
-            {
-                SubjectId = 1,
-                Code = "77777777777",
-                Name = "Programming",
-                CreditHours = 18,
-                CreatedByUserId = 1,
-                DepartmentId = 1,
-                CreatedAt = new DateTime(2026, 06, 30),
-            });
-        }
-    }
-}
-</file>
-
-<file path="DataAccessLayer/Configurations/ContentConfigurations/Announcement Configuration.cs">
-using Domain.Entities.Content;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DataAccessLayer.Configurations.ContentConfigurations
-{
-    public class Announcement_Configuration : IEntityTypeConfiguration<Announcement>
-    {
-        public void Configure(EntityTypeBuilder<Announcement> builder)
-        {
-            builder.HasKey(a => a.AnnouncementId);
-            builder.Property(a => a.AnnouncementId).ValueGeneratedOnAdd();
-
-            builder.Property(a => a.Title).HasColumnType("NVARCHAR(500)").IsRequired();
-            builder.Property(a => a.Content).HasColumnType("NVARCHAR(MAX)").IsRequired();
-            builder.Property(a => a.Type).HasConversion<byte>().HasColumnType("TINYINT").IsRequired();
-
-            //Releation Image(1) => Post(1)
-            builder.HasOne(a => a.Image).WithOne(i => i.Announcement)
-                .IsRequired(false).HasForeignKey<Post>(p => p.ImageId).OnDelete(DeleteBehavior.Restrict);
-        }
-    }
-}
-</file>
-
 <file path="DataAccessLayer/Configurations/Employees Configurations/LecturerConfiguration.cs">
 using Domain.Entities.Employees;
 using Microsoft.EntityFrameworkCore;
@@ -453,6 +252,176 @@ namespace DataAccessLayer.Configurations.Student_Configuration
                 SectionId = 1,
                 StatusId = 1,
                 EnrollmentDate = DateTime.Now,
+            });
+        }
+    }
+}
+</file>
+
+<file path="DataAccessLayer/Configurations/Study Configuration/SectionSubjectConfiguration.cs">
+using Domain.Entities.Study;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataAccessLayer.Configurations.Study_Configuration
+{
+    public class SectionSubjectConfiguration : IEntityTypeConfiguration<SectionSubject>
+    {
+        public void Configure(EntityTypeBuilder<SectionSubject> builder)
+        {
+            builder.HasKey(s => s.SectionSubjectId);
+            builder.Property(s => s.SectionSubjectId).ValueGeneratedOnAdd();
+
+            //Releation : Section(1) => SectionSubjects(*)
+            builder.HasOne(s => s.Section).WithMany(s => s.SectionSubjects)
+                .HasForeignKey(s => s.SectionId).IsRequired().OnDelete(DeleteBehavior.Restrict);
+
+            //Releation Subject(1) => SectionSubjects(*)
+            builder.HasOne(s=>s.Subject).WithMany(s=>s.SectionSubjects)
+                .HasForeignKey(s=>s.SubjectId).IsRequired().OnDelete(DeleteBehavior.Restrict);
+
+            // Semester => SectionSubjects(*)
+            builder.HasOne(s => s.Semester).WithMany(s => s.SectionSubjects)
+              .HasForeignKey(s => s.SemesterId).IsRequired().OnDelete(DeleteBehavior.Restrict);
+
+            // Lecturer(1) => SectionSubjects(*)
+            builder.HasOne(s => s.Lecturer).WithMany(s => s.SectionSubjects)
+              .HasForeignKey(s => s.LecturerId).IsRequired().OnDelete(DeleteBehavior.Restrict);
+
+            builder.ToTable("SectionSubjects");
+        }
+    }
+}
+</file>
+
+<file path="DataAccessLayer/Configurations/Study Configuration/SemesterConfiguration.cs">
+using Domain.Entities.Study;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataAccessLayer.Configurations.Study_Configuration
+{
+    public class SemesterConfiguration : IEntityTypeConfiguration<Semester>
+    {
+        public void Configure(EntityTypeBuilder<Semester> builder)
+        {
+            builder.HasKey(s => s.SemesterId);
+            builder.Property(s => s.SemesterId).ValueGeneratedOnAdd();
+
+            builder.Property(s => s.Name).HasColumnType("NVARCHAR(200)").IsRequired();
+
+            builder.Property(s => s.StartDate).IsRequired();
+            builder.Property(s => s.EndDate).IsRequired();
+
+            builder.Property(s => s.IsCurrent).IsRequired();
+
+            builder.ToTable("Semesters");
+            builder.HasData(new Semester
+            {
+                SemesterId = 1,
+                Name = "Term1",
+                StartDate = new DateTime(2026, 06, 30),
+                EndDate = new DateTime(2026, 06, 30),
+                IsCurrent = true,
+                CreatedByUserId = 1
+            });
+        }
+    }
+}
+</file>
+
+<file path="DataAccessLayer/Configurations/Study Configuration/StudentResultConfiguration.cs">
+using Domain.Entities.Study;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataAccessLayer.Configurations.Study_Configuration
+{
+    public class StudentResultConfiguration : IEntityTypeConfiguration<StudentResult>
+    {
+        public void Configure(EntityTypeBuilder<StudentResult> builder)
+        {
+            builder.HasKey(s => s.StudentResultId);
+            builder.Property(s => s.StudentResultId).ValueGeneratedOnAdd();
+
+            builder.Property(s => s.CreatedAt).HasDefaultValueSql("GETUTCDATE()").IsRequired();
+
+            builder.Property(s => s.Total).HasComputedColumnSql("[Midterm] + [Practical] + [Final]", stored: true);
+
+            // Releation : Student(1) => StudentResults(*)
+            builder.HasOne(s => s.Student).WithMany(s => s.StudentResults)
+                .HasForeignKey(s => s.StudentId).IsRequired().OnDelete(DeleteBehavior.Restrict);
+
+            //Releation : SectionSubject(1) => StudentResults(*)
+            builder.HasOne(s => s.SectionSubject).WithMany(s => s.StudentResults)
+                .HasForeignKey(s => s.SectionSubjectId).IsRequired().OnDelete(DeleteBehavior.Restrict);
+
+            // EnterdByUser(1) => StudentResults(*)
+            builder.HasOne(s => s.EnterdByUser).WithMany(e => e.EnteredByStudentResults)
+                .HasForeignKey(s => s.EnteredByUserId).IsRequired().OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(s => s.UpdatedByUser).WithMany(e => e.UpdatedStudentResults)
+                .HasForeignKey(s => s.UpdatedByUserId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
+        }
+    }
+}
+</file>
+
+<file path="DataAccessLayer/Configurations/Study Configuration/SubjectConfiguration.cs">
+using Domain.Entities.Study;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataAccessLayer.Configurations.Study_Configuration
+{
+    public class SubjectConfiguration : IEntityTypeConfiguration<Subject>
+    {
+        public void Configure(EntityTypeBuilder<Subject> builder)
+        {
+            builder.HasKey(s => s.SubjectId);
+            builder.Property(s => s.SubjectId).ValueGeneratedOnAdd();
+
+            builder.Property(s => s.Code).HasColumnType("NVARCHAR(25)").IsRequired();
+            builder.Property(s => s.Name).HasColumnType("NVARCHAR(200)").IsRequired();
+            builder.Property(s => s.Description).HasColumnType("NVARCHAR(MAX)").IsRequired(false);
+
+            builder.HasIndex(s => new { s.DepartmentId, s.Code }).IsUnique();
+            builder.HasIndex(s => new { s.DepartmentId, s.Name }).IsUnique();
+
+            //Releation : Department(1) => Subjects(*)
+            builder.HasOne(s => s.Department).WithMany(d => d.Subjects)
+                 .HasForeignKey(s => s.DepartmentId).IsRequired().OnDelete(DeleteBehavior.Restrict);
+            builder.ToTable("Subjects");
+
+            builder.HasData(new Subject
+            {
+                SubjectId = 1,
+                Code = "77777777777",
+                Name = "Programming",
+                CreditHours = 18,
+                CreatedByUserId = 1,
+                DepartmentId = 1,
+                CreatedAt = new DateTime(2026, 06, 30),
             });
         }
     }
@@ -698,66 +667,6 @@ namespace Domain.Entities.Study
 }
 </file>
 
-<file path="Domain/Entities/Study/StudentResult.cs">
-using Domain.Entities.Identity;
-using Domain.Entities.Students;
-
-namespace Domain.Entities.Study
-{
-    public class StudentResult
-    {
-        public int StudentResultId { get; set; }
-
-        public int StudentId { get; set; }
-        public Student Student { get; set; } = null!;
-
-        public int SectionSubjectId { get; set; }
-        public SectionSubject SectionSubject { get; set; } = null!;
-        public decimal Midterm { get; set; }
-
-        public decimal Practical { get; set; }
-
-        public decimal Final { get; set; }
-
-        public decimal Total { get; private set; }
-
-
-        public int EnteredByUserId { get; set; }
-        public User EnterdByUser { get; set; } = null!;
-        public int? UpdatedByUserId { get; set; }
-        public User UpdatedByUser { get; set; } = null!;
-        public DateTime CreatedAt { get; set; }
-
-        public DateTime? UpdatedAt { get; set; }
-    }
-}
-</file>
-
-<file path="Domain/Entities/Study/Subject.cs">
-using Domain.Entities.Academic_Structure;
-using Domain.Entities.Common;
-
-namespace Domain.Entities.Study
-{
-    public class Subject : BaseEntity
-    {
-        public int SubjectId { get; set; }
-
-        public string Code { get; set; } = null!;
-
-        public string Name { get; set; } = null!;
-
-        public string? Description { get; set; }
-
-        public int? CreditHours { get; set; }
-
-        public int DepartmentId { get; set; }
-        public Department Department { get; set; } = null!;
-        public ICollection<SectionSubject> SectionSubjects { get; set; } = new List<SectionSubject>();
-    }
-}
-</file>
-
 <file path="UniNet/Program.cs">
 namespace UniNet
 {
@@ -791,6 +700,37 @@ namespace UniNet
             app.MapControllers();
 
             app.Run();
+        }
+    }
+}
+</file>
+
+<file path="DataAccessLayer/Configurations/ContentConfigurations/Announcement Configuration.cs">
+using Domain.Entities.Content;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataAccessLayer.Configurations.ContentConfigurations
+{
+    public class Announcement_Configuration : IEntityTypeConfiguration<Announcement>
+    {
+        public void Configure(EntityTypeBuilder<Announcement> builder)
+        {
+            builder.HasKey(a => a.AnnouncementId);
+            builder.Property(a => a.AnnouncementId).ValueGeneratedOnAdd();
+
+            builder.Property(a => a.Title).HasColumnType("NVARCHAR(500)").IsRequired();
+            builder.Property(a => a.Content).HasColumnType("NVARCHAR(MAX)").IsRequired();
+            builder.Property(a => a.Type).HasConversion<byte>().HasColumnType("TINYINT").IsRequired();
+
+            //Releation Image(1) => Post(1)
+            builder.HasOne(a => a.Image).WithOne(i => i.Announcement)
+                .IsRequired(false).HasForeignKey<Announcement>(p => p.ImageId).OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
@@ -1109,6 +1049,66 @@ namespace Domain.Entities.Students
 
         public string? Description { get; set; }
         public ICollection<Student>Students { get; set; } = new List<Student>();
+    }
+}
+</file>
+
+<file path="Domain/Entities/Study/StudentResult.cs">
+using Domain.Entities.Identity;
+using Domain.Entities.Students;
+
+namespace Domain.Entities.Study
+{
+    public class StudentResult
+    {
+        public int StudentResultId { get; set; }
+
+        public int StudentId { get; set; }
+        public Student Student { get; set; } = null!;
+
+        public int SectionSubjectId { get; set; }
+        public SectionSubject SectionSubject { get; set; } = null!;
+        public decimal Midterm { get; set; }
+
+        public decimal Practical { get; set; }
+
+        public decimal Final { get; set; }
+
+        public decimal Total { get; private set; }
+
+
+        public int EnteredByUserId { get; set; }
+        public User EnterdByUser { get; set; } = null!;
+        public int? UpdatedByUserId { get; set; }
+        public User UpdatedByUser { get; set; } = null!;
+        public DateTime CreatedAt { get; set; }
+
+        public DateTime? UpdatedAt { get; set; }
+    }
+}
+</file>
+
+<file path="Domain/Entities/Study/Subject.cs">
+using Domain.Entities.Academic_Structure;
+using Domain.Entities.Common;
+
+namespace Domain.Entities.Study
+{
+    public class Subject : BaseEntity
+    {
+        public int SubjectId { get; set; }
+
+        public string Code { get; set; } = null!;
+
+        public string Name { get; set; } = null!;
+
+        public string? Description { get; set; }
+
+        public int? CreditHours { get; set; }
+
+        public int DepartmentId { get; set; }
+        public Department Department { get; set; } = null!;
+        public ICollection<SectionSubject> SectionSubjects { get; set; } = new List<SectionSubject>();
     }
 }
 </file>
@@ -1542,7 +1542,7 @@ namespace DataAccessLayer.Configurations.Identity_Configurations
             builder.Property(u => u.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
 
             builder.HasIndex(u => u.UserName).IsUnique();
-            builder.HasIndex(r => r.Email).IsUnique().HasFilter("[Email IS NO NULL]");
+            builder.HasIndex(r => r.Email).IsUnique().HasFilter("[Email IS NOT NULL]");
 
             //Releation : one User Created by One User & Many Users Created By One User
             builder.HasOne(u => u.CreatedByUser).WithMany(u => u.CreatedUsers)
@@ -1621,7 +1621,7 @@ namespace Domain.Entities.Identity
             = new List<Announcement>();
         public ICollection<Image> UploadedImages { get; set; } = new List<Image>();
         public ICollection<Image> UpdatedImages { get; set; } = new List<Image>();
-        public ICollection<StudentResult> EnterdStudentResults { get; set; } = new List<StudentResult>();
+        public ICollection<StudentResult> EnteredByStudentResults { get; set; } = new List<StudentResult>();
         public ICollection<StudentResult> UpdatedStudentResults { get; set; } = new List<StudentResult>();
     }
 }

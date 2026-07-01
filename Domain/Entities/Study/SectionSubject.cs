@@ -16,8 +16,7 @@ namespace Domain.Entities.Study
 
         public int SemesterId { get; set; }
         public Semester Semester { get; set; } = null!;
-        public int LecturerId { get; set; }
-        public Lecturer Lecturer { get; set; } = null!;
+        public string LecturerName { get; set; } = null!;
         public ICollection<StudentResult> StudentResults { get; set; } = new List<StudentResult>();
     }
 }

@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Students;
+﻿using DataAccessLayer.Seeds;
+using Domain.Entities.Students;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -37,17 +38,9 @@ namespace DataAccessLayer.Configurations.Student_Configuration
             //Releation : Status(1) => Students(*)
             builder.HasOne(s => s.Status).WithMany(s => s.Students)
                 .HasForeignKey(s => s.StatusId).IsRequired().OnDelete(DeleteBehavior.Restrict);
+            builder.ToTable("Students");
 
-            builder.HasData(new Student
-            {
-                StudentId = 1,
-                UserId = 1,
-                StudentNumber = "25170211102",
-                BatchId = 1,
-                SectionId = 1,
-                StatusId = 1,
-                EnrollmentDate = DateTime.Now,
-            });
+            builder.HasData(SeedData.GetStudents());
         }
     }
 }

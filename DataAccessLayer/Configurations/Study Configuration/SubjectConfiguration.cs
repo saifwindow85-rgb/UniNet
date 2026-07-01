@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Study;
+﻿using DataAccessLayer.Seeds;
+using Domain.Entities.Study;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -28,16 +29,7 @@ namespace DataAccessLayer.Configurations.Study_Configuration
                  .HasForeignKey(s => s.DepartmentId).IsRequired().OnDelete(DeleteBehavior.Restrict);
             builder.ToTable("Subjects");
 
-            builder.HasData(new Subject
-            {
-                SubjectId = 1,
-                Code = "77777777777",
-                Name = "Programming",
-                CreditHours = 18,
-                CreatedByUserId = 1,
-                DepartmentId = 1,
-                CreatedAt = new DateTime(2026, 06, 30),
-            });
+            builder.HasData(SeedData.GetSubjects());
         }
     }
 }

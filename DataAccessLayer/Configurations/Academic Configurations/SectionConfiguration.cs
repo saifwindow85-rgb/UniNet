@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Academic_Structure;
+﻿using DataAccessLayer.Seeds;
+using Domain.Entities.Academic_Structure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -25,15 +26,7 @@ namespace DataAccessLayer.Configurations.Academic_Structure
 
             builder.ToTable("Sections");
 
-            builder.HasData(new Section
-            {
-                BatchId = 1,
-                SectionId = 1,
-                Name = "A",
-                CreatedAt = new DateTime(2026, 1, 1),
-                CreatedByUserId = 1
-
-            });
+            builder.HasData(SeedData.GetSections());
         }
     }
 }

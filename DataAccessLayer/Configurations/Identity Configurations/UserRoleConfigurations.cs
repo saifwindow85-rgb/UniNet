@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Identity;
+﻿using DataAccessLayer.Seeds;
+using Domain.Entities.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -31,11 +32,7 @@ namespace DataAccessLayer.Configurations.Identity_Configurations
 
             builder.ToTable("UserRoles");
 
-            builder.HasData(new UserRole
-            {
-                UserId = 1,
-                RoleId = 1,
-            });
+            builder.HasData(SeedData.GetUserRoles());
         }
     }
 }

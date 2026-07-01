@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Identity;
+﻿using DataAccessLayer.Seeds;
+using Domain.Entities.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -21,11 +22,7 @@ namespace DataAccessLayer.Configurations.Academic_Configurations.Identity_Config
 
             builder.ToTable("Roles");
 
-            builder.HasData(new Role
-            {
-                RoleId = 1,
-                Name = "Super Admin"
-            });
+            builder.HasData(SeedData.GetRoles());
         }
     }
 }

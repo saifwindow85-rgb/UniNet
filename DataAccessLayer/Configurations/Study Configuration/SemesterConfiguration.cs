@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Study;
+﻿using DataAccessLayer.Seeds;
+using Domain.Entities.Study;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -24,15 +25,7 @@ namespace DataAccessLayer.Configurations.Study_Configuration
             builder.Property(s => s.IsCurrent).IsRequired();
 
             builder.ToTable("Semesters");
-            builder.HasData(new Semester
-            {
-                SemesterId = 1,
-                Name = "Term1",
-                StartDate = new DateTime(2026, 06, 30),
-                EndDate = new DateTime(2026, 06, 30),
-                IsCurrent = true,
-                CreatedByUserId = 1
-            });
+            builder.HasData(SeedData.GetSemesters());
         }
     }
 }
