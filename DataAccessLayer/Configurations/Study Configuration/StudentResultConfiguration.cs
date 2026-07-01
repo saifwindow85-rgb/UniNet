@@ -19,7 +19,10 @@ namespace DataAccessLayer.Configurations.Study_Configuration
 
             builder.Property(s => s.CreatedAt).HasDefaultValueSql("GETUTCDATE()").IsRequired();
 
-            builder.Property(s => s.Total).HasComputedColumnSql("[Midterm] + [Practical] + [Final]", stored: true);
+            builder.Property(s => s.Midterm).HasPrecision(5, 2);
+            builder.Property(s => s.Practical).HasPrecision(5, 2);
+            builder.Property(s => s.Final).HasPrecision(5, 2);
+            builder.Property(s => s.Total).HasPrecision(5, 2).HasComputedColumnSql("[Midterm] + [Practical] + [Final]", stored: true);
 
             // Releation : Student(1) => StudentResults(*)
             builder.HasOne(s => s.Student).WithMany(s => s.StudentResults)
