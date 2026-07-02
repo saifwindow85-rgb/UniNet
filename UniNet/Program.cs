@@ -1,4 +1,5 @@
 
+using Contracts.Extensions;
 using DataAccessLayer.Dbcontext;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,9 +17,28 @@ namespace UniNet
 options.UseSqlServer(
 builder.Configuration.GetConnectionString("DefaultConnection")));
             builder.Services.AddControllers();
+            //Application Services
+            builder.Services.Validators();
+
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
+
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("UniNetPolicy", policy =>
+                {
+                    policy
+                        .WithOrigins(
+                            "https://localhost:7082",
+                            "http://localhost:5126"
+                        )
+                        .AllowAnyOrigin()
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                });
+            });
 
             var app = builder.Build();
 
