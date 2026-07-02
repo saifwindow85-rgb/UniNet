@@ -1,5 +1,6 @@
 
 using Contracts.Extensions;
+using DataAccessLayer.Configurations.Options;
 using DataAccessLayer.Dbcontext;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,6 +12,10 @@ namespace UniNet
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            //JWT Options
+            builder.Services.Configure<JWTOption>(builder.Configuration.GetSection("Jwt"));
+            var JwtSection = builder.Configuration.GetSection("Jwt");
+            var JwtOptions = JwtSection.Get<JWTOption>();
 
             // Add services to the container.
             builder.Services.AddDbContext<AppDbcontext>(options =>
