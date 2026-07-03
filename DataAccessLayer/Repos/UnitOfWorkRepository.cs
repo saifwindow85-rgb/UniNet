@@ -1,5 +1,6 @@
 ﻿using DataAccessLayer.Dbcontext;
 using Domain.Interfaces.LoginInterfaces;
+using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
 using Domain.Interfaces.UnitOfWork;
 using Domain.Interfaces.UserInterfaces;
 using System;
@@ -17,11 +18,14 @@ namespace DataAccessLayer.Repos
 
         public ILoginRepository LoginRepository { get; private set; }
 
+        public IRefreshTokenRepository RefreshTokenRepository { get; private set; }
+
         public UnitOfWorkRepository(AppDbcontext context)
         {
             _context = context;
             UserRepository = new UserRepository(context);
             LoginRepository = new LoginRepository(context);
+            RefreshTokenRepository = new RefreshTokenRepository(context);
         }
         public async Task<int> CompleteAsync()
         {

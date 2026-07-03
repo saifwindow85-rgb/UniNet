@@ -6,6 +6,7 @@ using Domain.Entities.Identity;
 using Domain.Entities.Images;
 using Domain.Entities.Students;
 using Domain.Entities.Study;
+using Domain.Entities.Token;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
 using System;
@@ -43,6 +44,7 @@ namespace DataAccessLayer.Dbcontext
         public DbSet<Subject> Subjects { get; set; }
         public DbSet<SectionSubject> SectionSubjects { get; set; }
         public DbSet<StudentResult> StudentResults { get; set; }
+        public DbSet<RefreshToken>RefreshTokens { get; set; }
 
 
         //Options

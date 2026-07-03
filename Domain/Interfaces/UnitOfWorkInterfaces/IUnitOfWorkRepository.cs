@@ -1,4 +1,5 @@
 ﻿using Domain.Interfaces.LoginInterfaces;
+using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
 using Domain.Interfaces.UserInterfaces;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,7 @@ namespace Domain.Interfaces.UnitOfWork
     {
         public IUserRepository UserRepository { get; }
         public ILoginRepository LoginRepository { get; }
+        public IRefreshTokenRepository RefreshTokenRepository { get; }
 
         public Task<int> CompleteAsync();
     }
