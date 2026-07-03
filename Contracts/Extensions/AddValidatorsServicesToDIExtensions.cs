@@ -15,9 +15,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Contracts.Extensions
 {
-    public static class AddServicesToDIExtensions
+    public static class AddValidatorsServicesToDIExtensions
     {
-        //public static IServiceCollection Applications()
 
 
 

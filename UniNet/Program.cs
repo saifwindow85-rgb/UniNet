@@ -1,7 +1,9 @@
 
+using Application.Extensions;
 using Contracts.Extensions;
 using DataAccessLayer.Configurations.Options;
 using DataAccessLayer.Dbcontext;
+using DataAccessLayer.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace UniNet
@@ -21,9 +23,19 @@ namespace UniNet
             builder.Services.AddDbContext<AppDbcontext>(options =>
 options.UseSqlServer(
 builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
             builder.Services.AddControllers();
-            //Application Services
+
+            //Validators Services
             builder.Services.Validators();
+
+
+            // Application Services
+            builder.Services.ServicesToDI();
+            
+            //Repositories To DI
+            builder.Services.AddRepoSitoriesToDIContainer();
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();

@@ -12,5 +12,6 @@ namespace Domain.Interfaces.UserInterfaces
     {
         public  Task<bool> IsUserExsist(string userName);
         public Task<UserDTO?> GetUserById(int Id);
+        public Task Add(User user);
     }
 }

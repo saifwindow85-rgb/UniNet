@@ -3,6 +3,7 @@ using Contracts.Messages;
 using Contracts.Parameters_Validations;
 using Domain.Entities.Identity;
 using Domain.Interfaces.UnitOfWork;
+using Domain.Interfaces.UserInterfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,10 +13,10 @@ namespace UniNet.Controllers.Identity_Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly IUnitOfWorkService _unitOfWorkService;
-        public UserController(IUnitOfWorkService unitOfWorkService)
+        private readonly IUserService _userService;
+        public UserController(IUserService userService)
         {
-            _unitOfWorkService = unitOfWorkService;
+            _userService = userService;
         }
 
         [HttpGet("id:int", Name = "GetUserById")]
@@ -23,7 +24,7 @@ namespace UniNet.Controllers.Identity_Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<UserDTO>> GetUserById([FromQuery]IdDTO @param)
         {
-            var user = await _unitOfWorkService.UserService.FindById(param.Id);
+            var user = await _userService.FindById(param.Id);
             if (user == null)
                 return NotFound(ErrorMessages.NotFound<User>(param.Id));
 
