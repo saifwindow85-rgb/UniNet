@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Contracts.DTOs.CustomDTOS
+namespace Contracts.Responses
 {
     public class AddUpdateServiceResponse <T>
     {
@@ -36,11 +36,11 @@ namespace Contracts.DTOs.CustomDTOS
 
         };
 
-        public static AddUpdateServiceResponse<T> ExistedResource(string entityName) => new AddUpdateServiceResponse<T>
+        public static AddUpdateServiceResponse<T> ExistedResource<TEntity>() => new AddUpdateServiceResponse<T>
         {
             IsSuccess = false,
             ErrorType = EnErrorTypes.ExistedResource,
-            Errors = new List<string>() { $"This {entityName} Already Exist!" }
+            Errors = new List<string>() { $"This {typeof(TEntity).Name} Already Exist!" }
         };
         public static AddUpdateServiceResponse<T> InValidUserId(EnErrorTypes errorType) => new AddUpdateServiceResponse<T>
         {

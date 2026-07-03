@@ -1,4 +1,4 @@
-﻿using Contracts.DTOs.UserDTOs;
+﻿using Contracts.Responses;
 using Domain.Entities.Identity;
 using System;
 using System.Collections.Generic;

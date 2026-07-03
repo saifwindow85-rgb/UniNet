@@ -1,4 +1,4 @@
-﻿using Contracts.DTOs.UserDTOs;
+﻿using Contracts.Responses;
 using DataAccessLayer.Dbcontext;
 using Domain.Entities.Identity;
 using Domain.Interfaces.UserInterfaces;

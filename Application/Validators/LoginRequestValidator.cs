@@ -1,4 +1,4 @@
-﻿using Contracts.DTOs.Login_Request_DTO;
+﻿using Contracts.Requests;
 using FluentValidation;
 using System;
 using System.Collections.Generic;
@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Contracts.Validators.LoginRequestValidator
+namespace Application.Validators.LoginRequestValidator
 {
-    public class LoginRequestValidator : AbstractValidator<LoginRequestDTO>
+    public class LoginRequestValidator : AbstractValidator<LoginRequest>
     {
         public LoginRequestValidator() 
         {

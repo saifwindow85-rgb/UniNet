@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Contracts.DTOs.Login_Request_DTO
+namespace Contracts.Requests
 {
-    public class LoginRequestDTO
+    public class LoginRequest
     {
         public string UserName { get; set; } = null!;
         public string Password { get; set; } = null!;

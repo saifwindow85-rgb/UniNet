@@ -1,6 +1,6 @@
-﻿using Contracts.DTOs.UserDTOs;
-using Contracts.Messages;
-using Contracts.Parameters_Validations;
+﻿using Contracts.Messages;
+using Contracts.Requests;
+using Contracts.Responses;
 using Domain.Entities.Identity;
 using Domain.Interfaces.UnitOfWork;
 using Domain.Interfaces.UserInterfaces;
@@ -22,7 +22,7 @@ namespace UniNet.Controllers.Identity_Controllers
         [HttpGet("id:int", Name = "GetUserById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<UserDTO>> GetUserById([FromQuery]IdDTO @param)
+        public async Task<ActionResult<UserDTO>> GetUserById([FromQuery]IdRequest @param)
         {
             var user = await _userService.FindById(param.Id);
             if (user == null)

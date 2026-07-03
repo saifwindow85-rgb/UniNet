@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BCrypt.Net;
-using Contracts.DTOs.UserDTOs;
+using Contracts.Responses;
 
 namespace Application.Services.IdentityServices
 {
