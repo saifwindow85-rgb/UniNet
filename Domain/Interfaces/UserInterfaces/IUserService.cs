@@ -1,4 +1,5 @@
-﻿using Contracts.Responses;
+﻿using Contracts.Requests.UserRequests;
+using Contracts.Responses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,5 +12,6 @@ namespace Domain.Interfaces.UserInterfaces
     {
         public Task<bool> IsUserExists(string userName);
         public Task<UserDTO?> FindById(int Id);
+        public Task<AddUpdateServiceResponse<UserDTO>> AddUser(AddUserDTO newUser);
     }
 }

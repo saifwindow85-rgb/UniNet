@@ -11,6 +11,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Application.Validators.LoginRequestValidator;
 using Contracts.Requests.LoginRequests;
+using Contracts.Requests.UserRequests;
+using Application.Validators;
 
 namespace Application.Extensions
 {
@@ -24,6 +26,7 @@ namespace Application.Extensions
         public static IServiceCollection Validators(this IServiceCollection services)
         {
             services.AddScoped<IValidator<LoginRequest>, LoginRequestValidator>();
+            services.AddScoped<IValidator<AddUserDTO>, AddUserValidator>();
             return services;
         }
     }

@@ -1,6 +1,5 @@
 
 using Application.Extensions;
-using Contracts.Extensions;
 using DataAccessLayer.Configurations.Options;
 using DataAccessLayer.Dbcontext;
 using DataAccessLayer.Extensions;
