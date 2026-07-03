@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Contracts.Requests.RequestParameters
 {
-    public class IdRequest
+    public class RequestParameters
     {
         [Range(1, int.MaxValue, ErrorMessage = "Invalid Id Format!/Id Must Be > 0")]
         public int Id { get; set; }

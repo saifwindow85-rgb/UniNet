@@ -22,7 +22,7 @@ namespace UniNet.Controllers.Identity_Controllers
         [HttpGet("id:int", Name = "GetUserById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<UserDTO>> GetUserById([FromQuery]IdRequest @param)
+        public async Task<ActionResult<UserDTO>> GetUserById([FromQuery]RequestParameters @param)
         {
             var user = await _userService.FindById(param.Id);
             if (user == null)
