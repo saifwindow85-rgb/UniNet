@@ -3,6 +3,7 @@ using Domain.Entities.Employees;
 using Domain.Entities.Images;
 using Domain.Entities.Students;
 using Domain.Entities.Study;
+using Domain.Entities.Token;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,6 +42,7 @@ namespace Domain.Entities.Identity
 
         public ICollection<UserRole> UserRoles { get; set; }
             = new List<UserRole>();
+        public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
         public ICollection<Post> Posts { get; set; }
     = new List<Post>();
 
