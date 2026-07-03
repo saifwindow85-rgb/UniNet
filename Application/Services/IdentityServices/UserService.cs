@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BCrypt.Net;
+using Contracts.DTOs.UserDTOs;
 
 namespace Application.Services.IdentityServices
 {
@@ -16,6 +17,12 @@ namespace Application.Services.IdentityServices
         {
             _unitOfWork = unitOfWork;
         }
+
+        public async Task<UserDTO?> FindById(int Id)
+        {
+            return await _unitOfWork.UserRepository.GetUserById(Id);
+        }
+
         public async Task<bool> IsUserExists(string userName)
         {
             return await _unitOfWork.UserRepository.IsUserExsist(userName);

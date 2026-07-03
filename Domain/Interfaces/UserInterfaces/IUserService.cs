@@ -10,6 +10,6 @@ namespace Domain.Interfaces.UserInterfaces
     public interface IUserService
     {
         public Task<bool> IsUserExists(string userName);
-        public Task<UserDTO> FindById(int Id);
+        public Task<UserDTO?> FindById(int Id);
     }
 }
