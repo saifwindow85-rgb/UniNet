@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Contracts.DTOs.UserDTOs;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,5 +10,6 @@ namespace Domain.Interfaces.UserInterfaces
     public interface IUserService
     {
         public Task<bool> IsUserExists(string userName);
+        public Task<UserDTO> FindById(int Id);
     }
 }
