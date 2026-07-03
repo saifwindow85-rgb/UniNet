@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Contracts.Requests
+namespace Contracts.Requests.RequestParameters
 {
     public class IdRequest
     {

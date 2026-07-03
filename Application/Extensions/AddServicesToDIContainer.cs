@@ -1,5 +1,4 @@
 ﻿using Application.Services.IdentityServices;
-using Contracts.Requests;
 using Domain.Interfaces.LoginInterfaces;
 using Domain.Interfaces.UnitOfWork;
 using Domain.Interfaces.UserInterfaces;
@@ -11,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Application.Validators.LoginRequestValidator;
+using Contracts.Requests.LoginRequests;
 
 namespace Application.Extensions
 {

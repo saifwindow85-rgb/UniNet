@@ -1,5 +1,5 @@
 ﻿using Contracts.Messages;
-using Contracts.Requests;
+using Contracts.Requests.RequestParameters;
 using Contracts.Responses;
 using Domain.Entities.Identity;
 using Domain.Interfaces.UnitOfWork;
