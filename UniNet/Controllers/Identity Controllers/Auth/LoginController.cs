@@ -1,4 +1,5 @@
-﻿using Contracts.Requests.LoginRequests;
+﻿using Application.Mappers;
+using Contracts.Requests.LoginRequests;
 using Contracts.Responses.Login;
 using DataAccessLayer.Configurations.Options;
 using Domain.Entities.Identity;
@@ -12,6 +13,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using UniNet.Helpers;
 
 namespace UniNet.Controllers.Identity_Controllers.Auth
 {
@@ -21,13 +23,13 @@ namespace UniNet.Controllers.Identity_Controllers.Auth
     {
         private readonly IUserService _userService;
         private readonly IRefreshTokenService _refreshTokenService;
-        private readonly JWTOption _jwtOption;
+        private readonly JWTOption _jwtOptions;
 
         public LoginController(IUserService userService, IRefreshTokenService refreshTokenService, IOptions<JWTOption> jwtOption)
         {
             _userService = userService;
             _refreshTokenService = refreshTokenService;
-            _jwtOption = jwtOption.Value;
+            _jwtOptions = jwtOption.Value;
         }
 
         [HttpPost("login")]
@@ -51,24 +53,9 @@ namespace UniNet.Controllers.Identity_Controllers.Auth
                 return StatusCode(403, new { Title = "Banned Account", Message = "Your Account Is Banned" });
             }
 
-            var claims = new[]
-            {
-                new Claim(ClaimTypes.NameIdentifier,user.UserId.ToString()),
-                new Claim(ClaimTypes.Name,user.UserName),
-            };
+            var tokenInfo = user.ToInfoDTO();
+            var token = AuthenticationHelper.TokenIssuer(tokenInfo, _jwtOptions);
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOption.Key));
-
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken
-                (
-                  issuer: _jwtOption.Issuer,
-                  audience: _jwtOption.Audience,
-                  claims: claims,
-                    expires: DateTime.UtcNow.AddMinutes(30),
-                    signingCredentials: creds
-                );
             var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
             var refreshToken = _refreshTokenService.GenerateRefreshToken();
             await _refreshTokenService.AddRefreshToken(refreshToken, user.UserId);
@@ -100,24 +87,10 @@ namespace UniNet.Controllers.Identity_Controllers.Auth
                 return Unauthorized("Refresh token is revoked");
             }
 
-            var claims = new[]
-       {
-                new Claim(ClaimTypes.NameIdentifier,userToken.UserId.ToString()),
-                new Claim(ClaimTypes.Name,userToken.UserName),
-            };
+            var tokenInfo = userToken.ToInfoDTO();
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOption.Key));
+            var token = AuthenticationHelper.TokenIssuer(tokenInfo, _jwtOptions);
 
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken
-                (
-                  issuer: _jwtOption.Issuer,
-                  audience: _jwtOption.Audience,
-                  claims: claims,
-                    expires: DateTime.UtcNow.AddMinutes(30),
-                    signingCredentials: creds
-                );
             var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
             var newRefreshToken = _refreshTokenService.GenerateRefreshToken();
             await _refreshTokenService.RefreshToken(newRefreshToken, userToken.UserId, userToken.RefreshTokenId);
@@ -138,7 +111,7 @@ namespace UniNet.Controllers.Identity_Controllers.Auth
                 return Ok();
             }
 
-            if(userToken.RevokedAt == null)
+            if(userToken.RevokedAt != null)
             {
                 return Ok();
             }

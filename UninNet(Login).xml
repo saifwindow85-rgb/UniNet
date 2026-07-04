@@ -43,15 +43,20 @@ The content is organized as follows:
 
 <directory_structure>
 Application/Extensions/AddServicesToDIContainer.cs
+Application/HelperClasses/UserHelper.cs
 Application/Services/IdentityServices/UserService.cs
+Application/Services/Login Service/RefreshTokenService.cs
+Application/Validators/AddUserValidator.cs
 Application/Validators/LoginRequestValidator.cs
 Contracts/Common/ErrorMessages.cs
 Contracts/Enums/ErrorTypes.cs
 Contracts/Requests/LoginRequests/LoginRequest.cs
-Contracts/Requests/LoginRequests/TokenResponse.cs
+Contracts/Requests/LoginRequests/RefreshToken_LogOut_Request.cs
+Contracts/Requests/LoginRequests/UserToken.cs
 Contracts/Requests/RequestParameters/RequestParameters.cs
 Contracts/Requests/UserRequests/AddUserDTO.cs
 Contracts/Responses/AddUpdateServiceResponse.cs
+Contracts/Responses/Login/TokenResponse.cs
 Contracts/Responses/UserDTO.cs
 DataAccessLayer/Configurations/Academic Configurations/BatchConfiguration.cs
 DataAccessLayer/Configurations/Academic Configurations/CollegeConfiguration.cs
@@ -72,12 +77,16 @@ DataAccessLayer/Configurations/Study Configuration/SectionSubjectConfiguration.c
 DataAccessLayer/Configurations/Study Configuration/SemesterConfiguration.cs
 DataAccessLayer/Configurations/Study Configuration/StudentResultConfiguration.cs
 DataAccessLayer/Configurations/Study Configuration/SubjectConfiguration.cs
+DataAccessLayer/Configurations/Tokens/RefreshTokenConfiguration.cs
 DataAccessLayer/Dbcontext/AppDbcontext.cs
 DataAccessLayer/Extensions/RepositoriesToDIContainer.cs
 DataAccessLayer/Migrations/20260701081809_Initial Migration .cs
 DataAccessLayer/Migrations/20260701081809_Initial Migration .Designer.cs
+DataAccessLayer/Migrations/20260703134953_Add Refresh Token Entitiy.cs
+DataAccessLayer/Migrations/20260703134953_Add Refresh Token Entitiy.Designer.cs
 DataAccessLayer/Migrations/AppDbcontextModelSnapshot.cs
 DataAccessLayer/Repos/LoginRepository.cs
+DataAccessLayer/Repos/RefreshTokenRepository.cs
 DataAccessLayer/Repos/UnitOfWorkRepository.cs
 DataAccessLayer/Repos/UserRepository.cs
 DataAccessLayer/Seeds/SeedData.cs
@@ -101,32 +110,98 @@ Domain/Entities/Study/SectionSubject.cs
 Domain/Entities/Study/Semester.cs
 Domain/Entities/Study/StudentResult.cs
 Domain/Entities/Study/Subject.cs
+Domain/Entities/Token/RefreshToken.cs
 Domain/Interfaces/LoginInterfaces/ILoginRepository.cs
 Domain/Interfaces/LoginInterfaces/ILoginService.cs
+Domain/Interfaces/LoginInterfaces/TokenInterfaces/IRefreshTokenRepository.cs
+Domain/Interfaces/LoginInterfaces/TokenInterfaces/IRefreshTokenService.cs
 Domain/Interfaces/UnitOfWorkInterfaces/IUnitOfWorkRepository.cs
 Domain/Interfaces/UserInterfaces/IUserRepository.cs
 Domain/Interfaces/UserInterfaces/IUserService.cs
+UniNet/Controllers/Identity Controllers/Auth/LoginController.cs
 UniNet/Controllers/Identity Controllers/UserController.cs
+UniNet/Extensions/ControllersExtensions.cs
 UniNet/Program.cs
 </directory_structure>
 
 <files>
 This section contains the contents of the repository's files.
 
-<file path="Contracts/Requests/RequestParameters/RequestParameters.cs">
+<file path="Application/HelperClasses/UserHelper.cs">
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Contracts.Requests.RequestParameters
+namespace Application.HelperClasses
 {
-    public class RequestParameters
+    public class UserHelper
     {
-        [Range(1, int.MaxValue, ErrorMessage = "Invalid Id Format!/Id Must Be > 0")]
-        public int Id { get; set; }
+    }
+}
+</file>
+
+<file path="Application/Validators/AddUserValidator.cs">
+using Contracts.Requests.UserRequests;
+using FluentValidation;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Application.Validators
+{
+    public class AddUserValidator : AbstractValidator<AddUserDTO>
+    {
+        public AddUserValidator()
+        {
+            // 1. Full Name
+            RuleFor(x => x.FullName)
+                .NotEmpty().WithMessage("Full name is required.")
+                .MinimumLength(3).WithMessage("Full name must be at least 3 characters long.")
+                .MaximumLength(250).WithMessage("Full name cannot exceed 100 characters.")
+                .Matches(@"^[a-zA-ZÀ-ÿ\s'-]+$").WithMessage("Full name can only contain letters, spaces, hyphens, and apostrophes.");
+
+            // 2. User Name
+            RuleFor(x => x.UserName)
+                .NotEmpty().WithMessage("Username is required.")
+                .MinimumLength(4).WithMessage("Username must be at least 4 characters long.")
+                .MaximumLength(250).WithMessage("Username cannot exceed 50 characters.")
+                .Matches(@"^[a-zA-Z0-9_]+$").WithMessage("Username can only contain alphanumeric characters and underscores (_), with no spaces.");
+
+            // 3. Password (Robust Security Policy)
+            RuleFor(x => x.Password)
+       .NotEmpty()
+           .WithMessage("Password is required.")
+
+       .Length(8, 32)
+           .WithMessage("Password must be between 8 and 32 characters.")
+
+       .Matches("[A-Z]")
+           .WithMessage("Password must contain at least one uppercase letter.")
+
+       .Matches("[a-z]")
+           .WithMessage("Password must contain at least one lowercase letter.")
+
+       .Matches(@"\d")
+           .WithMessage("Password must contain at least one digit.")
+
+       .Matches(@"[^a-zA-Z0-9]")
+           .WithMessage("Password must contain at least one special character.");
+
+            // 4. Email (Optional, but validated if provided)
+            RuleFor(x => x.Email)
+                .EmailAddress().WithMessage("Invalid email address format.")
+                .MaximumLength(150).WithMessage("Email cannot exceed 150 characters.")
+                .When(x => !string.IsNullOrEmpty(x.Email));
+
+            // 5. Phone Number (Optional, E.164 international standard format)
+            RuleFor(x => x.PhoneNumber)
+                .Matches(@"^\+?[1-9]\d{1,14}$").WithMessage("Invalid phone number format. Please use international format (e.g., +1234567890).")
+                .When(x => !string.IsNullOrEmpty(x.PhoneNumber));
+        }
     }
 }
 </file>
@@ -180,7 +255,7 @@ namespace Contracts.Requests.LoginRequests
 }
 </file>
 
-<file path="Contracts/Requests/LoginRequests/TokenResponse.cs">
+<file path="Contracts/Requests/LoginRequests/RefreshToken_LogOut_Request.cs">
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -189,37 +264,49 @@ using System.Threading.Tasks;
 
 namespace Contracts.Requests.LoginRequests
 {
-    public class TokenResponse
+    public class RefreshToken_LogOut_Request
     {
-        //public 
+        public string RefreshToken { get; set; } = null!;
     }
 }
 </file>
 
-<file path="Contracts/Requests/UserRequests/AddUserDTO.cs">
+<file path="Contracts/Requests/LoginRequests/UserToken.cs">
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Contracts.Requests.UserRequests
+namespace Contracts.Requests.LoginRequests
 {
-    public class AddUserDTO
+    public class UserToken
     {
-
-        public string FullName { get; set; } = null!;
-
+        public int UserId { get; set; }
         public string UserName { get; set; } = null!;
+        public string TokenHash { get; set; } = null!;
+        public int RefreshTokenId { get; set; }
+        public DateTime ExpiresAt { get; set; }
+        public DateTime? RevokedAt { get; set; }
+        public int? ReplacedByTokenId { get; set; }
+    }
+}
+</file>
 
-        public string PasswordHash { get; set; } = null!;
+<file path="Contracts/Requests/RequestParameters/RequestParameters.cs">
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-        public string? Email { get; set; }
-
-        public string? PhoneNumber { get; set; }
-
-        public bool IsActive { get; set; }
-
+namespace Contracts.Requests.RequestParameters
+{
+    public class RequestParameters
+    {
+        [Range(1, int.MaxValue, ErrorMessage = "Invalid Id Format!/Id Must Be > 0")]
+        public int Id { get; set; }
     }
 }
 </file>
@@ -274,6 +361,23 @@ namespace Contracts.Responses
             ErrorMessage = "Unauthorized",
             ErrorType = errorType
         };
+    }
+}
+</file>
+
+<file path="Contracts/Responses/Login/TokenResponse.cs">
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Contracts.Responses.Login
+{
+    public class TokenResponse
+    {
+        public string AccesseToken { get; set; } = null!;
+        public string RefreshToken { get; set; } = null!;
     }
 }
 </file>
@@ -398,26 +502,40 @@ namespace DataAccessLayer.Configurations.Options
 }
 </file>
 
-<file path="DataAccessLayer/Extensions/RepositoriesToDIContainer.cs">
-using DataAccessLayer.Repos;
-using Domain.Interfaces.UnitOfWork;
-using Domain.Interfaces.UserInterfaces;
-using Microsoft.Extensions.DependencyInjection;
+<file path="DataAccessLayer/Configurations/Tokens/RefreshTokenConfiguration.cs">
+using Domain.Entities.Token;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataAccessLayer.Extensions
+namespace DataAccessLayer.Configurations.Tokens
 {
-    public static class RepositoriesToDIContainer
+    public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
     {
-        public static IServiceCollection  AddRepoSitoriesToDIContainer(this IServiceCollection services)
+        public void Configure(EntityTypeBuilder<RefreshToken> builder)
         {
-            services.AddScoped<IUnitOfWorkRepository, UnitOfWorkRepository>();
-            services.AddScoped<IUserRepository, UserRepository>();
-            return services;
+            builder.HasKey(r => r.RefreshTokenId);
+
+            builder.Property(r => r.TokenHash)
+                   .HasMaxLength(256)
+                   .IsRequired();
+
+            builder.Property(r => r.ExpiresAt)
+                   .IsRequired();
+
+            builder.HasIndex(r => r.TokenHash)
+                   .IsUnique();
+
+            builder.HasOne(r => r.User)
+                   .WithMany(u => u.RefreshTokens)
+                   .HasForeignKey(r => r.UserId)
+                   .IsRequired();
+
+            builder.ToTable("RefreshTokens");
         }
     }
 }
@@ -3050,6 +3168,2530 @@ namespace DataAccessLayer.Migrations
 }
 </file>
 
+<file path="DataAccessLayer/Migrations/20260703134953_Add Refresh Token Entitiy.cs">
+using System;
+using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace DataAccessLayer.Migrations
+{
+    /// <inheritdoc />
+    public partial class AddRefreshTokenEntitiy : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.CreateTable(
+                name: "RefreshTokens",
+                columns: table => new
+                {
+                    RefreshTokenId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TokenHash = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    RevokedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ReplacedByTokenId = table.Column<int>(type: "int", nullable: true),
+                    UserId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefreshTokens", x => x.RefreshTokenId);
+                    table.ForeignKey(
+                        name: "FK_RefreshTokens_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_TokenHash",
+                table: "RefreshTokens",
+                column: "TokenHash",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_UserId",
+                table: "RefreshTokens",
+                column: "UserId");
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropTable(
+                name: "RefreshTokens");
+        }
+    }
+}
+</file>
+
+<file path="DataAccessLayer/Migrations/20260703134953_Add Refresh Token Entitiy.Designer.cs">
+// <auto-generated />
+using System;
+using DataAccessLayer.Dbcontext;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+
+#nullable disable
+
+namespace DataAccessLayer.Migrations
+{
+    [DbContext(typeof(AppDbcontext))]
+    [Migration("20260703134953_Add Refresh Token Entitiy")]
+    partial class AddRefreshTokenEntitiy
+    {
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        {
+#pragma warning disable 612, 618
+            modelBuilder
+                .HasAnnotation("ProductVersion", "8.0.0")
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("Domain.Entities.Academic_Structure.Batch", b =>
+                {
+                    b.Property<int>("BatchId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BatchId"));
+
+                    b.Property<int>("BatchYear")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DepartmentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("NVARCHAR(MAX)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("NVARCHAR(250)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("BatchId");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("UpdatedByUserId");
+
+                    b.HasIndex("DepartmentId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("Batches", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            BatchId = 1,
+                            BatchYear = 2025,
+                            CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedByUserId = 1,
+                            DepartmentId = 1,
+                            Description = "First cohort of the new curriculum.",
+                            Name = "Batch 2025"
+                        });
+                });
+
+            modelBuilder.Entity("Domain.Entities.Academic_Structure.College", b =>
+                {
+                    b.Property<int>("CollegeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CollegeId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("NVARCHAR(MAX)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("NVARCHAR(250)");
+
+                    b.Property<int>("UniversityId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("CollegeId");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("UpdatedByUserId");
+
+                    b.HasIndex("UniversityId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("Colleges", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            CollegeId = 1,
+                            CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedByUserId = 1,
+                            Description = "Specializes in Software Engineering, AI, Cybersecurity, and Data Science.",
+                            Name = "Faculty of Computer Science and Information Technology",
+                            UniversityId = 1
+                        });
+                });
+
+            modelBuilder.Entity("Domain.Entities.Academic_Structure.Department", b =>
+                {
+                    b.Property<int>("DepartmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DepartmentId"));
+
+                    b.Property<int>("CollegeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("NVARCHAR(MAX)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("NVARCHAR(250)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("DepartmentId");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("UpdatedByUserId");
+
+                    b.HasIndex("CollegeId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("Departments", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            DepartmentId = 1,
+                            CollegeId = 1,
+                            CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedByUserId = 1,
+                            Description = "Focuses on networking, database management, web development, and system security.",
+                            Name = "Information Technology Department"
+                        });
+                });
+
+            modelBuilder.Entity("Domain.Entities.Academic_Structure.Section", b =>
+                {
+                    b.Property<int>("SectionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SectionId"));
+
+                    b.Property<int>("BatchId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("NVARCHAR(250)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("SectionId");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("UpdatedByUserId");
+
+                    b.HasIndex("BatchId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("Sections", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            SectionId = 1,
+                            BatchId = 1,
+                            CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedByUserId = 1,
+                            Name = "Section A"
+                        });
+                });
+
+            modelBuilder.Entity("Domain.Entities.Academic_Structure.University", b =>
+                {
+                    b.Property<int>("UniversityId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UniversityId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("NVARCHAR(MAX)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("NVARCHAR(250)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("UniversityId");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.HasIndex("UpdatedByUserId");
+
+                    b.ToTable("Universities", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            UniversityId = 1,
+                            CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedByUserId = 1,
+                            Description = "A leading Yemeni university committed to academic excellence and community development.",
+                            Name = "Hadhramout University"
+                        });
+                });
+
+            modelBuilder.Entity("Domain.Entities.Content.Announcement", b =>
+                {
+                    b.Property<int>("AnnouncementId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AnnouncementId"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("NVARCHAR(MAX)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ImageId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("NVARCHAR(500)");
+
+                    b.Property<byte>("Type")
+                        .HasColumnType("TINYINT");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("AnnouncementId");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("ImageId")
+                        .IsUnique()
+                        .HasFilter("[ImageId] IS NOT NULL");
+
+                    b.HasIndex("UpdatedByUserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Announcements", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Entities.Content.Post", b =>
+                {
+                    b.Property<int>("PostId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PostId"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("NVARCHAR(MAX)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ImageId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasColumnType("NVARCHAR(500)");
+
+                    b.Property<byte>("Type")
+                        .HasColumnType("TINYINT");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("PostId");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("ImageId")
+                        .IsUnique()
+                        .HasFilter("[ImageId] IS NOT NULL");
+
+                    b.HasIndex("UpdatedByUserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Posts", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Entities.Employees.Employee", b =>
+                {
+                    b.Property<int>("EmployeeId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EmployeeId"));
+
+                    b.Property<int?>("CollegeId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DepartmentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UniversityId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("EmployeeId");
+
+                    b.HasIndex("CollegeId");
+
+                    b.HasIndex("DepartmentId");
+
+                    b.HasIndex("UniversityId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Employees", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            EmployeeId = 1,
+                            CollegeId = 1,
+                            DepartmentId = 1,
+                            UniversityId = 1,
+                            UserId = 1
+                        });
+                });
+
+            modelBuilder.Entity("Domain.Entities.Identity.Role", b =>
+                {
+                    b.Property<int>("RoleId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RoleId"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("NVARCHAR");
+
+                    b.HasKey("RoleId");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Roles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            RoleId = 1,
+                            Name = "Super Admin"
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            Name = "Admin"
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            Name = "Lecturer"
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            Name = "Student"
+                        });
+                });
+
+            modelBuilder.Entity("Domain.Entities.Identity.User", b =>
+                {
+                    b.Property<int>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int?>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("NVARCHAR(256)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("NVARCHAR(250)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("NVARCHAR(MAX)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("NVARCHAR(25)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("NVARCHAR(250)");
+
+                    b.HasKey("UserId");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasFilter("[Email] IS NOT NULL");
+
+                    b.HasIndex("UpdatedByUserId");
+
+                    b.HasIndex("UserName")
+                        .IsUnique();
+
+                    b.ToTable("Users", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            UserId = 1,
+                            CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedByUserId = 1,
+                            Email = "ahmed@hu.edu.ye",
+                            FullName = "Dr. Ahmed Al-Hadrami",
+                            IsActive = true,
+                            PasswordHash = "AQAAAAEAACcQAAAAEP4sN4u5xW9p8oJkzLq2vXy...",
+                            PhoneNumber = "+967 777000111",
+                            UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            UserName = "Ahmed.HU"
+                        });
+                });
+
+            modelBuilder.Entity("Domain.Entities.Identity.UserRole", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.HasIndex("UserId", "RoleId")
+                        .IsUnique();
+
+                    b.ToTable("UserRoles", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            UserId = 1,
+                            RoleId = 1
+                        });
+                });
+
+            modelBuilder.Entity("Domain.Entities.Images.Image", b =>
+                {
+                    b.Property<int>("ImageId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ImageId"));
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasColumnType("NVARCHAR(250)");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasColumnType("NVARCHAR(500)");
+
+                    b.Property<long>("FileSize")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int>("UploadedByUserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ImageId");
+
+                    b.HasIndex("UpdatedByUserId");
+
+                    b.HasIndex("UploadedByUserId");
+
+                    b.ToTable("Images", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Entities.Students.Student", b =>
+                {
+                    b.Property<int>("StudentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StudentId"));
+
+                    b.Property<int>("BatchId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("EnrollmentDate")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int?>("SectionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StatusId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StudentNumber")
+                        .IsRequired()
+                        .HasColumnType("NVARCHAR(20)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("StudentId");
+
+                    b.HasIndex("BatchId");
+
+                    b.HasIndex("SectionId");
+
+                    b.HasIndex("StatusId");
+
+                    b.HasIndex("StudentNumber")
+                        .IsUnique();
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Students", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            StudentId = 1,
+                            BatchId = 1,
+                            EnrollmentDate = new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Utc),
+                            SectionId = 1,
+                            StatusId = 1,
+                            StudentNumber = "20251001",
+                            UserId = 1
+                        });
+                });
+
+            modelBuilder.Entity("Domain.Entities.Students.StudentStatus", b =>
+                {
+                    b.Property<int>("StatusId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StatusId"));
+
+                    b.Property<string>("Description")
+                        .HasColumnType("NVARCHAR(300)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("NVARCHAR(50)");
+
+                    b.HasKey("StatusId");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("StudentStatuses", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            StatusId = 1,
+                            Description = "Actively enrolled and progressing in studies.",
+                            Name = "Enrolled"
+                        },
+                        new
+                        {
+                            StatusId = 2,
+                            Description = "Completed all academic requirements.",
+                            Name = "Graduated"
+                        });
+                });
+
+            modelBuilder.Entity("Domain.Entities.Study.SectionSubject", b =>
+                {
+                    b.Property<int>("SectionSubjectId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SectionSubjectId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("LecturerName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SectionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SemesterId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SubjectId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("SectionSubjectId");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("SectionId");
+
+                    b.HasIndex("SemesterId");
+
+                    b.HasIndex("SubjectId");
+
+                    b.HasIndex("UpdatedByUserId");
+
+                    b.ToTable("SectionSubjects", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            SectionSubjectId = 1,
+                            CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedByUserId = 1,
+                            LecturerName = "Ahmed",
+                            SectionId = 1,
+                            SemesterId = 1,
+                            SubjectId = 1
+                        });
+                });
+
+            modelBuilder.Entity("Domain.Entities.Study.Semester", b =>
+                {
+                    b.Property<int>("SemesterId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SemesterId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsCurrent")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("NVARCHAR(200)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("SemesterId");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("UpdatedByUserId");
+
+                    b.ToTable("Semesters", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            SemesterId = 1,
+                            CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedByUserId = 1,
+                            EndDate = new DateTime(2025, 12, 20, 0, 0, 0, 0, DateTimeKind.Utc),
+                            IsCurrent = true,
+                            Name = "Fall 2025",
+                            StartDate = new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        });
+                });
+
+            modelBuilder.Entity("Domain.Entities.Study.StudentResult", b =>
+                {
+                    b.Property<int>("StudentResultId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StudentResultId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int>("EnteredByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Final")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<decimal>("Midterm")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<decimal>("Practical")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
+
+                    b.Property<int>("SectionSubjectId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Total")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)")
+                        .HasComputedColumnSql("[Midterm] + [Practical] + [Final]", true);
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("StudentResultId");
+
+                    b.HasIndex("EnteredByUserId");
+
+                    b.HasIndex("SectionSubjectId");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("UpdatedByUserId");
+
+                    b.ToTable("StudentResults", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            StudentResultId = 1,
+                            CreatedAt = new DateTime(2025, 12, 25, 0, 0, 0, 0, DateTimeKind.Utc),
+                            EnteredByUserId = 1,
+                            Final = 40m,
+                            Midterm = 45m,
+                            Practical = 10m,
+                            SectionSubjectId = 1,
+                            StudentId = 1,
+                            Total = 0m
+                        });
+                });
+
+            modelBuilder.Entity("Domain.Entities.Study.Subject", b =>
+                {
+                    b.Property<int>("SubjectId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SubjectId"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("NVARCHAR(25)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("CreditHours")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DepartmentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("NVARCHAR(MAX)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("NVARCHAR(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("SubjectId");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("UpdatedByUserId");
+
+                    b.HasIndex("DepartmentId", "Code")
+                        .IsUnique();
+
+                    b.HasIndex("DepartmentId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("Subjects", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            SubjectId = 1,
+                            Code = "CS101",
+                            CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedByUserId = 1,
+                            CreditHours = 3,
+                            DepartmentId = 1,
+                            Description = "Fundamentals of programming using C# and .NET.",
+                            Name = "Introduction to Programming"
+                        },
+                        new
+                        {
+                            SubjectId = 2,
+                            Code = "CS205",
+                            CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedByUserId = 1,
+                            CreditHours = 3,
+                            DepartmentId = 1,
+                            Description = "Relational database design, SQL, and Entity Framework Core.",
+                            Name = "Database Systems"
+                        });
+                });
+
+            modelBuilder.Entity("Domain.Entities.Token.RefreshToken", b =>
+                {
+                    b.Property<int>("RefreshTokenId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RefreshTokenId"));
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ReplacedByTokenId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("RefreshTokenId");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Entities.Academic_Structure.Batch", b =>
+                {
+                    b.HasOne("Domain.Entities.Identity.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Academic_Structure.Department", "Department")
+                        .WithMany("Batches")
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Identity.User", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("Department");
+
+                    b.Navigation("UpdatedByUser");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Academic_Structure.College", b =>
+                {
+                    b.HasOne("Domain.Entities.Identity.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Academic_Structure.University", "University")
+                        .WithMany("Colleges")
+                        .HasForeignKey("UniversityId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Identity.User", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("University");
+
+                    b.Navigation("UpdatedByUser");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Academic_Structure.Department", b =>
+                {
+                    b.HasOne("Domain.Entities.Academic_Structure.College", "College")
+                        .WithMany("Departments")
+                        .HasForeignKey("CollegeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Identity.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Identity.User", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("College");
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("UpdatedByUser");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Academic_Structure.Section", b =>
+                {
+                    b.HasOne("Domain.Entities.Academic_Structure.Batch", "Batch")
+                        .WithMany("Sections")
+                        .HasForeignKey("BatchId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Identity.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Identity.User", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Batch");
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("UpdatedByUser");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Academic_Structure.University", b =>
+                {
+                    b.HasOne("Domain.Entities.Identity.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Identity.User", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("UpdatedByUser");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Content.Announcement", b =>
+                {
+                    b.HasOne("Domain.Entities.Identity.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Images.Image", "Image")
+                        .WithOne("Announcement")
+                        .HasForeignKey("Domain.Entities.Content.Announcement", "ImageId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Domain.Entities.Identity.User", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Domain.Entities.Identity.User", null)
+                        .WithMany("Announcements")
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("Image");
+
+                    b.Navigation("UpdatedByUser");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Content.Post", b =>
+                {
+                    b.HasOne("Domain.Entities.Identity.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Images.Image", "Image")
+                        .WithOne("Post")
+                        .HasForeignKey("Domain.Entities.Content.Post", "ImageId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Domain.Entities.Identity.User", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Domain.Entities.Identity.User", null)
+                        .WithMany("Posts")
+                        .HasForeignKey("UserId");
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("Image");
+
+                    b.Navigation("UpdatedByUser");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Employees.Employee", b =>
+                {
+                    b.HasOne("Domain.Entities.Academic_Structure.College", "College")
+                        .WithMany("Employees")
+                        .HasForeignKey("CollegeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Domain.Entities.Academic_Structure.Department", "Department")
+                        .WithMany("Employees")
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Domain.Entities.Academic_Structure.University", "University")
+                        .WithMany("Employees")
+                        .HasForeignKey("UniversityId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Identity.User", "User")
+                        .WithOne("Employee")
+                        .HasForeignKey("Domain.Entities.Employees.Employee", "UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("College");
+
+                    b.Navigation("Department");
+
+                    b.Navigation("University");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Identity.User", b =>
+                {
+                    b.HasOne("Domain.Entities.Identity.User", "CreatedByUser")
+                        .WithMany("CreatedUsers")
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Domain.Entities.Identity.User", "UpdatedByUser")
+                        .WithMany("UpdatedUsers")
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("UpdatedByUser");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Identity.UserRole", b =>
+                {
+                    b.HasOne("Domain.Entities.Identity.Role", "Role")
+                        .WithMany("UserRoles")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Identity.User", "User")
+                        .WithMany("UserRoles")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Role");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Images.Image", b =>
+                {
+                    b.HasOne("Domain.Entities.Identity.User", "UpdatedByUser")
+                        .WithMany("UpdatedImages")
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Domain.Entities.Identity.User", "UploadedByUser")
+                        .WithMany("UploadedImages")
+                        .HasForeignKey("UploadedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("UpdatedByUser");
+
+                    b.Navigation("UploadedByUser");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Students.Student", b =>
+                {
+                    b.HasOne("Domain.Entities.Academic_Structure.Batch", "Batch")
+                        .WithMany("Students")
+                        .HasForeignKey("BatchId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Academic_Structure.Section", "Section")
+                        .WithMany("Students")
+                        .HasForeignKey("SectionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Domain.Entities.Students.StudentStatus", "Status")
+                        .WithMany("Students")
+                        .HasForeignKey("StatusId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Identity.User", "User")
+                        .WithOne("Student")
+                        .HasForeignKey("Domain.Entities.Students.Student", "UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Batch");
+
+                    b.Navigation("Section");
+
+                    b.Navigation("Status");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Study.SectionSubject", b =>
+                {
+                    b.HasOne("Domain.Entities.Identity.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Academic_Structure.Section", "Section")
+                        .WithMany("SectionSubjects")
+                        .HasForeignKey("SectionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Study.Semester", "Semester")
+                        .WithMany("SectionSubjects")
+                        .HasForeignKey("SemesterId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Study.Subject", "Subject")
+                        .WithMany("SectionSubjects")
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Identity.User", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("Section");
+
+                    b.Navigation("Semester");
+
+                    b.Navigation("Subject");
+
+                    b.Navigation("UpdatedByUser");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Study.Semester", b =>
+                {
+                    b.HasOne("Domain.Entities.Identity.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Identity.User", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("UpdatedByUser");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Study.StudentResult", b =>
+                {
+                    b.HasOne("Domain.Entities.Identity.User", "EnterdByUser")
+                        .WithMany("EnteredByStudentResults")
+                        .HasForeignKey("EnteredByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Study.SectionSubject", "SectionSubject")
+                        .WithMany("StudentResults")
+                        .HasForeignKey("SectionSubjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Students.Student", "Student")
+                        .WithMany("StudentResults")
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Identity.User", "UpdatedByUser")
+                        .WithMany("UpdatedStudentResults")
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("EnterdByUser");
+
+                    b.Navigation("SectionSubject");
+
+                    b.Navigation("Student");
+
+                    b.Navigation("UpdatedByUser");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Study.Subject", b =>
+                {
+                    b.HasOne("Domain.Entities.Identity.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Academic_Structure.Department", "Department")
+                        .WithMany("Subjects")
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.Identity.User", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("Department");
+
+                    b.Navigation("UpdatedByUser");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Token.RefreshToken", b =>
+                {
+                    b.HasOne("Domain.Entities.Identity.User", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Academic_Structure.Batch", b =>
+                {
+                    b.Navigation("Sections");
+
+                    b.Navigation("Students");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Academic_Structure.College", b =>
+                {
+                    b.Navigation("Departments");
+
+                    b.Navigation("Employees");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Academic_Structure.Department", b =>
+                {
+                    b.Navigation("Batches");
+
+                    b.Navigation("Employees");
+
+                    b.Navigation("Subjects");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Academic_Structure.Section", b =>
+                {
+                    b.Navigation("SectionSubjects");
+
+                    b.Navigation("Students");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Academic_Structure.University", b =>
+                {
+                    b.Navigation("Colleges");
+
+                    b.Navigation("Employees");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Identity.Role", b =>
+                {
+                    b.Navigation("UserRoles");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Identity.User", b =>
+                {
+                    b.Navigation("Announcements");
+
+                    b.Navigation("CreatedUsers");
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("EnteredByStudentResults");
+
+                    b.Navigation("Posts");
+
+                    b.Navigation("RefreshTokens");
+
+                    b.Navigation("Student");
+
+                    b.Navigation("UpdatedImages");
+
+                    b.Navigation("UpdatedStudentResults");
+
+                    b.Navigation("UpdatedUsers");
+
+                    b.Navigation("UploadedImages");
+
+                    b.Navigation("UserRoles");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Images.Image", b =>
+                {
+                    b.Navigation("Announcement");
+
+                    b.Navigation("Post");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Students.Student", b =>
+                {
+                    b.Navigation("StudentResults");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Students.StudentStatus", b =>
+                {
+                    b.Navigation("Students");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Study.SectionSubject", b =>
+                {
+                    b.Navigation("StudentResults");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Study.Semester", b =>
+                {
+                    b.Navigation("SectionSubjects");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Study.Subject", b =>
+                {
+                    b.Navigation("SectionSubjects");
+                });
+#pragma warning restore 612, 618
+        }
+    }
+}
+</file>
+
+<file path="DataAccessLayer/Repos/LoginRepository.cs">
+using DataAccessLayer.Dbcontext;
+using Domain.Interfaces.LoginInterfaces;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataAccessLayer.Repos
+{
+    public class LoginRepository : ILoginRepository
+    {
+        private readonly AppDbcontext _context;
+
+        public LoginRepository(AppDbcontext context)
+        {
+            _context = context;
+        }
+        public async Task<bool> IsUserExists(string userName)
+        {
+            return await _context.Users.AnyAsync(l => l.UserName == userName);
+        }
+    }
+}
+</file>
+
+<file path="DataAccessLayer/Seeds/SeedData.cs">
+using Domain.Entities.Academic_Structure;
+using Domain.Entities.Content;
+using Domain.Entities.Employees;
+using Domain.Entities.Enums;
+using Domain.Entities.Identity;
+using Domain.Entities.Images;
+using Domain.Entities.Students;
+using Domain.Entities.Study;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataAccessLayer.Seeds
+{
+    public static class SeedData
+    {
+        // ----------------------------------------------------------
+        // 1. الهوية والمستخدمون (Identity & Users)
+        // ----------------------------------------------------------
+
+        public static List<Role> GetRoles() => new()
+        {
+            new Role { RoleId = 1, Name = "Super Admin" },
+            new Role { RoleId = 2, Name = "Admin" },
+            new Role { RoleId = 3, Name = "Lecturer" },
+            new Role { RoleId = 4, Name = "Student" }
+        };
+
+        public static List<User> GetUsers() => new()
+        {
+            new User
+            {
+                UserId = 1,
+                FullName = "Dr. Ahmed Al-Hadrami",
+                UserName = "Ahmed.HU",
+                // استخدم مكتبة BCrypt لتوليد هذا النص من كلمة المرور "P@ssw0rd123!"
+                // مثال: BCrypt.Net.BCrypt.HashPassword("P@ssw0rd123!")
+                PasswordHash = "AQAAAAEAACcQAAAAEP4sN4u5xW9p8oJkzLq2vXy...",
+                Email = "ahmed@hu.edu.ye",
+                PhoneNumber = "+967 777000111",
+                IsActive = true,
+                CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+                CreatedByUserId = 1 // (المستخدم الأول أنشأ نفسه في النظام)
+            }
+        };
+
+        public static List<UserRole> GetUserRoles() => new()
+        {
+            new UserRole { UserId = 1, RoleId = 1 } // المستخدم الأول هو Super Admin
+        };
+
+
+        // ----------------------------------------------------------
+        // 2. الهيكل الأكاديمي (Academic Structure)
+        // ----------------------------------------------------------
+
+        public static List<University> GetUniversities() => new()
+        {
+            new University
+            {
+                UniversityId = 1,
+                Name = "Hadhramout University",
+                Description = "A leading Yemeni university committed to academic excellence and community development.",
+                CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+                CreatedByUserId = 1
+            }
+        };
+
+        public static List<College> GetColleges() => new()
+        {
+            new College
+            {
+                CollegeId = 1,
+                UniversityId = 1,
+                Name = "Faculty of Computer Science and Information Technology",
+                Description = "Specializes in Software Engineering, AI, Cybersecurity, and Data Science.",
+                CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+                CreatedByUserId = 1
+            }
+        };
+
+        public static List<Department> GetDepartments() => new()
+        {
+            new Department
+            {
+                DepartmentId = 1,
+                CollegeId = 1,
+                Name = "Information Technology Department",
+                Description = "Focuses on networking, database management, web development, and system security.",
+                CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+                CreatedByUserId = 1
+            }
+        };
+
+        public static List<Batch> GetBatches() => new()
+        {
+            new Batch
+            {
+                BatchId = 1,
+                DepartmentId = 1,
+                Name = "Batch 2025",
+                BatchYear = 2025,
+                Description = "First cohort of the new curriculum.",
+                CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+                CreatedByUserId = 1
+            }
+        };
+
+        public static List<Section> GetSections() => new()
+        {
+            new Section
+            {
+                SectionId = 1,
+                BatchId = 1,
+                Name = "Section A",
+                CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+                CreatedByUserId = 1
+            }
+        };
+
+
+        // ----------------------------------------------------------
+        // 3. الطلاب (Students)
+        // ----------------------------------------------------------
+
+        public static List<StudentStatus> GetStudentStatuses() => new()
+        {
+            new StudentStatus
+            {
+                StatusId = 1,
+                Name = "Enrolled",
+                Description = "Actively enrolled and progressing in studies."
+            },
+            new StudentStatus
+            {
+                StatusId = 2,
+                Name = "Graduated",
+                Description = "Completed all academic requirements."
+            }
+        };
+
+        public static List<Student> GetStudents() => new()
+        {
+            new Student
+            {
+                StudentId = 1,
+                UserId = 1,          // نفس المستخدم (يمكن جعله طالباً أيضاً، أو سننشئ مستخدم آخر. هنا سنفترض أن Admin هو طالب تجريبي)
+                StudentNumber = "20251001",
+                BatchId = 1,
+                SectionId = 1,
+                StatusId = 1,
+                EnrollmentDate = new DateTime(2025, 9, 15, 0, 0, 0, DateTimeKind.Utc)
+            }
+        };
+
+
+        // ----------------------------------------------------------
+        // 4. الموظفون والمحاضرون (Employees & Lecturers)
+        // ----------------------------------------------------------
+
+        public static List<Employee> GetEmployees() => new()
+        {
+            new Employee
+            {
+                EmployeeId = 1,
+                UserId = 1,
+                UniversityId = 1,
+                CollegeId = 1,
+                DepartmentId = 1
+            }
+        };
+
+
+
+        // ----------------------------------------------------------
+        // 5. الدراسات (Study: Subjects, Semesters, SectionSubjects)
+        // ----------------------------------------------------------
+
+        public static List<Subject> GetSubjects() => new()
+        {
+            new Subject
+            {
+                SubjectId = 1,
+                Code = "CS101",
+                Name = "Introduction to Programming",
+                Description = "Fundamentals of programming using C# and .NET.",
+                CreditHours = 3,
+                DepartmentId = 1,
+                CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+                CreatedByUserId = 1
+            },
+            new Subject
+            {
+                SubjectId = 2,
+                Code = "CS205",
+                Name = "Database Systems",
+                Description = "Relational database design, SQL, and Entity Framework Core.",
+                CreditHours = 3,
+                DepartmentId = 1,
+                CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+                CreatedByUserId = 1
+            }
+        };
+
+        public static List<Semester> GetSemesters() => new()
+        {
+            new Semester
+            {
+                SemesterId = 1,
+                Name = "Fall 2025",
+                StartDate = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+                EndDate = new DateTime(2025, 12, 20, 0, 0, 0, DateTimeKind.Utc),
+                IsCurrent = true,
+                CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+                CreatedByUserId = 1
+            }
+        };
+
+        public static List<SectionSubject> GetSectionSubjects() => new()
+        {
+            new SectionSubject
+            {
+                SectionSubjectId = 1,
+                SectionId = 1,
+                SubjectId = 1,
+                SemesterId = 1,
+                LecturerName = "Ahmed",
+                CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+                CreatedByUserId = 1
+            }
+        };
+
+
+        // ----------------------------------------------------------
+        // 6. المحتوى والصور (Content & Images)
+        // ----------------------------------------------------------
+
+        public static List<Image> GetImages() => new()
+        {
+            new Image
+            {
+                ImageId = 1,
+                FileName = "default-banner.jpg",
+                FilePath = "/uploads/default-banner.jpg",
+                FileSize = 204800,
+                UploadedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+                UploadedByUserId = 1
+                // UpdatedAt و UpdatedByUserId تبقى null في البذور الأولية
+            }
+        };
+
+        public static List<Post> GetPosts() => new()
+        {
+            new Post
+            {
+                PostId = 1,
+                Title = "Welcome to the New Academic Year",
+                Content = "We are excited to announce the start of the Fall 2025 semester. All students are encouraged to check their schedules.",
+                Type = EnContentType.Public,
+                ImageId = 1,
+                CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
+                CreatedByUserId = 1
+            }
+        };
+
+        public static List<Announcement> GetAnnouncements() => new()
+        {
+            new Announcement
+            {
+                AnnouncementId = 1,
+                Title = "Important: Final Exam Schedule",
+                Content = "Final exams for Fall 2025 will start on December 22nd. Please check the official schedule.",
+                Type = EnContentType.University,
+                ImageId = 1,
+                CreatedAt = new DateTime(2025, 11, 1, 0, 0, 0, DateTimeKind.Utc),
+                CreatedByUserId = 1
+            }
+        };
+
+
+        // ----------------------------------------------------------
+        // 7. النتائج الأكاديمية (Student Results)
+        // ----------------------------------------------------------
+
+        public static List<StudentResult> GetStudentResults() => new()
+        {
+            new StudentResult
+            {
+                StudentResultId = 1,
+                StudentId = 1,
+                SectionSubjectId = 1,
+                Midterm = 45,    // من 50
+                Practical = 10,  // من 10
+                Final = 40,      // من 40
+                // Total هو عمود محسوب في قاعدة البيانات، لا نحتاج لتعيينه هنا.
+                EnteredByUserId = 1,
+                CreatedAt = new DateTime(2025, 12, 25, 0, 0, 0, DateTimeKind.Utc)
+            }
+        };
+    }
+}
+</file>
+
+<file path="Domain/Entities/Academic Structure/College.cs">
+using Domain.Entities.Common;
+using Domain.Entities.Employees;
+
+namespace Domain.Entities.Academic_Structure
+{
+    public class College : BaseEntity
+    {
+        public int CollegeId { get; set; }
+
+        public int UniversityId { get; set; }
+        public University University { get; set; } = null!;
+
+        public string Name { get; set; } = null!;
+
+        public string? Description { get; set; }
+        public ICollection<Department> Departments { get; set; } = new List<Department>();
+        public ICollection<Employee> Employees { get; set; } = new List<Employee>();
+    }
+}
+</file>
+
+<file path="Domain/Entities/Academic Structure/Department.cs">
+using Domain.Entities.Common;
+using Domain.Entities.Employees;
+using Domain.Entities.Study;
+
+namespace Domain.Entities.Academic_Structure
+{
+    public class Department : BaseEntity
+    {
+        public int DepartmentId { get; set; }
+
+        public int CollegeId { get; set; }
+        public College College { get; set; } = null!;
+        public string Name { get; set; } = null!;
+
+        public string? Description { get; set; }
+        public ICollection<Batch> Batches { get; set; } =new List<Batch>();
+
+        public ICollection<Subject> Subjects { get; set; }
+            = new List<Subject>();
+        public ICollection<Employee> Employees { get; set; } = new List<Employee>();
+
+    }
+}
+</file>
+
+<file path="Domain/Entities/Academic Structure/Section.cs">
+using Domain.Entities.Common;
+using Domain.Entities.Students;
+using Domain.Entities.Study;
+
+namespace Domain.Entities.Academic_Structure
+{
+    public class Section : BaseEntity
+    {
+        public int SectionId { get; set; }
+
+        public int BatchId { get; set; }
+        public Batch Batch { get; set; } = null!;
+
+        public string Name { get; set; } = null!;
+
+        public ICollection<Student> Students { get; set; } = new List<Student>();
+        public ICollection<SectionSubject> SectionSubjects { get; set; } = new List<SectionSubject>();
+    }
+}
+</file>
+
+<file path="Domain/Entities/Academic Structure/University.cs">
+using Domain.Entities.Common;
+using Domain.Entities.Employees;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Domain.Entities.Academic_Structure
+{
+    public class University :BaseEntity
+    {
+        public int UniversityId { get; set; }
+
+        public string Name { get; set; } = null!;
+
+        public string? Description { get; set; }
+        public ICollection<College> Colleges { get; set; }
+          = new List<College>();
+        public ICollection<Employee> Employees { get; set; } = new List<Employee>();
+
+    }
+}
+</file>
+
+<file path="Domain/Entities/Common/BaseEntity.cs">
+using Domain.Entities.Identity;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Domain.Entities.Common
+{
+    public abstract class BaseEntity
+    {
+        public DateTime CreatedAt { get; set; }
+
+        public int CreatedByUserId { get; set; }
+
+        public DateTime? UpdatedAt { get; set; }
+
+        public int? UpdatedByUserId { get; set; }
+
+        public User CreatedByUser { get; set; } = null!;
+
+        public User? UpdatedByUser { get; set; }
+    }
+}
+</file>
+
+<file path="Domain/Entities/Enums/ContentEnum.cs">
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Domain.Entities.Enums
+{
+   public enum EnContentType { Public =1 , Batch =2,Department = 3,College =4,University =5}
+}
+</file>
+
+<file path="Domain/Entities/Identity/Role.cs">
+namespace Domain.Entities.Identity
+{
+    public class Role
+    {
+        public int RoleId { get; set; }
+
+        public string Name { get; set; } = null!;
+
+        public ICollection<UserRole> UserRoles { get; set; }
+            = new List<UserRole>();
+    }
+}
+</file>
+
+<file path="Domain/Entities/Identity/UserRole.cs">
+namespace Domain.Entities.Identity
+{
+    public class UserRole
+    {
+        public int UserId { get; set; }
+        public User User { get; set; } = null!;
+
+        public int RoleId { get; set; }
+        public Role Role { get; set; } = null!;
+    }
+}
+</file>
+
+<file path="Domain/Entities/Study/Semester.cs">
+using Domain.Entities.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Domain.Entities.Study
+{
+    public class Semester : BaseEntity
+    {
+        public int SemesterId { get; set; }
+
+        public string Name { get; set; } = null!;
+
+        public DateTime StartDate { get; set; }
+
+        public DateTime EndDate { get; set; }
+
+        public bool IsCurrent { get; set; }
+        public ICollection<SectionSubject> SectionSubjects { get; set; } = new List<SectionSubject>();
+
+    }
+}
+</file>
+
+<file path="Domain/Entities/Token/RefreshToken.cs">
+using Domain.Entities.Identity;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Domain.Entities.Token
+{
+    public class RefreshToken
+    {
+        public int RefreshTokenId { get; set; }
+
+        public string TokenHash { get; set; } = null!;
+        public DateTime ExpiresAt { get; set; }
+        public DateTime? RevokedAt { get; set; }
+        public int? ReplacedByTokenId { get; set; }
+        public int UserId { get; set; }
+
+        public User User { get; set; } = null!;
+    }
+}
+</file>
+
+<file path="Domain/Interfaces/LoginInterfaces/ILoginRepository.cs">
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Domain.Interfaces.LoginInterfaces
+{
+    public interface ILoginRepository
+    {
+        public Task<bool> IsUserExists(string UserName);
+    }
+}
+</file>
+
+<file path="Domain/Interfaces/LoginInterfaces/ILoginService.cs">
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Domain.Interfaces.LoginInterfaces
+{
+    public interface ILoginService
+    {
+        public Task<bool> IsUserExists(string UserName);
+    }
+}
+</file>
+
+<file path="UniNet/Extensions/ControllersExtensions.cs">
+using Contracts.Enums;
+using Contracts.Responses;
+using Microsoft.AspNetCore.Mvc;
+
+namespace UniNet.Extensions
+{
+    public static  class ControllersExtensions
+    {
+        public static ActionResult<AddUpdateServiceResponse<T>> ToActionResult<T>(this AddUpdateServiceResponse<T> response)
+        {
+            if (response.IsSuccess)
+            {
+                return response.Data != null ? new OkObjectResult(response.Data) : new NoContentResult();
+            }
+
+            return response.ErrorType switch
+            {
+                EnErrorTypes.NotFound => new NotFoundObjectResult(new
+                {
+                    Status = 404,
+                    Title = "Not Found",
+                    Detail = response.Errors.FirstOrDefault() ?? "The requested resource was not found."
+                }),
+
+                EnErrorTypes.InvalidData => new BadRequestObjectResult(new
+                {
+                    Status = 400,
+                    Title = "Validation Error",
+                    Errors = response.Errors
+                }),
+
+                EnErrorTypes.InvalidRefrenceData => new BadRequestObjectResult(new
+                {
+                    Status = 400,
+                    Title = "Invalid Related Entity",
+                    Errors = response.Errors
+                }),
+
+                EnErrorTypes.InvalidAuthenticatedUserId => new UnauthorizedObjectResult(new
+                {
+                    StatusCode = 401,
+                    Message = response.ErrorMessage
+                }),
+
+                EnErrorTypes.ExistedResource => new BadRequestObjectResult(new
+                {
+                    StatusCode = 400,
+                    Errors = response.Errors
+                }),
+
+                _ => new ObjectResult(new { Status = 500, Title = "Server Error" }) { StatusCode = 500 }
+            };
+        }
+
+
+        //public static ActionResult<PagedResult<T>> ToPagedActioneResult<T>(this PagedResult<T> pagedResult)
+        //{
+        //    return pagedResult.Data != null ? new ObjectResult(pagedResult) : new NotFoundObjectResult(new { Status = 404, Title = "No Result Found ?" });
+        //}
+    }
+}
+</file>
+
+<file path="Application/Validators/LoginRequestValidator.cs">
+using Contracts.Requests.LoginRequests;
+using FluentValidation;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Application.Validators.LoginRequestValidator
+{
+    public class LoginRequestValidator : AbstractValidator<LoginRequest>
+    {
+        public LoginRequestValidator() 
+        {
+            RuleFor(l => l.UserName).NotEmpty().MinimumLength(4).WithMessage("Minimum length is 4 letters!")
+                .MaximumLength(250).WithMessage("Max lenght is 250 letters!")
+                .Matches("^[a-zA-Z0-9_]+$").WithMessage("UserName can only contain letters, numbers, and underscores.");
+
+            RuleFor(l => l.Password).MinimumLength(9).WithMessage("Minimum lenght is 9 letters")
+                .Matches("^[a-zA-Z0-9_]+$").WithMessage("Password can only contain letters, numbers, and underscores.");
+        }
+    }
+}
+</file>
+
+<file path="DataAccessLayer/Configurations/Student Configuration/StatusConfiguration.cs">
+using DataAccessLayer.Seeds;
+using Domain.Entities.Students;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataAccessLayer.Configurations.Student_Configuration
+{
+    public class StatusConfiguration : IEntityTypeConfiguration<StudentStatus>
+    {
+        public void Configure(EntityTypeBuilder<StudentStatus> builder)
+        {
+            builder.HasKey(s => s.StatusId);
+            builder.Property(s => s.StatusId).ValueGeneratedOnAdd();
+
+            builder.Property(s => s.Name).HasColumnType("NVARCHAR(50)").IsRequired();
+            builder.Property(s => s.Description).HasColumnType("NVARCHAR(300)").IsRequired(false);
+
+            builder.HasIndex(s => s.Name).IsUnique();
+            builder.ToTable("StudentStatuses");
+
+            builder.HasData(SeedData.GetStudentStatuses());
+        }
+    }
+}
+</file>
+
+<file path="DataAccessLayer/Configurations/Student Configuration/StudentConfiguration.cs">
+using DataAccessLayer.Seeds;
+using Domain.Entities.Students;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataAccessLayer.Configurations.Student_Configuration
+{
+    public class StudentConfiguration : IEntityTypeConfiguration<Student>
+    {
+        public void Configure(EntityTypeBuilder<Student> builder)
+        {
+            builder.HasKey(s => s.StudentId);
+            builder.Property(s => s.StudentId).ValueGeneratedOnAdd();
+
+            builder.Property(s => s.StudentNumber).HasColumnType("NVARCHAR(20)").IsRequired();
+            builder.Property(s => s.EnrollmentDate).HasDefaultValueSql("GETUTCDATE()");
+
+            builder.HasIndex(s => s.UserId).IsUnique();
+            builder.HasIndex(s => s.StudentNumber).IsUnique();
+            // Releation : Student(1) => User(1)
+            builder.HasOne(s => s.User).WithOne(u => u.Student)
+                .HasForeignKey<Student>(s => s.UserId).OnDelete(DeleteBehavior.Restrict);
+
+            //Releation : Batch(1) => Students(*)
+            builder.HasOne(s => s.Batch).WithMany(b => b.Students)
+                .HasForeignKey(s => s.BatchId).IsRequired().OnDelete(DeleteBehavior.Restrict);
+
+            // Releation : Section(1) => Students(*)
+            builder.HasOne(s => s.Section).WithMany(s => s.Students)
+                .HasForeignKey(s => s.SectionId).IsRequired(false) // At The Begnning Student May Not Belong To Any Section
+                .OnDelete(DeleteBehavior.Restrict);
+
+            //Releation : Status(1) => Students(*)
+            builder.HasOne(s => s.Status).WithMany(s => s.Students)
+                .HasForeignKey(s => s.StatusId).IsRequired().OnDelete(DeleteBehavior.Restrict);
+            builder.ToTable("Students");
+
+            builder.HasData(SeedData.GetStudents());
+        }
+    }
+}
+</file>
+
+<file path="DataAccessLayer/Configurations/Study Configuration/SectionSubjectConfiguration.cs">
+using DataAccessLayer.Seeds;
+using Domain.Entities.Study;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataAccessLayer.Configurations.Study_Configuration
+{
+    public class SectionSubjectConfiguration : IEntityTypeConfiguration<SectionSubject>
+    {
+        public void Configure(EntityTypeBuilder<SectionSubject> builder)
+        {
+            builder.HasKey(s => s.SectionSubjectId);
+            builder.Property(s => s.SectionSubjectId).ValueGeneratedOnAdd();
+
+            //Releation : Section(1) => SectionSubjects(*)
+            builder.HasOne(s => s.Section).WithMany(s => s.SectionSubjects)
+                .HasForeignKey(s => s.SectionId).IsRequired().OnDelete(DeleteBehavior.Restrict);
+
+            //Releation Subject(1) => SectionSubjects(*)
+            builder.HasOne(s=>s.Subject).WithMany(s=>s.SectionSubjects)
+                .HasForeignKey(s=>s.SubjectId).IsRequired().OnDelete(DeleteBehavior.Restrict);
+
+            // Semester => SectionSubjects(*)
+            builder.HasOne(s => s.Semester).WithMany(s => s.SectionSubjects)
+              .HasForeignKey(s => s.SemesterId).IsRequired().OnDelete(DeleteBehavior.Restrict);
+
+
+            builder.ToTable("SectionSubjects");
+            builder.HasData(SeedData.GetSectionSubjects());
+        }
+    }
+}
+</file>
+
+<file path="DataAccessLayer/Configurations/Study Configuration/SemesterConfiguration.cs">
+using DataAccessLayer.Seeds;
+using Domain.Entities.Study;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataAccessLayer.Configurations.Study_Configuration
+{
+    public class SemesterConfiguration : IEntityTypeConfiguration<Semester>
+    {
+        public void Configure(EntityTypeBuilder<Semester> builder)
+        {
+            builder.HasKey(s => s.SemesterId);
+            builder.Property(s => s.SemesterId).ValueGeneratedOnAdd();
+
+            builder.Property(s => s.Name).HasColumnType("NVARCHAR(200)").IsRequired();
+
+            builder.Property(s => s.StartDate).IsRequired();
+            builder.Property(s => s.EndDate).IsRequired();
+
+            builder.Property(s => s.IsCurrent).IsRequired();
+
+            builder.ToTable("Semesters");
+            builder.HasData(SeedData.GetSemesters());
+        }
+    }
+}
+</file>
+
+<file path="DataAccessLayer/Configurations/Study Configuration/SubjectConfiguration.cs">
+using DataAccessLayer.Seeds;
+using Domain.Entities.Study;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataAccessLayer.Configurations.Study_Configuration
+{
+    public class SubjectConfiguration : IEntityTypeConfiguration<Subject>
+    {
+        public void Configure(EntityTypeBuilder<Subject> builder)
+        {
+            builder.HasKey(s => s.SubjectId);
+            builder.Property(s => s.SubjectId).ValueGeneratedOnAdd();
+
+            builder.Property(s => s.Code).HasColumnType("NVARCHAR(25)").IsRequired();
+            builder.Property(s => s.Name).HasColumnType("NVARCHAR(200)").IsRequired();
+            builder.Property(s => s.Description).HasColumnType("NVARCHAR(MAX)").IsRequired(false);
+
+            builder.HasIndex(s => new { s.DepartmentId, s.Code }).IsUnique();
+            builder.HasIndex(s => new { s.DepartmentId, s.Name }).IsUnique();
+
+            //Releation : Department(1) => Subjects(*)
+            builder.HasOne(s => s.Department).WithMany(d => d.Subjects)
+                 .HasForeignKey(s => s.DepartmentId).IsRequired().OnDelete(DeleteBehavior.Restrict);
+            builder.ToTable("Subjects");
+
+            builder.HasData(SeedData.GetSubjects());
+        }
+    }
+}
+</file>
+
+<file path="DataAccessLayer/Extensions/RepositoriesToDIContainer.cs">
+using DataAccessLayer.Repos;
+using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
+using Domain.Interfaces.UnitOfWork;
+using Domain.Interfaces.UserInterfaces;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataAccessLayer.Extensions
+{
+    public static class RepositoriesToDIContainer
+    {
+        public static IServiceCollection  AddRepoSitoriesToDIContainer(this IServiceCollection services)
+        {
+            services.AddScoped<IUnitOfWorkRepository, UnitOfWorkRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+            return services;
+        }
+    }
+}
+</file>
+
 <file path="DataAccessLayer/Migrations/AppDbcontextModelSnapshot.cs">
 // <auto-generated />
 using System;
@@ -4046,6 +6688,41 @@ namespace DataAccessLayer.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Domain.Entities.Token.RefreshToken", b =>
+                {
+                    b.Property<int>("RefreshTokenId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RefreshTokenId"));
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ReplacedByTokenId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("RefreshTokenId");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens", (string)null);
+                });
+
             modelBuilder.Entity("Domain.Entities.Academic_Structure.Batch", b =>
                 {
                     b.HasOne("Domain.Entities.Identity.User", "CreatedByUser")
@@ -4467,6 +7144,17 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("UpdatedByUser");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Token.RefreshToken", b =>
+                {
+                    b.HasOne("Domain.Entities.Identity.User", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Domain.Entities.Academic_Structure.Batch", b =>
                 {
                     b.Navigation("Sections");
@@ -4521,6 +7209,8 @@ namespace DataAccessLayer.Migrations
 
                     b.Navigation("Posts");
 
+                    b.Navigation("RefreshTokens");
+
                     b.Navigation("Student");
 
                     b.Navigation("UpdatedImages");
@@ -4571,30 +7261,55 @@ namespace DataAccessLayer.Migrations
 }
 </file>
 
-<file path="DataAccessLayer/Repos/LoginRepository.cs">
+<file path="DataAccessLayer/Repos/RefreshTokenRepository.cs">
+using Contracts.Requests.LoginRequests;
 using DataAccessLayer.Dbcontext;
-using Domain.Interfaces.LoginInterfaces;
+using Domain.Entities.Token;
+using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace DataAccessLayer.Repos
 {
-    public class LoginRepository : ILoginRepository
+    public class RefreshTokenRepository : IRefreshTokenRepository
     {
         private readonly AppDbcontext _context;
+        private Expression<Func<RefreshToken, UserToken>> ToDetaieldTokenDTO = t => new UserToken
+        {
+            RefreshTokenId = t.RefreshTokenId,
+            TokenHash = t.TokenHash,
+            ExpiresAt = t.ExpiresAt,
+            RevokedAt = t.RevokedAt,
+            UserId = t.UserId,
+            UserName = t.User.UserName,
+            ReplacedByTokenId = t.ReplacedByTokenId,
 
-        public LoginRepository(AppDbcontext context)
+        };
+        public RefreshTokenRepository(AppDbcontext context)
         {
             _context = context;
         }
-        public async Task<bool> IsUserExists(string userName)
+        public async Task Add(RefreshToken refreshToken)
         {
-            return await _context.Users.AnyAsync(l => l.UserName == userName);
+            await _context.RefreshTokens.AddAsync(refreshToken);
         }
+
+        public async Task<RefreshToken?> GetRefreshTokenById(int tokenId)
+        {
+            return await _context.RefreshTokens.FindAsync(tokenId);
+        }
+
+        public async Task<UserToken?> GetTokenDetails(string refreshToken)
+        {
+            return await _context.RefreshTokens.Select(ToDetaieldTokenDTO).Where(r => r.TokenHash == refreshToken).SingleOrDefaultAsync();
+        }
+
+
     }
 }
 </file>
@@ -4602,6 +7317,7 @@ namespace DataAccessLayer.Repos
 <file path="DataAccessLayer/Repos/UnitOfWorkRepository.cs">
 using DataAccessLayer.Dbcontext;
 using Domain.Interfaces.LoginInterfaces;
+using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
 using Domain.Interfaces.UnitOfWork;
 using Domain.Interfaces.UserInterfaces;
 using System;
@@ -4619,11 +7335,14 @@ namespace DataAccessLayer.Repos
 
         public ILoginRepository LoginRepository { get; private set; }
 
+        public IRefreshTokenRepository RefreshTokenRepository { get; private set; }
+
         public UnitOfWorkRepository(AppDbcontext context)
         {
             _context = context;
             UserRepository = new UserRepository(context);
             LoginRepository = new LoginRepository(context);
+            RefreshTokenRepository = new RefreshTokenRepository(context);
         }
         public async Task<int> CompleteAsync()
         {
@@ -4633,755 +7352,6 @@ namespace DataAccessLayer.Repos
         public void Dispose()
         {
             _context.Dispose();
-        }
-    }
-}
-</file>
-
-<file path="DataAccessLayer/Seeds/SeedData.cs">
-using Domain.Entities.Academic_Structure;
-using Domain.Entities.Content;
-using Domain.Entities.Employees;
-using Domain.Entities.Enums;
-using Domain.Entities.Identity;
-using Domain.Entities.Images;
-using Domain.Entities.Students;
-using Domain.Entities.Study;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DataAccessLayer.Seeds
-{
-    public static class SeedData
-    {
-        // ----------------------------------------------------------
-        // 1. الهوية والمستخدمون (Identity & Users)
-        // ----------------------------------------------------------
-
-        public static List<Role> GetRoles() => new()
-        {
-            new Role { RoleId = 1, Name = "Super Admin" },
-            new Role { RoleId = 2, Name = "Admin" },
-            new Role { RoleId = 3, Name = "Lecturer" },
-            new Role { RoleId = 4, Name = "Student" }
-        };
-
-        public static List<User> GetUsers() => new()
-        {
-            new User
-            {
-                UserId = 1,
-                FullName = "Dr. Ahmed Al-Hadrami",
-                UserName = "Ahmed.HU",
-                // استخدم مكتبة BCrypt لتوليد هذا النص من كلمة المرور "P@ssw0rd123!"
-                // مثال: BCrypt.Net.BCrypt.HashPassword("P@ssw0rd123!")
-                PasswordHash = "AQAAAAEAACcQAAAAEP4sN4u5xW9p8oJkzLq2vXy...",
-                Email = "ahmed@hu.edu.ye",
-                PhoneNumber = "+967 777000111",
-                IsActive = true,
-                CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
-                CreatedByUserId = 1 // (المستخدم الأول أنشأ نفسه في النظام)
-            }
-        };
-
-        public static List<UserRole> GetUserRoles() => new()
-        {
-            new UserRole { UserId = 1, RoleId = 1 } // المستخدم الأول هو Super Admin
-        };
-
-
-        // ----------------------------------------------------------
-        // 2. الهيكل الأكاديمي (Academic Structure)
-        // ----------------------------------------------------------
-
-        public static List<University> GetUniversities() => new()
-        {
-            new University
-            {
-                UniversityId = 1,
-                Name = "Hadhramout University",
-                Description = "A leading Yemeni university committed to academic excellence and community development.",
-                CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
-                CreatedByUserId = 1
-            }
-        };
-
-        public static List<College> GetColleges() => new()
-        {
-            new College
-            {
-                CollegeId = 1,
-                UniversityId = 1,
-                Name = "Faculty of Computer Science and Information Technology",
-                Description = "Specializes in Software Engineering, AI, Cybersecurity, and Data Science.",
-                CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
-                CreatedByUserId = 1
-            }
-        };
-
-        public static List<Department> GetDepartments() => new()
-        {
-            new Department
-            {
-                DepartmentId = 1,
-                CollegeId = 1,
-                Name = "Information Technology Department",
-                Description = "Focuses on networking, database management, web development, and system security.",
-                CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
-                CreatedByUserId = 1
-            }
-        };
-
-        public static List<Batch> GetBatches() => new()
-        {
-            new Batch
-            {
-                BatchId = 1,
-                DepartmentId = 1,
-                Name = "Batch 2025",
-                BatchYear = 2025,
-                Description = "First cohort of the new curriculum.",
-                CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
-                CreatedByUserId = 1
-            }
-        };
-
-        public static List<Section> GetSections() => new()
-        {
-            new Section
-            {
-                SectionId = 1,
-                BatchId = 1,
-                Name = "Section A",
-                CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
-                CreatedByUserId = 1
-            }
-        };
-
-
-        // ----------------------------------------------------------
-        // 3. الطلاب (Students)
-        // ----------------------------------------------------------
-
-        public static List<StudentStatus> GetStudentStatuses() => new()
-        {
-            new StudentStatus
-            {
-                StatusId = 1,
-                Name = "Enrolled",
-                Description = "Actively enrolled and progressing in studies."
-            },
-            new StudentStatus
-            {
-                StatusId = 2,
-                Name = "Graduated",
-                Description = "Completed all academic requirements."
-            }
-        };
-
-        public static List<Student> GetStudents() => new()
-        {
-            new Student
-            {
-                StudentId = 1,
-                UserId = 1,          // نفس المستخدم (يمكن جعله طالباً أيضاً، أو سننشئ مستخدم آخر. هنا سنفترض أن Admin هو طالب تجريبي)
-                StudentNumber = "20251001",
-                BatchId = 1,
-                SectionId = 1,
-                StatusId = 1,
-                EnrollmentDate = new DateTime(2025, 9, 15, 0, 0, 0, DateTimeKind.Utc)
-            }
-        };
-
-
-        // ----------------------------------------------------------
-        // 4. الموظفون والمحاضرون (Employees & Lecturers)
-        // ----------------------------------------------------------
-
-        public static List<Employee> GetEmployees() => new()
-        {
-            new Employee
-            {
-                EmployeeId = 1,
-                UserId = 1,
-                UniversityId = 1,
-                CollegeId = 1,
-                DepartmentId = 1
-            }
-        };
-
-
-
-        // ----------------------------------------------------------
-        // 5. الدراسات (Study: Subjects, Semesters, SectionSubjects)
-        // ----------------------------------------------------------
-
-        public static List<Subject> GetSubjects() => new()
-        {
-            new Subject
-            {
-                SubjectId = 1,
-                Code = "CS101",
-                Name = "Introduction to Programming",
-                Description = "Fundamentals of programming using C# and .NET.",
-                CreditHours = 3,
-                DepartmentId = 1,
-                CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
-                CreatedByUserId = 1
-            },
-            new Subject
-            {
-                SubjectId = 2,
-                Code = "CS205",
-                Name = "Database Systems",
-                Description = "Relational database design, SQL, and Entity Framework Core.",
-                CreditHours = 3,
-                DepartmentId = 1,
-                CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
-                CreatedByUserId = 1
-            }
-        };
-
-        public static List<Semester> GetSemesters() => new()
-        {
-            new Semester
-            {
-                SemesterId = 1,
-                Name = "Fall 2025",
-                StartDate = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
-                EndDate = new DateTime(2025, 12, 20, 0, 0, 0, DateTimeKind.Utc),
-                IsCurrent = true,
-                CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
-                CreatedByUserId = 1
-            }
-        };
-
-        public static List<SectionSubject> GetSectionSubjects() => new()
-        {
-            new SectionSubject
-            {
-                SectionSubjectId = 1,
-                SectionId = 1,
-                SubjectId = 1,
-                SemesterId = 1,
-                LecturerName = "Ahmed",
-                CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
-                CreatedByUserId = 1
-            }
-        };
-
-
-        // ----------------------------------------------------------
-        // 6. المحتوى والصور (Content & Images)
-        // ----------------------------------------------------------
-
-        public static List<Image> GetImages() => new()
-        {
-            new Image
-            {
-                ImageId = 1,
-                FileName = "default-banner.jpg",
-                FilePath = "/uploads/default-banner.jpg",
-                FileSize = 204800,
-                UploadedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
-                UploadedByUserId = 1
-                // UpdatedAt و UpdatedByUserId تبقى null في البذور الأولية
-            }
-        };
-
-        public static List<Post> GetPosts() => new()
-        {
-            new Post
-            {
-                PostId = 1,
-                Title = "Welcome to the New Academic Year",
-                Content = "We are excited to announce the start of the Fall 2025 semester. All students are encouraged to check their schedules.",
-                Type = EnContentType.Public,
-                ImageId = 1,
-                CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
-                CreatedByUserId = 1
-            }
-        };
-
-        public static List<Announcement> GetAnnouncements() => new()
-        {
-            new Announcement
-            {
-                AnnouncementId = 1,
-                Title = "Important: Final Exam Schedule",
-                Content = "Final exams for Fall 2025 will start on December 22nd. Please check the official schedule.",
-                Type = EnContentType.University,
-                ImageId = 1,
-                CreatedAt = new DateTime(2025, 11, 1, 0, 0, 0, DateTimeKind.Utc),
-                CreatedByUserId = 1
-            }
-        };
-
-
-        // ----------------------------------------------------------
-        // 7. النتائج الأكاديمية (Student Results)
-        // ----------------------------------------------------------
-
-        public static List<StudentResult> GetStudentResults() => new()
-        {
-            new StudentResult
-            {
-                StudentResultId = 1,
-                StudentId = 1,
-                SectionSubjectId = 1,
-                Midterm = 45,    // من 50
-                Practical = 10,  // من 10
-                Final = 40,      // من 40
-                // Total هو عمود محسوب في قاعدة البيانات، لا نحتاج لتعيينه هنا.
-                EnteredByUserId = 1,
-                CreatedAt = new DateTime(2025, 12, 25, 0, 0, 0, DateTimeKind.Utc)
-            }
-        };
-    }
-}
-</file>
-
-<file path="Domain/Entities/Academic Structure/College.cs">
-using Domain.Entities.Common;
-using Domain.Entities.Employees;
-
-namespace Domain.Entities.Academic_Structure
-{
-    public class College : BaseEntity
-    {
-        public int CollegeId { get; set; }
-
-        public int UniversityId { get; set; }
-        public University University { get; set; } = null!;
-
-        public string Name { get; set; } = null!;
-
-        public string? Description { get; set; }
-        public ICollection<Department> Departments { get; set; } = new List<Department>();
-        public ICollection<Employee> Employees { get; set; } = new List<Employee>();
-    }
-}
-</file>
-
-<file path="Domain/Entities/Academic Structure/Department.cs">
-using Domain.Entities.Common;
-using Domain.Entities.Employees;
-using Domain.Entities.Study;
-
-namespace Domain.Entities.Academic_Structure
-{
-    public class Department : BaseEntity
-    {
-        public int DepartmentId { get; set; }
-
-        public int CollegeId { get; set; }
-        public College College { get; set; } = null!;
-        public string Name { get; set; } = null!;
-
-        public string? Description { get; set; }
-        public ICollection<Batch> Batches { get; set; } =new List<Batch>();
-
-        public ICollection<Subject> Subjects { get; set; }
-            = new List<Subject>();
-        public ICollection<Employee> Employees { get; set; } = new List<Employee>();
-
-    }
-}
-</file>
-
-<file path="Domain/Entities/Academic Structure/Section.cs">
-using Domain.Entities.Common;
-using Domain.Entities.Students;
-using Domain.Entities.Study;
-
-namespace Domain.Entities.Academic_Structure
-{
-    public class Section : BaseEntity
-    {
-        public int SectionId { get; set; }
-
-        public int BatchId { get; set; }
-        public Batch Batch { get; set; } = null!;
-
-        public string Name { get; set; } = null!;
-
-        public ICollection<Student> Students { get; set; } = new List<Student>();
-        public ICollection<SectionSubject> SectionSubjects { get; set; } = new List<SectionSubject>();
-    }
-}
-</file>
-
-<file path="Domain/Entities/Academic Structure/University.cs">
-using Domain.Entities.Common;
-using Domain.Entities.Employees;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Domain.Entities.Academic_Structure
-{
-    public class University :BaseEntity
-    {
-        public int UniversityId { get; set; }
-
-        public string Name { get; set; } = null!;
-
-        public string? Description { get; set; }
-        public ICollection<College> Colleges { get; set; }
-          = new List<College>();
-        public ICollection<Employee> Employees { get; set; } = new List<Employee>();
-
-    }
-}
-</file>
-
-<file path="Domain/Entities/Common/BaseEntity.cs">
-using Domain.Entities.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Domain.Entities.Common
-{
-    public abstract class BaseEntity
-    {
-        public DateTime CreatedAt { get; set; }
-
-        public int CreatedByUserId { get; set; }
-
-        public DateTime? UpdatedAt { get; set; }
-
-        public int? UpdatedByUserId { get; set; }
-
-        public User CreatedByUser { get; set; } = null!;
-
-        public User? UpdatedByUser { get; set; }
-    }
-}
-</file>
-
-<file path="Domain/Entities/Enums/ContentEnum.cs">
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Domain.Entities.Enums
-{
-   public enum EnContentType { Public =1 , Batch =2,Department = 3,College =4,University =5}
-}
-</file>
-
-<file path="Domain/Entities/Identity/Role.cs">
-namespace Domain.Entities.Identity
-{
-    public class Role
-    {
-        public int RoleId { get; set; }
-
-        public string Name { get; set; } = null!;
-
-        public ICollection<UserRole> UserRoles { get; set; }
-            = new List<UserRole>();
-    }
-}
-</file>
-
-<file path="Domain/Entities/Identity/UserRole.cs">
-namespace Domain.Entities.Identity
-{
-    public class UserRole
-    {
-        public int UserId { get; set; }
-        public User User { get; set; } = null!;
-
-        public int RoleId { get; set; }
-        public Role Role { get; set; } = null!;
-    }
-}
-</file>
-
-<file path="Domain/Entities/Study/Semester.cs">
-using Domain.Entities.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Domain.Entities.Study
-{
-    public class Semester : BaseEntity
-    {
-        public int SemesterId { get; set; }
-
-        public string Name { get; set; } = null!;
-
-        public DateTime StartDate { get; set; }
-
-        public DateTime EndDate { get; set; }
-
-        public bool IsCurrent { get; set; }
-        public ICollection<SectionSubject> SectionSubjects { get; set; } = new List<SectionSubject>();
-
-    }
-}
-</file>
-
-<file path="Domain/Interfaces/LoginInterfaces/ILoginRepository.cs">
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Domain.Interfaces.LoginInterfaces
-{
-    public interface ILoginRepository
-    {
-        public Task<bool> IsUserExists(string UserName);
-    }
-}
-</file>
-
-<file path="Domain/Interfaces/LoginInterfaces/ILoginService.cs">
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Domain.Interfaces.LoginInterfaces
-{
-    public interface ILoginService
-    {
-        public Task<bool> IsUserExists(string UserName);
-    }
-}
-</file>
-
-<file path="Application/Validators/LoginRequestValidator.cs">
-using Contracts.Requests.LoginRequests;
-using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Application.Validators.LoginRequestValidator
-{
-    public class LoginRequestValidator : AbstractValidator<LoginRequest>
-    {
-        public LoginRequestValidator() 
-        {
-            RuleFor(l => l.UserName).NotEmpty().MinimumLength(4).WithMessage("Minimum length is 4 letters!")
-                .MaximumLength(250).WithMessage("Max lenght is 250 letters!")
-                .Matches("^[a-zA-Z0-9_]+$").WithMessage("UserName can only contain letters, numbers, and underscores.");
-
-            RuleFor(l => l.Password).MinimumLength(9).WithMessage("Minimum lenght is 9 letters")
-                .Matches("^[a-zA-Z0-9_]+$").WithMessage("Password can only contain letters, numbers, and underscores.");
-        }
-    }
-}
-</file>
-
-<file path="DataAccessLayer/Configurations/Student Configuration/StatusConfiguration.cs">
-using DataAccessLayer.Seeds;
-using Domain.Entities.Students;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DataAccessLayer.Configurations.Student_Configuration
-{
-    public class StatusConfiguration : IEntityTypeConfiguration<StudentStatus>
-    {
-        public void Configure(EntityTypeBuilder<StudentStatus> builder)
-        {
-            builder.HasKey(s => s.StatusId);
-            builder.Property(s => s.StatusId).ValueGeneratedOnAdd();
-
-            builder.Property(s => s.Name).HasColumnType("NVARCHAR(50)").IsRequired();
-            builder.Property(s => s.Description).HasColumnType("NVARCHAR(300)").IsRequired(false);
-
-            builder.HasIndex(s => s.Name).IsUnique();
-            builder.ToTable("StudentStatuses");
-
-            builder.HasData(SeedData.GetStudentStatuses());
-        }
-    }
-}
-</file>
-
-<file path="DataAccessLayer/Configurations/Student Configuration/StudentConfiguration.cs">
-using DataAccessLayer.Seeds;
-using Domain.Entities.Students;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DataAccessLayer.Configurations.Student_Configuration
-{
-    public class StudentConfiguration : IEntityTypeConfiguration<Student>
-    {
-        public void Configure(EntityTypeBuilder<Student> builder)
-        {
-            builder.HasKey(s => s.StudentId);
-            builder.Property(s => s.StudentId).ValueGeneratedOnAdd();
-
-            builder.Property(s => s.StudentNumber).HasColumnType("NVARCHAR(20)").IsRequired();
-            builder.Property(s => s.EnrollmentDate).HasDefaultValueSql("GETUTCDATE()");
-
-            builder.HasIndex(s => s.UserId).IsUnique();
-            builder.HasIndex(s => s.StudentNumber).IsUnique();
-            // Releation : Student(1) => User(1)
-            builder.HasOne(s => s.User).WithOne(u => u.Student)
-                .HasForeignKey<Student>(s => s.UserId).OnDelete(DeleteBehavior.Restrict);
-
-            //Releation : Batch(1) => Students(*)
-            builder.HasOne(s => s.Batch).WithMany(b => b.Students)
-                .HasForeignKey(s => s.BatchId).IsRequired().OnDelete(DeleteBehavior.Restrict);
-
-            // Releation : Section(1) => Students(*)
-            builder.HasOne(s => s.Section).WithMany(s => s.Students)
-                .HasForeignKey(s => s.SectionId).IsRequired(false) // At The Begnning Student May Not Belong To Any Section
-                .OnDelete(DeleteBehavior.Restrict);
-
-            //Releation : Status(1) => Students(*)
-            builder.HasOne(s => s.Status).WithMany(s => s.Students)
-                .HasForeignKey(s => s.StatusId).IsRequired().OnDelete(DeleteBehavior.Restrict);
-            builder.ToTable("Students");
-
-            builder.HasData(SeedData.GetStudents());
-        }
-    }
-}
-</file>
-
-<file path="DataAccessLayer/Configurations/Study Configuration/SectionSubjectConfiguration.cs">
-using DataAccessLayer.Seeds;
-using Domain.Entities.Study;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DataAccessLayer.Configurations.Study_Configuration
-{
-    public class SectionSubjectConfiguration : IEntityTypeConfiguration<SectionSubject>
-    {
-        public void Configure(EntityTypeBuilder<SectionSubject> builder)
-        {
-            builder.HasKey(s => s.SectionSubjectId);
-            builder.Property(s => s.SectionSubjectId).ValueGeneratedOnAdd();
-
-            //Releation : Section(1) => SectionSubjects(*)
-            builder.HasOne(s => s.Section).WithMany(s => s.SectionSubjects)
-                .HasForeignKey(s => s.SectionId).IsRequired().OnDelete(DeleteBehavior.Restrict);
-
-            //Releation Subject(1) => SectionSubjects(*)
-            builder.HasOne(s=>s.Subject).WithMany(s=>s.SectionSubjects)
-                .HasForeignKey(s=>s.SubjectId).IsRequired().OnDelete(DeleteBehavior.Restrict);
-
-            // Semester => SectionSubjects(*)
-            builder.HasOne(s => s.Semester).WithMany(s => s.SectionSubjects)
-              .HasForeignKey(s => s.SemesterId).IsRequired().OnDelete(DeleteBehavior.Restrict);
-
-
-            builder.ToTable("SectionSubjects");
-            builder.HasData(SeedData.GetSectionSubjects());
-        }
-    }
-}
-</file>
-
-<file path="DataAccessLayer/Configurations/Study Configuration/SemesterConfiguration.cs">
-using DataAccessLayer.Seeds;
-using Domain.Entities.Study;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DataAccessLayer.Configurations.Study_Configuration
-{
-    public class SemesterConfiguration : IEntityTypeConfiguration<Semester>
-    {
-        public void Configure(EntityTypeBuilder<Semester> builder)
-        {
-            builder.HasKey(s => s.SemesterId);
-            builder.Property(s => s.SemesterId).ValueGeneratedOnAdd();
-
-            builder.Property(s => s.Name).HasColumnType("NVARCHAR(200)").IsRequired();
-
-            builder.Property(s => s.StartDate).IsRequired();
-            builder.Property(s => s.EndDate).IsRequired();
-
-            builder.Property(s => s.IsCurrent).IsRequired();
-
-            builder.ToTable("Semesters");
-            builder.HasData(SeedData.GetSemesters());
-        }
-    }
-}
-</file>
-
-<file path="DataAccessLayer/Configurations/Study Configuration/SubjectConfiguration.cs">
-using DataAccessLayer.Seeds;
-using Domain.Entities.Study;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DataAccessLayer.Configurations.Study_Configuration
-{
-    public class SubjectConfiguration : IEntityTypeConfiguration<Subject>
-    {
-        public void Configure(EntityTypeBuilder<Subject> builder)
-        {
-            builder.HasKey(s => s.SubjectId);
-            builder.Property(s => s.SubjectId).ValueGeneratedOnAdd();
-
-            builder.Property(s => s.Code).HasColumnType("NVARCHAR(25)").IsRequired();
-            builder.Property(s => s.Name).HasColumnType("NVARCHAR(200)").IsRequired();
-            builder.Property(s => s.Description).HasColumnType("NVARCHAR(MAX)").IsRequired(false);
-
-            builder.HasIndex(s => new { s.DepartmentId, s.Code }).IsUnique();
-            builder.HasIndex(s => new { s.DepartmentId, s.Name }).IsUnique();
-
-            //Releation : Department(1) => Subjects(*)
-            builder.HasOne(s => s.Department).WithMany(d => d.Subjects)
-                 .HasForeignKey(s => s.DepartmentId).IsRequired().OnDelete(DeleteBehavior.Restrict);
-            builder.ToTable("Subjects");
-
-            builder.HasData(SeedData.GetSubjects());
         }
     }
 }
@@ -5628,95 +7598,74 @@ namespace Domain.Entities.Study
 }
 </file>
 
-<file path="Domain/Interfaces/UnitOfWorkInterfaces/IUnitOfWorkRepository.cs">
-using Domain.Interfaces.LoginInterfaces;
-using Domain.Interfaces.UserInterfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Domain.Interfaces.UnitOfWork
-{
-    public interface IUnitOfWorkRepository : IDisposable
-    {
-        public IUserRepository UserRepository { get; }
-        public ILoginRepository LoginRepository { get; }
-
-        public Task<int> CompleteAsync();
-    }
-}
-</file>
-
-<file path="Application/Extensions/AddServicesToDIContainer.cs">
-using Application.Services.IdentityServices;
-using Domain.Interfaces.LoginInterfaces;
-using Domain.Interfaces.UnitOfWork;
-using Domain.Interfaces.UserInterfaces;
-using FluentValidation;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Application.Validators.LoginRequestValidator;
+<file path="Domain/Interfaces/LoginInterfaces/TokenInterfaces/IRefreshTokenRepository.cs">
 using Contracts.Requests.LoginRequests;
-
-namespace Application.Extensions
-{
-    public static class AddServicesToDIContainer
-    {
-        public static IServiceCollection ServicesToDI(this IServiceCollection services)
-        {
-            services.AddScoped<IUserService, UserService>();
-            return services;
-        }
-        public static IServiceCollection Validators(this IServiceCollection services)
-        {
-            services.AddScoped<IValidator<LoginRequest>, LoginRequestValidator>();
-            return services;
-        }
-    }
-}
-</file>
-
-<file path="Application/Services/IdentityServices/UserService.cs">
-using Domain.Interfaces.UnitOfWork;
-using Domain.Interfaces.UserInterfaces;
+using Domain.Entities.Token;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using BCrypt.Net;
-using Contracts.Responses;
 
-namespace Application.Services.IdentityServices
+namespace Domain.Interfaces.LoginInterfaces.TokenInterfaces
 {
-    public class UserService : IUserService
+    public interface IRefreshTokenRepository
     {
-        private readonly IUnitOfWorkRepository _unitOfWork;
-        public UserService(IUnitOfWorkRepository unitOfWork)
-        {
-            _unitOfWork = unitOfWork;
-        }
+        public Task Add(RefreshToken refreshToken);
+        public Task<UserToken?> GetTokenDetails(string refreshToken);
+        public Task<RefreshToken?> GetRefreshTokenById(int tokenId);
+    }
+}
+</file>
 
-        public async Task<UserDTO?> FindById(int Id)
-        {
-            return await _unitOfWork.UserRepository.GetUserById(Id);
-        }
+<file path="Domain/Interfaces/LoginInterfaces/TokenInterfaces/IRefreshTokenService.cs">
+using Contracts.Requests.LoginRequests;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-        public async Task<bool> IsUserExists(string userName)
-        {
-            return await _unitOfWork.UserRepository.IsUserExsist(userName);
-        }
+namespace Domain.Interfaces.LoginInterfaces.TokenInterfaces
+{
+    public interface IRefreshTokenService
+    {
+        public Task AddRefreshToken(string refreshToken, int UserId);
+        public string GenerateRefreshToken();
+        public Task<UserToken> GetTokenDetails(string tokenHash);
+        public Task RefreshToken(string refreshedToken, int userId, int replacedTokenId);
 
-        public bool VerifyPassword(string password,string passwordHash)
-        {
-            return BCrypt.Net.BCrypt.Verify(password, passwordHash);
-        }
+        public string GetHash(string refreshToken);
+        public Task Logout(int tokenId);
+    }
+}
+</file>
+
+<file path="Contracts/Requests/UserRequests/AddUserDTO.cs">
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Contracts.Requests.UserRequests
+{
+    public class AddUserDTO
+    {
+
+        public string FullName { get; set; } = null!;
+
+        public string UserName { get; set; } = null!;
+
+        public string Password { get; set; } = null!;
+
+        public string? Email { get; set; }
+
+        public string? PhoneNumber { get; set; }
+
+        public bool IsActive { get; set; }
+        public int CreatedByUserId { get; set; }
+
     }
 }
 </file>
@@ -5988,6 +7937,237 @@ namespace Domain.Entities.Images
 }
 </file>
 
+<file path="Domain/Interfaces/UnitOfWorkInterfaces/IUnitOfWorkRepository.cs">
+using Domain.Interfaces.LoginInterfaces;
+using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
+using Domain.Interfaces.UserInterfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Domain.Interfaces.UnitOfWork
+{
+    public interface IUnitOfWorkRepository : IDisposable
+    {
+        public IUserRepository UserRepository { get; }
+        public ILoginRepository LoginRepository { get; }
+        public IRefreshTokenRepository RefreshTokenRepository { get; }
+
+        public Task<int> CompleteAsync();
+    }
+}
+</file>
+
+<file path="Application/Services/Login Service/RefreshTokenService.cs">
+using Contracts.Requests.LoginRequests;
+using Domain.Entities.Token;
+using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
+using Domain.Interfaces.UnitOfWork;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Application.Services.Login_Service
+{
+    public class RefreshTokenService : IRefreshTokenService
+    {
+        private readonly IUnitOfWorkRepository _unitOfWorkRepository;
+        public RefreshTokenService(IUnitOfWorkRepository unitOfWorkRepository)
+        {
+            _unitOfWorkRepository = unitOfWorkRepository;
+        }
+        public async Task AddRefreshToken(string refreshToken, int UserId)
+        {
+            using var sha = SHA256.Create();
+            var incommingHash = Convert.ToBase64String(sha.ComputeHash(Encoding.UTF8.GetBytes(refreshToken)));
+            var refreshTokenEntity = new RefreshToken
+            {
+                TokenHash = incommingHash,
+                ExpiresAt = DateTime.UtcNow.AddDays(7),
+                RevokedAt = null,
+                UserId = UserId,
+            };
+            await _unitOfWorkRepository.RefreshTokenRepository.Add(refreshTokenEntity);
+            await _unitOfWorkRepository.CompleteAsync();
+        }
+
+        public string GenerateRefreshToken()
+        {
+            var bytes = new byte[64];
+
+            using var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(bytes);
+
+            return Convert.ToBase64String(bytes);
+        }
+
+        public string GetHash(string refreshToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<UserToken?> GetTokenDetails(string tokenHash)
+        {
+            using var sha = SHA256.Create();
+            var incommingHash = Convert.ToBase64String(sha.ComputeHash(Encoding.UTF8.GetBytes(tokenHash)));
+            return  await _unitOfWorkRepository.RefreshTokenRepository.GetTokenDetails(incommingHash);
+        }
+
+        public async Task Logout(int tokenId)
+        {
+            var refrshToken = await _unitOfWorkRepository.RefreshTokenRepository.GetRefreshTokenById(tokenId);
+            refrshToken!.RevokedAt = DateTime.UtcNow;
+            await _unitOfWorkRepository.CompleteAsync();
+        }
+
+        public async Task RefreshToken(string refreshedToken, int userId, int replacedTokenId)
+        {
+            using var sha = SHA256.Create();
+            var incommingHash = Convert.ToBase64String(sha.ComputeHash(Encoding.UTF8.GetBytes(refreshedToken)));
+
+            var refreshTokenEntity = new RefreshToken
+            {
+                TokenHash = incommingHash,
+                UserId = userId,
+                ReplacedByTokenId = replacedTokenId,
+                ExpiresAt = DateTime.UtcNow.AddDays(7)
+            };
+
+            var oldRefreshToken = await _unitOfWorkRepository.RefreshTokenRepository.GetRefreshTokenById(replacedTokenId);
+            oldRefreshToken!.RevokedAt = DateTime.UtcNow;
+            await _unitOfWorkRepository.RefreshTokenRepository.Add(refreshTokenEntity);
+            await _unitOfWorkRepository.CompleteAsync();
+        }
+    }
+}
+</file>
+
+<file path="Application/Extensions/AddServicesToDIContainer.cs">
+using Application.Services.IdentityServices;
+using Domain.Interfaces.LoginInterfaces;
+using Domain.Interfaces.UnitOfWork;
+using Domain.Interfaces.UserInterfaces;
+using FluentValidation;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Application.Validators.LoginRequestValidator;
+using Contracts.Requests.LoginRequests;
+using Contracts.Requests.UserRequests;
+using Application.Validators;
+using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
+using Application.Services.Login_Service;
+
+namespace Application.Extensions
+{
+    public static class AddServicesToDIContainer
+    {
+        public static IServiceCollection ServicesToDI(this IServiceCollection services)
+        {
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+            return services;
+        }
+        public static IServiceCollection Validators(this IServiceCollection services)
+        {
+            services.AddScoped<IValidator<LoginRequest>, LoginRequestValidator>();
+            services.AddScoped<IValidator<AddUserDTO>, AddUserValidator>();
+            return services;
+        }
+    }
+}
+</file>
+
+<file path="Application/Services/IdentityServices/UserService.cs">
+using Domain.Interfaces.UnitOfWork;
+using Domain.Interfaces.UserInterfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using BCrypt.Net;
+using Contracts.Responses;
+using Contracts.Requests.UserRequests;
+using FluentValidation;
+using Application.Validators;
+using Contracts.Enums;
+using Domain.Entities.Identity;
+
+namespace Application.Services.IdentityServices
+{
+    public class UserService : IUserService
+    {
+        private readonly IUnitOfWorkRepository _unitOfWork;
+        private readonly IValidator<AddUserDTO> _validaor;
+        public UserService(IUnitOfWorkRepository unitOfWork,IValidator <AddUserDTO>validator)
+        {
+            _unitOfWork = unitOfWork;
+            _validaor = validator;
+        }
+
+        public async Task<AddUpdateServiceResponse<UserDTO>> AddUser(AddUserDTO newUser)
+        {
+            var validation = _validaor.Validate(newUser);
+            if(!validation.IsValid)
+            {
+                return AddUpdateServiceResponse<UserDTO>.Failure(validation.Errors.Select
+                    (e => $"{e.PropertyName} : {e.ErrorMessage}").ToList(), EnErrorTypes.InvalidData);
+            }
+
+            if(await _unitOfWork.UserRepository.IsUserExsist(newUser.UserName))
+            {
+                return AddUpdateServiceResponse<UserDTO>.ExistedResource<User>();
+            }
+
+            var userEntity = new User
+            {
+                FullName = newUser.FullName,
+                UserName = newUser.UserName,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(newUser.Password),
+                PhoneNumber = newUser.PhoneNumber,
+                Email = newUser.Email,
+                IsActive = newUser.IsActive,
+                CreatedAt = DateTime.UtcNow,
+                CreatedByUserId = newUser.CreatedByUserId,
+            };
+            await _unitOfWork.UserRepository.Add(userEntity);
+            await _unitOfWork.CompleteAsync();
+            var userDTO = await _unitOfWork.UserRepository.GetUserById(userEntity.UserId);
+            return AddUpdateServiceResponse<UserDTO>.Success(userDTO);
+        }
+
+        public async Task<UserDTO?> FindById(int Id)
+        {
+            return await _unitOfWork.UserRepository.GetUserById(Id);
+        }
+
+        public async Task<User?> FindByUserName(string userName)
+        {
+            return await _unitOfWork.UserRepository.GetUserByUserName(userName);
+        }
+
+        public async Task<bool> IsUserExists(string userName)
+        {
+            return await _unitOfWork.UserRepository.IsUserExsist(userName);
+        }
+
+        public bool VerifyPassword(string password,string passwordHash)
+        {
+            return BCrypt.Net.BCrypt.Verify(password, passwordHash);
+        }
+    }
+}
+</file>
+
 <file path="DataAccessLayer/Dbcontext/AppDbcontext.cs">
 using Domain.Entities.Academic_Structure;
 using Domain.Entities.Common;
@@ -5997,6 +8177,7 @@ using Domain.Entities.Identity;
 using Domain.Entities.Images;
 using Domain.Entities.Students;
 using Domain.Entities.Study;
+using Domain.Entities.Token;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
 using System;
@@ -6034,6 +8215,7 @@ namespace DataAccessLayer.Dbcontext
         public DbSet<Subject> Subjects { get; set; }
         public DbSet<SectionSubject> SectionSubjects { get; set; }
         public DbSet<StudentResult> StudentResults { get; set; }
+        public DbSet<RefreshToken>RefreshTokens { get; set; }
 
 
         //Options
@@ -6134,6 +8316,11 @@ namespace DataAccessLayer.Repos
         {
             await _context.Users.AddAsync(user);
         }
+
+        public async Task<User?> GetUserByUserName(string userName)
+        {
+            return await _context.Users.SingleOrDefaultAsync(u => u.UserName == userName);
+        }
     }
 }
 </file>
@@ -6153,202 +8340,159 @@ namespace Domain.Interfaces.UserInterfaces
     {
         public  Task<bool> IsUserExsist(string userName);
         public Task<UserDTO?> GetUserById(int Id);
+        public Task<User?> GetUserByUserName(string userName);
         public Task Add(User user);
     }
 }
 </file>
 
-<file path="Domain/Interfaces/UserInterfaces/IUserService.cs">
-using Contracts.Responses;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Domain.Interfaces.UserInterfaces
-{
-    public interface IUserService
-    {
-        public Task<bool> IsUserExists(string userName);
-        public Task<UserDTO?> FindById(int Id);
-    }
-}
-</file>
-
-<file path="UniNet/Controllers/Identity Controllers/UserController.cs">
-using Contracts.Messages;
-using Contracts.Requests.RequestParameters;
-using Contracts.Responses;
+<file path="UniNet/Controllers/Identity Controllers/Auth/LoginController.cs">
+using Contracts.Requests.LoginRequests;
+using Contracts.Responses.Login;
+using DataAccessLayer.Configurations.Options;
 using Domain.Entities.Identity;
-using Domain.Interfaces.UnitOfWork;
+using Domain.Entities.Token;
+using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
 using Domain.Interfaces.UserInterfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
-namespace UniNet.Controllers.Identity_Controllers
+namespace UniNet.Controllers.Identity_Controllers.Auth
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class LoginController : ControllerBase
     {
         private readonly IUserService _userService;
-        public UserController(IUserService userService)
+        private readonly IRefreshTokenService _refreshTokenService;
+        private readonly JWTOption _jwtOption;
+
+        public LoginController(IUserService userService, IRefreshTokenService refreshTokenService, IOptions<JWTOption> jwtOption)
         {
             _userService = userService;
+            _refreshTokenService = refreshTokenService;
+            _jwtOption = jwtOption.Value;
         }
 
-        [HttpGet("id:int", Name = "GetUserById")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<UserDTO>> GetUserById([FromQuery]RequestParameters @param)
+        [HttpPost("login")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<IActionResult> Login([FromBody]LoginRequest request)
         {
-            var user = await _userService.FindById(param.Id);
-            if (user == null)
-                return NotFound(ErrorMessages.NotFound<User>(param.Id));
-
-            return Ok(user);
-        }
-    }
-}
-</file>
-
-<file path="Domain/Entities/Identity/User.cs">
-using Domain.Entities.Content;
-using Domain.Entities.Employees;
-using Domain.Entities.Images;
-using Domain.Entities.Students;
-using Domain.Entities.Study;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Domain.Entities.Identity
-{
-    public class User
-    {
-        public int UserId { get; set; }
-
-        public string FullName { get; set; } = null!;
-
-        public string UserName { get; set; } = null!;
-
-        public string PasswordHash { get; set; } = null!;
-
-        public string? Email { get; set; }
-
-        public string? PhoneNumber { get; set; }
-
-        public bool IsActive { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public int ?CreatedByUserId {  get; set; }
-        public User?CreatedByUser { get; set; }
-        public DateTime UpdatedAt {  get; set; }
-        public int ?UpdatedByUserId { get; set; }
-        public User? UpdatedByUser { get; set; }
-        public Student? Student { get; set; }
-
-        public Employee? Employee { get; set; }
-
-        public ICollection<User> CreatedUsers { get; set; } = new List<User>();
-        public ICollection<User> UpdatedUsers { get; set; } = new List<User>();
-
-        public ICollection<UserRole> UserRoles { get; set; }
-            = new List<UserRole>();
-        public ICollection<Post> Posts { get; set; }
-    = new List<Post>();
-
-        public ICollection<Announcement> Announcements { get; set; }
-            = new List<Announcement>();
-        public ICollection<Image> UploadedImages { get; set; } = new List<Image>();
-        public ICollection<Image> UpdatedImages { get; set; } = new List<Image>();
-        public ICollection<StudentResult> EnteredByStudentResults { get; set; } = new List<StudentResult>();
-        public ICollection<StudentResult> UpdatedStudentResults { get; set; } = new List<StudentResult>();
-    }
-}
-</file>
-
-<file path="UniNet/Program.cs">
-using Application.Extensions;
-using Contracts.Extensions;
-using DataAccessLayer.Configurations.Options;
-using DataAccessLayer.Dbcontext;
-using DataAccessLayer.Extensions;
-using Microsoft.EntityFrameworkCore;
-
-namespace UniNet
-{
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            var builder = WebApplication.CreateBuilder(args);
-
-            //JWT Options
-            builder.Services.Configure<JWTOption>(builder.Configuration.GetSection("Jwt"));
-            var JwtSection = builder.Configuration.GetSection("Jwt");
-            var JwtOptions = JwtSection.Get<JWTOption>();
-
-            // Add services to the container.
-            builder.Services.AddDbContext<AppDbcontext>(options =>
-options.UseSqlServer(
-builder.Configuration.GetConnectionString("DefaultConnection")));
-
-
-            builder.Services.AddControllers();
-
-            //Validators Services
-            builder.Services.Validators();
-
-
-            // Application Services
-            builder.Services.ServicesToDI();
-            
-            //Repositories To DI
-            builder.Services.AddRepoSitoriesToDIContainer();
-
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
-
-            builder.Services.AddHttpContextAccessor();
-            builder.Services.AddCors(options =>
+            var user = await _userService.FindByUserName(request.UserName);
+            if(user == null)
             {
-                options.AddPolicy("UniNetPolicy", policy =>
-                {
-                    policy
-                        .WithOrigins(
-                            "https://localhost:7082",
-                            "http://localhost:5126"
-                        )
-                        .AllowAnyOrigin()
-                        .AllowAnyHeader()
-                        .AllowAnyMethod();
-                });
-            });
-
-            var app = builder.Build();
-
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
+                return Unauthorized("Invalid credentials!");
             }
 
-    
+            if (!_userService.VerifyPassword(request.Password, user.PasswordHash))
+            {
+                return Unauthorized("Invalid credentials!");
+            }
+
+            if(!user.IsActive)
+            {
+                return StatusCode(403, new { Title = "Banned Account", Message = "Your Account Is Banned" });
+            }
+
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier,user.UserId.ToString()),
+                new Claim(ClaimTypes.Name,user.UserName),
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOption.Key));
+
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken
+                (
+                  issuer: _jwtOption.Issuer,
+                  audience: _jwtOption.Audience,
+                  claims: claims,
+                    expires: DateTime.UtcNow.AddMinutes(30),
+                    signingCredentials: creds
+                );
+            var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
+            var refreshToken = _refreshTokenService.GenerateRefreshToken();
+            await _refreshTokenService.AddRefreshToken(refreshToken, user.UserId);
+            return Ok(new TokenResponse
+            {
+                AccesseToken = accessToken,
+                RefreshToken = refreshToken
+            });
+        }
 
 
-            app.UseHttpsRedirection();
+        [HttpPost("refresh")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public async Task<IActionResult> Refresh([FromBody]RefreshToken_LogOut_Request request)
+        {
+            var userToken = await _refreshTokenService.GetTokenDetails(request.RefreshToken);
+            if(userToken == null)
+            {
+                return Unauthorized("Invalid refresh request");
+            }
 
-            app.UseAuthorization();
+            if(userToken.RevokedAt != null)
+            {
+                return Unauthorized("Refresh token is revoked");
+            }
 
+            if(userToken.ExpiresAt <= DateTime.UtcNow)
+            {
+                return Unauthorized("Refresh token is revoked");
+            }
 
-            app.MapControllers();
+            var claims = new[]
+       {
+                new Claim(ClaimTypes.NameIdentifier,userToken.UserId.ToString()),
+                new Claim(ClaimTypes.Name,userToken.UserName),
+            };
 
-            app.Run();
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOption.Key));
+
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken
+                (
+                  issuer: _jwtOption.Issuer,
+                  audience: _jwtOption.Audience,
+                  claims: claims,
+                    expires: DateTime.UtcNow.AddMinutes(30),
+                    signingCredentials: creds
+                );
+            var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
+            var newRefreshToken = _refreshTokenService.GenerateRefreshToken();
+            await _refreshTokenService.RefreshToken(newRefreshToken, userToken.UserId, userToken.RefreshTokenId);
+            return Ok(new TokenResponse
+            {
+                AccesseToken = accessToken,
+                RefreshToken = newRefreshToken
+            });
+        }
+
+        [HttpPost("logOut")]
+        public async Task<IActionResult>LogOut(RefreshToken_LogOut_Request request)
+        {
+            var userToken = await _refreshTokenService.GetTokenDetails(request.RefreshToken);
+            if(userToken == null)
+            {
+                // we dont reveal anything to the user
+                return Ok();
+            }
+
+            if(userToken.RevokedAt != null)
+            {
+                return Ok();
+            }
+            await _refreshTokenService.Logout(userToken.RefreshTokenId);
+            return Ok("Logged out successfully");
         }
     }
 }
@@ -6543,6 +8687,324 @@ namespace DataAccessLayer.Configurations.Identity_Configurations
             builder.HasData(SeedData.GetUsers());
         }
 
+    }
+}
+</file>
+
+<file path="Domain/Entities/Identity/User.cs">
+using Domain.Entities.Content;
+using Domain.Entities.Employees;
+using Domain.Entities.Images;
+using Domain.Entities.Students;
+using Domain.Entities.Study;
+using Domain.Entities.Token;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Domain.Entities.Identity
+{
+    public class User
+    {
+        public int UserId { get; set; }
+
+        public string FullName { get; set; } = null!;
+
+        public string UserName { get; set; } = null!;
+
+        public string PasswordHash { get; set; } = null!;
+
+        public string? Email { get; set; }
+
+        public string? PhoneNumber { get; set; }
+
+        public bool IsActive { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public int ?CreatedByUserId {  get; set; }
+        public User?CreatedByUser { get; set; }
+        public DateTime UpdatedAt {  get; set; }
+        public int ?UpdatedByUserId { get; set; }
+        public User? UpdatedByUser { get; set; }
+        public Student? Student { get; set; }
+
+        public Employee? Employee { get; set; }
+
+        public ICollection<User> CreatedUsers { get; set; } = new List<User>();
+        public ICollection<User> UpdatedUsers { get; set; } = new List<User>();
+
+        public ICollection<UserRole> UserRoles { get; set; }
+            = new List<UserRole>();
+        public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
+        public ICollection<Post> Posts { get; set; }
+    = new List<Post>();
+
+        public ICollection<Announcement> Announcements { get; set; }
+            = new List<Announcement>();
+        public ICollection<Image> UploadedImages { get; set; } = new List<Image>();
+        public ICollection<Image> UpdatedImages { get; set; } = new List<Image>();
+        public ICollection<StudentResult> EnteredByStudentResults { get; set; } = new List<StudentResult>();
+        public ICollection<StudentResult> UpdatedStudentResults { get; set; } = new List<StudentResult>();
+    }
+}
+</file>
+
+<file path="Domain/Interfaces/UserInterfaces/IUserService.cs">
+using Contracts.Requests.UserRequests;
+using Contracts.Responses;
+using Domain.Entities.Identity;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Domain.Interfaces.UserInterfaces
+{
+    public interface IUserService
+    {
+        public Task<bool> IsUserExists(string userName);
+        public Task<UserDTO?> FindById(int Id);
+        public Task<User?> FindByUserName(string userName);
+        public Task<AddUpdateServiceResponse<UserDTO>> AddUser(AddUserDTO newUser);
+        public bool VerifyPassword(string password, string passwordHash);
+    }
+}
+</file>
+
+<file path="UniNet/Controllers/Identity Controllers/UserController.cs">
+using Contracts.Messages;
+using Contracts.Requests.RequestParameters;
+using Contracts.Requests.UserRequests;
+using Contracts.Responses;
+using Domain.Entities.Identity;
+using Domain.Interfaces.UnitOfWork;
+using Domain.Interfaces.UserInterfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using UniNet.Extensions;
+
+namespace UniNet.Controllers.Identity_Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class UserController : ControllerBase
+    {
+        private readonly IUserService _userService;
+        public UserController(IUserService userService)
+        {
+            _userService = userService;
+        }
+
+        [HttpGet("Id", Name = "GetUserById")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<UserDTO>> GetUserById([FromQuery]RequestParameters @param)
+        {
+            var user = await _userService.FindById(param.Id);
+            if (user == null)
+                return NotFound(ErrorMessages.NotFound<User>(param.Id));
+
+            return Ok(user);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<AddUpdateServiceResponse<UserDTO>>>AddUser(AddUserDTO newUser)
+        {
+            var response = await _userService.AddUser(newUser);
+            return response.ToActionResult();
+        }
+    }
+}
+</file>
+
+<file path="UniNet/Program.cs">
+using Application.Extensions;
+using DataAccessLayer.Configurations.Options;
+using DataAccessLayer.Dbcontext;
+using DataAccessLayer.Extensions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.Text.Json;
+
+namespace UniNet
+{
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            var builder = WebApplication.CreateBuilder(args);
+
+            //JWT Options
+            builder.Services.Configure<JWTOption>(builder.Configuration.GetSection("Jwt"));
+            var JwtSection = builder.Configuration.GetSection("Jwt");
+            var JwtOptions = JwtSection.Get<JWTOption>();
+            //Auth
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        // TokenValidationParameters define how incoming JWTs will be validated.
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            // Ensures the token was issued by a trusted issuer.
+            ValidateIssuer = true,
+
+
+            // Ensures the token is intended for this API (audience check).
+            ValidateAudience = true,
+
+
+            // Ensures the token has not expired.
+            ValidateLifetime = true,
+
+
+            // Ensures the token signature is valid and was signed by the API.
+            ValidateIssuerSigningKey = true,
+
+
+            // The expected issuer value (must match the issuer used when creating the JWT).
+            ValidIssuer = JwtOptions!.Issuer,
+
+
+            // The expected audience value (must match the audience used when creating the JWT).
+            ValidAudience = JwtOptions.Audience,
+
+
+            // The secret key used to validate the JWT signature.
+            // This must be the same key used when generating the token.
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(JwtOptions.Key))
+        };
+        options.Events = new JwtBearerEvents
+        {
+            OnForbidden = context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                context.Response.ContentType = "application/json";
+
+                var result = JsonSerializer.Serialize(new
+                {
+                    status = 403,
+                    message = "Access denied: You do not have the required role."
+                });
+
+                return context.Response.WriteAsync(result);
+            },
+
+            OnChallenge = context =>
+            {
+                context.HandleResponse();
+
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.ContentType = "application/json";
+
+                var result = JsonSerializer.Serialize(new
+                {
+                    status = 401,
+                    message = "Unauthorized: Please login first."
+                });
+
+                return context.Response.WriteAsync(result);
+            }
+        };
+    });
+            // Add services to the container.
+            builder.Services.AddDbContext<AppDbcontext>(options =>
+options.UseSqlServer(
+builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
+            builder.Services.AddControllers();
+
+            //Validators Services
+            builder.Services.Validators();
+
+
+            // Application Services
+            builder.Services.ServicesToDI();
+
+            
+            //Repositories To DI
+            builder.Services.AddRepoSitoriesToDIContainer();
+
+            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(options =>
+            {
+                // 1. Define the security scheme for JWT Bearer
+                options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+                    Description = "Enter your JWT token in this format: Bearer {your_token}"
+                });
+
+                // 2. Apply this security requirement globally to all endpoints
+                options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+            });
+
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("UniNetPolicy", policy =>
+                {
+                    policy
+                        .WithOrigins(
+                            "https://localhost:7082",
+                            "http://localhost:5126"
+                        )
+                        .AllowAnyOrigin()
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                });
+            });
+
+            var app = builder.Build();
+
+            // Configure the HTTP request pipeline.
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
+
+    
+
+
+            app.UseHttpsRedirection();
+            app.UseCors("UniNetPolicy");
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.MapControllers();
+
+            app.Run();
+        }
     }
 }
 </file>
