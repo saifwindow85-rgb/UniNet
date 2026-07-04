@@ -20,8 +20,7 @@ namespace Application.Services.Login_Service
         }
         public async Task AddRefreshToken(string refreshToken, int UserId)
         {
-            using var sha = SHA256.Create();
-            var incommingHash = Convert.ToBase64String(sha.ComputeHash(Encoding.UTF8.GetBytes(refreshToken)));
+            var incommingHash = GetHash(refreshToken);
             var refreshTokenEntity = new RefreshToken
             {
                 TokenHash = incommingHash,
@@ -45,7 +44,9 @@ namespace Application.Services.Login_Service
 
         public string GetHash(string refreshToken)
         {
-            throw new NotImplementedException();
+            using var sha = SHA256.Create();
+            var incommingHash = Convert.ToBase64String(sha.ComputeHash(Encoding.UTF8.GetBytes(refreshToken)));
+            return incommingHash;
         }
 
         public async Task<UserToken?> GetTokenDetails(string tokenHash)
@@ -64,9 +65,7 @@ namespace Application.Services.Login_Service
 
         public async Task RefreshToken(string refreshedToken, int userId, int replacedTokenId)
         {
-            using var sha = SHA256.Create();
-            var incommingHash = Convert.ToBase64String(sha.ComputeHash(Encoding.UTF8.GetBytes(refreshedToken)));
-
+            var incommingHash = GetHash(refreshedToken);
             var refreshTokenEntity = new RefreshToken
             {
                 TokenHash = incommingHash,

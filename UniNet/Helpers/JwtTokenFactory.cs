@@ -28,7 +28,7 @@ namespace UniNet.Helpers
                   issuer: jwtOptions.Issuer,
                   audience: jwtOptions.Audience,
                   claims: claims,
-                    expires: jwtOptions.AccessTokenLifeTimeInMinutes,
+                    expires: DateTime.UtcNow.AddMinutes(jwtOptions.AccessTokenLifeTimeInMinutes),
                     signingCredentials: creds
                 );
             return token;
