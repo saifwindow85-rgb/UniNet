@@ -17,5 +17,11 @@ namespace Contracts.Responses
         public string? PhoneNumber { get; set; }
 
         public bool IsActive { get; set; }
+        public DateTime CreatedAt {  get; set; }
+        public int? CreatedByUserId { get; set; }
+
+        public DateTime UpdatedAt { get; set; }
+        public int? UpdatedByUserId { get; set; }
+
     }
 }

@@ -24,6 +24,7 @@ namespace Application.Extensions
         {
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
             return services;
         }
         public static IServiceCollection Validators(this IServiceCollection services)

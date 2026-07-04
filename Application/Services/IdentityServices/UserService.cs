@@ -25,7 +25,7 @@ namespace Application.Services.IdentityServices
             _validaor = validator;
         }
 
-        public async Task<AddUpdateServiceResponse<UserDTO>> AddUser(AddUserDTO newUser)
+        public async Task<AddUpdateServiceResponse<UserDTO>> AddUser(AddUserDTO newUser,int userId)
         {
             var validation = _validaor.Validate(newUser);
             if(!validation.IsValid)
@@ -48,7 +48,7 @@ namespace Application.Services.IdentityServices
                 Email = newUser.Email,
                 IsActive = newUser.IsActive,
                 CreatedAt = DateTime.UtcNow,
-                CreatedByUserId = newUser.CreatedByUserId,
+                CreatedByUserId = userId,
             };
             await _unitOfWork.UserRepository.Add(userEntity);
             await _unitOfWork.CompleteAsync();

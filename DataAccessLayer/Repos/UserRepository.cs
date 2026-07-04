@@ -22,6 +22,10 @@ namespace DataAccessLayer.Repos
             Email = u.Email,
             PhoneNumber = u.PhoneNumber,
             IsActive = u.IsActive,
+            CreatedAt = u.CreatedAt,
+            CreatedByUserId = u.CreatedByUserId,
+            UpdatedAt = u.UpdatedAt,
+            UpdatedByUserId = u.UpdatedByUserId,
         };
 
         public readonly AppDbcontext _context;

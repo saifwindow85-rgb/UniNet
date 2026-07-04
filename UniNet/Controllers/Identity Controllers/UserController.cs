@@ -17,9 +17,12 @@ namespace UniNet.Controllers.Identity_Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
-        public UserController(IUserService userService)
+        private readonly ICurrentUserService _currentUserService;
+
+        public UserController(IUserService userService, ICurrentUserService currentUserService)
         {
             _userService = userService;
+            _currentUserService = currentUserService;
         }
 
         [HttpGet("Id", Name = "GetUserById")]
@@ -41,7 +44,8 @@ namespace UniNet.Controllers.Identity_Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<AddUpdateServiceResponse<UserDTO>>>AddUser(AddUserDTO newUser)
         {
-            var response = await _userService.AddUser(newUser);
+            var userId = _currentUserService.UserId;
+            var response = await _userService.AddUser(newUser,userId);
             return response.ToActionResult();
         }
     }

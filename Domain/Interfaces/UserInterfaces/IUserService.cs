@@ -14,7 +14,7 @@ namespace Domain.Interfaces.UserInterfaces
         public Task<bool> IsUserExists(string userName);
         public Task<UserDTO?> FindById(int Id);
         public Task<User?> FindByUserName(string userName);
-        public Task<AddUpdateServiceResponse<UserDTO>> AddUser(AddUserDTO newUser);
+        public Task<AddUpdateServiceResponse<UserDTO>> AddUser(AddUserDTO newUser,int userId);
         public bool VerifyPassword(string password, string passwordHash);
     }
 }
