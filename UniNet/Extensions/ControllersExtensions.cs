@@ -1,6 +1,8 @@
 ﻿using Contracts.Enums;
 using Contracts.Responses;
+using Contracts.Results;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace UniNet.Extensions
 {
@@ -53,9 +55,9 @@ namespace UniNet.Extensions
         }
 
 
-        //public static ActionResult<PagedResult<T>> ToPagedActioneResult<T>(this PagedResult<T> pagedResult)
-        //{
-        //    return pagedResult.Data != null ? new ObjectResult(pagedResult) : new NotFoundObjectResult(new { Status = 404, Title = "No Result Found ?" });
-        //}
+        public static ActionResult<PagedResult<T>> ToPagedActioneResult<T>(this PagedResult<T> pagedResult)
+        {
+            return pagedResult.Data != null ? new ObjectResult(pagedResult) : new NotFoundObjectResult(new { Status = 404, Title = "No Result Found ?" });
+        }
     }
 }
