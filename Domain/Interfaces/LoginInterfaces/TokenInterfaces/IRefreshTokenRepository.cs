@@ -11,7 +11,7 @@ namespace Domain.Interfaces.LoginInterfaces.TokenInterfaces
     public interface IRefreshTokenRepository
     {
         public Task Add(RefreshToken refreshToken);
-        public Task<UserToken> GetTokenDetails(string refreshToken);
-        public Task<RefreshToken> GetRefreshTokenById(int tokenId);
+        public Task<UserToken?> GetTokenDetails(string refreshToken);
+        public Task<RefreshToken?> GetRefreshTokenById(int tokenId);
     }
 }

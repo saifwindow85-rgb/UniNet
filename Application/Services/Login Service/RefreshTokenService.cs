@@ -48,7 +48,7 @@ namespace Application.Services.Login_Service
             throw new NotImplementedException();
         }
 
-        public async Task<UserToken> GetTokenDetails(string tokenHash)
+        public async Task<UserToken?> GetTokenDetails(string tokenHash)
         {
             using var sha = SHA256.Create();
             var incommingHash = Convert.ToBase64String(sha.ComputeHash(Encoding.UTF8.GetBytes(tokenHash)));
@@ -60,9 +60,23 @@ namespace Application.Services.Login_Service
             throw new NotImplementedException();
         }
 
-        public Task RefreshToken(string refreshedToken, int userId, int replacedTokenId)
+        public async Task RefreshToken(string refreshedToken, int userId, int replacedTokenId)
         {
-            throw new NotImplementedException();
+            using var sha = SHA256.Create();
+            var incommingHash = Convert.ToBase64String(sha.ComputeHash(Encoding.UTF8.GetBytes(refreshedToken)));
+
+            var refreshTokenEntity = new RefreshToken
+            {
+                TokenHash = incommingHash,
+                UserId = userId,
+                ReplacedByTokenId = replacedTokenId,
+                ExpiresAt = DateTime.UtcNow.AddDays(7)
+            };
+
+            var oldRefreshToken = await _unitOfWorkRepository.RefreshTokenRepository.GetRefreshTokenById(replacedTokenId);
+            oldRefreshToken!.RevokedAt = DateTime.UtcNow;
+            await _unitOfWorkRepository.RefreshTokenRepository.Add(refreshTokenEntity);
+            await _unitOfWorkRepository.CompleteAsync();
         }
     }
 }

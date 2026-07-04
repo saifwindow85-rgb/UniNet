@@ -35,14 +35,16 @@ namespace DataAccessLayer.Repos
             await _context.RefreshTokens.AddAsync(refreshToken);
         }
 
-        public async Task<RefreshToken> GetRefreshTokenById(int tokenId)
+        public async Task<RefreshToken?> GetRefreshTokenById(int tokenId)
         {
             return await _context.RefreshTokens.FindAsync(tokenId);
         }
 
-        public async Task<UserToken> GetTokenDetails(string refreshToken)
+        public async Task<UserToken?> GetTokenDetails(string refreshToken)
         {
             return await _context.RefreshTokens.Select(ToDetaieldTokenDTO).Where(r => r.TokenHash == refreshToken).SingleOrDefaultAsync();
         }
+
+
     }
 }
