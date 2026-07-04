@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Contracts.Requests.LoginRequests
+namespace Contracts.Responses.Login
 {
     public class TokenResponse
     {
-        //public 
+        public string AccesseToken { get; set; } = null!;
+        public string RefreshToken { get; set; } = null!;
     }
 }

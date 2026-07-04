@@ -1,5 +1,6 @@
 ﻿using Contracts.Requests.UserRequests;
 using Contracts.Responses;
+using Domain.Entities.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,8 @@ namespace Domain.Interfaces.UserInterfaces
     {
         public Task<bool> IsUserExists(string userName);
         public Task<UserDTO?> FindById(int Id);
+        public Task<User?> FindByUserName(string userName);
         public Task<AddUpdateServiceResponse<UserDTO>> AddUser(AddUserDTO newUser);
+        public bool VerifyPassword(string password, string passwordHash);
     }
 }

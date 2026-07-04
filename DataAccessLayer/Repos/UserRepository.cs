@@ -44,5 +44,10 @@ namespace DataAccessLayer.Repos
         {
             await _context.Users.AddAsync(user);
         }
+
+        public async Task<User?> GetUserByUserName(string userName)
+        {
+            return await _context.Users.SingleOrDefaultAsync(u => u.UserName == userName);
+        }
     }
 }

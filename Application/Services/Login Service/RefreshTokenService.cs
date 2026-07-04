@@ -48,9 +48,11 @@ namespace Application.Services.Login_Service
             throw new NotImplementedException();
         }
 
-        public Task<UserToken> GetTokenDetails(string userName)
+        public async Task<UserToken> GetTokenDetails(string tokenHash)
         {
-            throw new NotImplementedException();
+            using var sha = SHA256.Create();
+            var incommingHash = Convert.ToBase64String(sha.ComputeHash(Encoding.UTF8.GetBytes(tokenHash)));
+            return  await _unitOfWorkRepository.RefreshTokenRepository.GetTokenDetails(incommingHash);
         }
 
         public Task Logout(int tokenId)

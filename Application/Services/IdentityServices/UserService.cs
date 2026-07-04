@@ -61,6 +61,11 @@ namespace Application.Services.IdentityServices
             return await _unitOfWork.UserRepository.GetUserById(Id);
         }
 
+        public async Task<User?> FindByUserName(string userName)
+        {
+            return await _unitOfWork.UserRepository.GetUserByUserName(userName);
+        }
+
         public async Task<bool> IsUserExists(string userName)
         {
             return await _unitOfWork.UserRepository.IsUserExsist(userName);

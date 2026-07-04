@@ -18,8 +18,8 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "JWT__Key": "a9F$k2@L9xP!z7QwR8vB3mN6tY1cD4eZ",
-        "JWT__Issuer": "BarshiedAPI",
-        "JWT__Audience": "BarshiedAPIUsers"
+        "JWT__Issuer": "UniNetAPI",
+        "JWT__Audience": "UniNetAPIUsers"
       }
     },
     "https": {
@@ -31,8 +31,8 @@
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
         "JWT__Key": "a9F$k2@L9xP!z7QwR8vB3mN6tY1cD4eZ",
-        "JWT__Issuer": "BarshiedAPI",
-        "JWT__Audience": "BarshiedAPIUsers"
+        "JWT__Issuer": "UniNetAPI",
+        "JWT__Audience": "UniNetAPIUsers"
       }
     },
     "IIS Express": {
