@@ -5,6 +5,7 @@ using Contracts.Responses;
 using Domain.Entities.Identity;
 using Domain.Interfaces.UnitOfWork;
 using Domain.Interfaces.UserInterfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using UniNet.Extensions;
@@ -22,6 +23,7 @@ namespace UniNet.Controllers.Identity_Controllers
         }
 
         [HttpGet("Id", Name = "GetUserById")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<UserDTO>> GetUserById([FromQuery]RequestParameters @param)
@@ -34,6 +36,7 @@ namespace UniNet.Controllers.Identity_Controllers
         }
 
         [HttpPost]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<AddUpdateServiceResponse<UserDTO>>>AddUser(AddUserDTO newUser)

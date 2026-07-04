@@ -61,8 +61,8 @@ namespace UniNet.Controllers.Identity_Controllers.Auth
 
             var token = new JwtSecurityToken
                 (
-                  issuer: "UniNetAPI",
-                  audience: "UniNetAPIUsers",
+                  issuer: _jwtOption.Issuer,
+                  audience: _jwtOption.Audience,
                   claims: claims,
                     expires: DateTime.UtcNow.AddMinutes(30),
                     signingCredentials: creds

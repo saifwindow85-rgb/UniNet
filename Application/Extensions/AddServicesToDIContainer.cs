@@ -13,6 +13,8 @@ using Application.Validators.LoginRequestValidator;
 using Contracts.Requests.LoginRequests;
 using Contracts.Requests.UserRequests;
 using Application.Validators;
+using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
+using Application.Services.Login_Service;
 
 namespace Application.Extensions
 {
@@ -21,6 +23,7 @@ namespace Application.Extensions
         public static IServiceCollection ServicesToDI(this IServiceCollection services)
         {
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IRefreshTokenService, RefreshTokenService>();
             return services;
         }
         public static IServiceCollection Validators(this IServiceCollection services)

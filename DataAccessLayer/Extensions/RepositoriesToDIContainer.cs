@@ -1,4 +1,5 @@
 ﻿using DataAccessLayer.Repos;
+using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
 using Domain.Interfaces.UnitOfWork;
 using Domain.Interfaces.UserInterfaces;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,6 +17,7 @@ namespace DataAccessLayer.Extensions
         {
             services.AddScoped<IUnitOfWorkRepository, UnitOfWorkRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             return services;
         }
     }
