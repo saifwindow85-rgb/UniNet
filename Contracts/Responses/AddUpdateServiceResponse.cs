@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Contracts.Responses
 {
-    public class AddUpdateServiceResponse <T>
+    public class AddUpdateServiceResponse<T>
     {
         public T? Data { get; private set; }
         public bool IsSuccess { get; private set; }
