@@ -1,6 +1,8 @@
 ﻿using Contracts.Requests.LoginRequests;
 using Contracts.Responses.Login;
 using DataAccessLayer.Configurations.Options;
+using Domain.Entities.Identity;
+using Domain.Entities.Token;
 using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
 using Domain.Interfaces.UserInterfaces;
 using Microsoft.AspNetCore.Http;
@@ -78,6 +80,50 @@ namespace UniNet.Controllers.Identity_Controllers.Auth
         }
 
 
-        public async Task<IActionResult> Refresh([FromBody]loginreq)
+        public async Task<IActionResult> Refresh([FromBody]RefreshToken_LogOut_Request request)
+        {
+            var userToken = await _refreshTokenService.GetTokenDetails(request.RefreshToken);
+            if(userToken == null)
+            {
+                return Unauthorized("Invalid refresh request");
+            }
+
+            if(userToken.RevokedAt != null)
+            {
+                return Unauthorized("Refresh token is revoked");
+            }
+
+            if(userToken.ExpiresAt <= DateTime.UtcNow)
+            {
+                return Unauthorized("Refresh token is revoked");
+            }
+
+            var claims = new[]
+       {
+                new Claim(ClaimTypes.NameIdentifier,userToken.UserId.ToString()),
+                new Claim(ClaimTypes.Name,userToken.UserName),
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOption.Key));
+
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken
+                (
+                  issuer: _jwtOption.Issuer,
+                  audience: _jwtOption.Audience,
+                  claims: claims,
+                    expires: DateTime.UtcNow.AddMinutes(30),
+                    signingCredentials: creds
+                );
+            var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
+            var newRefreshToken = _refreshTokenService.GenerateRefreshToken();
+            await _refreshTokenService.RefreshToken(newRefreshToken, userToken.UserId, userToken.RefreshTokenId);
+            return Ok(new TokenResponse
+            {
+                AccesseToken = accessToken,
+                RefreshToken = newRefreshToken
+            });
+        }
     }
 }
