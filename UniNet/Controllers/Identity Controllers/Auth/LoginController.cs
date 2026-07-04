@@ -80,6 +80,8 @@ namespace UniNet.Controllers.Identity_Controllers.Auth
         }
 
 
+        [HttpPost("refresh")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Refresh([FromBody]RefreshToken_LogOut_Request request)
         {
             var userToken = await _refreshTokenService.GetTokenDetails(request.RefreshToken);
@@ -124,6 +126,24 @@ namespace UniNet.Controllers.Identity_Controllers.Auth
                 AccesseToken = accessToken,
                 RefreshToken = newRefreshToken
             });
+        }
+
+        [HttpPost("logOut")]
+        public async Task<IActionResult>LogOut(RefreshToken_LogOut_Request request)
+        {
+            var userToken = await _refreshTokenService.GetTokenDetails(request.RefreshToken);
+            if(userToken == null)
+            {
+                // we dont reveal anything to the user
+                return Ok();
+            }
+
+            if(userToken.RevokedAt == null)
+            {
+                return Ok();
+            }
+            await _refreshTokenService.Logout(userToken.RefreshTokenId);
+            return Ok("Logged out successfully");
         }
     }
 }

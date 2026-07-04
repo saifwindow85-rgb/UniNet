@@ -55,9 +55,11 @@ namespace Application.Services.Login_Service
             return  await _unitOfWorkRepository.RefreshTokenRepository.GetTokenDetails(incommingHash);
         }
 
-        public Task Logout(int tokenId)
+        public async Task Logout(int tokenId)
         {
-            throw new NotImplementedException();
+            var refrshToken = await _unitOfWorkRepository.RefreshTokenRepository.GetRefreshTokenById(tokenId);
+            refrshToken!.RevokedAt = DateTime.UtcNow;
+            await _unitOfWorkRepository.CompleteAsync();
         }
 
         public async Task RefreshToken(string refreshedToken, int userId, int replacedTokenId)
