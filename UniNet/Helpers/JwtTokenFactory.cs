@@ -9,7 +9,7 @@ using System.Text;
 
 namespace UniNet.Helpers
 {
-    public class AuthenticationHelper
+    public class JwtTokenFactory
     {
         public static JwtSecurityToken TokenIssuer(TokenUserInfoDTO info,JWTOption jwtOptions)
         {
@@ -28,7 +28,7 @@ namespace UniNet.Helpers
                   issuer: jwtOptions.Issuer,
                   audience: jwtOptions.Audience,
                   claims: claims,
-                    expires: DateTime.UtcNow.AddMinutes(30),
+                    expires: jwtOptions.AccessTokenLifeTimeInMinutes,
                     signingCredentials: creds
                 );
             return token;

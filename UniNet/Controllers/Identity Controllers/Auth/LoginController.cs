@@ -54,7 +54,7 @@ namespace UniNet.Controllers.Identity_Controllers.Auth
             }
 
             var tokenInfo = user.ToInfoDTO();
-            var token = AuthenticationHelper.TokenIssuer(tokenInfo, _jwtOptions);
+            var token = JwtTokenFactory.TokenIssuer(tokenInfo, _jwtOptions);
 
             var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
             var refreshToken = _refreshTokenService.GenerateRefreshToken();
@@ -89,7 +89,7 @@ namespace UniNet.Controllers.Identity_Controllers.Auth
 
             var tokenInfo = userToken.ToInfoDTO();
 
-            var token = AuthenticationHelper.TokenIssuer(tokenInfo, _jwtOptions);
+            var token = JwtTokenFactory.TokenIssuer(tokenInfo, _jwtOptions);
 
             var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
             var newRefreshToken = _refreshTokenService.GenerateRefreshToken();
