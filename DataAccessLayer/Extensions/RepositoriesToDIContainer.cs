@@ -1,7 +1,7 @@
 ﻿using DataAccessLayer.Repos;
+using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
 using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
 using Domain.Interfaces.UnitOfWork;
-using Domain.Interfaces.UserInterfaces;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;

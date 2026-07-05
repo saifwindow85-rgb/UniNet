@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Contracts.Responses
+namespace Contracts.Responses.IdentityResponses.RoleResponses
 {
     public class RoleDTO
     {
+        public int RoleId { get; set; }
         public string RoleName { get; set; } = null!;
     }
 }

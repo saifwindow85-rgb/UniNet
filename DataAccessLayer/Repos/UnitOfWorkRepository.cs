@@ -1,8 +1,8 @@
 ﻿using DataAccessLayer.Dbcontext;
+using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
 using Domain.Interfaces.LoginInterfaces;
 using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
 using Domain.Interfaces.UnitOfWork;
-using Domain.Interfaces.UserInterfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;

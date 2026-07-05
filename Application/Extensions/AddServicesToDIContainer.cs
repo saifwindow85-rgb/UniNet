@@ -1,7 +1,6 @@
 ﻿using Application.Services.IdentityServices;
 using Domain.Interfaces.LoginInterfaces;
 using Domain.Interfaces.UnitOfWork;
-using Domain.Interfaces.UserInterfaces;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -18,6 +17,7 @@ using Application.Services.Login_Service;
 using Application.Validators.User_Validators;
 using Contracts.Requests.IdentityRequests.RoleRequests;
 using Application.Validators.IdentityValidators.RoleValidators;
+using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
 
 namespace Application.Extensions
 {

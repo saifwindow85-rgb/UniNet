@@ -1,7 +1,7 @@
 ﻿using Contracts.Responses.IdentityResponses;
 using DataAccessLayer.Dbcontext;
 using Domain.Entities.Identity;
-using Domain.Interfaces.UserInterfaces;
+using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;

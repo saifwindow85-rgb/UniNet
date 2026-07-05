@@ -1,5 +1,4 @@
 ﻿using Domain.Interfaces.UnitOfWork;
-using Domain.Interfaces.UserInterfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +12,7 @@ using Application.Validators;
 using Contracts.Enums;
 using Domain.Entities.Identity;
 using Contracts.Responses.IdentityResponses;
+using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
 
 namespace Application.Services.IdentityServices
 {
