@@ -47,5 +47,18 @@ namespace Contracts.Responses
             ErrorMessage = "Unauthorized",
             ErrorType = errorType
         };
+
+        public static AddUpdateServiceResponse<T> ResourceDoesntExsist<TEntity>() => new AddUpdateServiceResponse<T>
+        {
+            IsSuccess = false,
+            ErrorType = EnErrorTypes.ResourceNotFound,
+            Errors = new List<string>() { $"This {typeof(TEntity).Name} Doesnt Exist!" }
+        };
+        public static AddUpdateServiceResponse<T> ExistedResource<TEntity>(string?proprty) => new AddUpdateServiceResponse<T>
+        {
+            IsSuccess = false,
+            ErrorType = EnErrorTypes.ExistedResource,
+            Errors = new List<string>() { $" {typeof(TEntity).Name} With UserName : {proprty} Already Exist!" }
+        };
     }
 }

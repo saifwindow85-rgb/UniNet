@@ -15,6 +15,7 @@ using Contracts.Requests.UserRequests;
 using Application.Validators;
 using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
 using Application.Services.Login_Service;
+using Application.Validators.User_Validators;
 
 namespace Application.Extensions
 {
@@ -31,6 +32,7 @@ namespace Application.Extensions
         {
             services.AddScoped<IValidator<LoginRequest>, LoginRequestValidator>();
             services.AddScoped<IValidator<AddUserDTO>, AddUserValidator>();
+            services.AddScoped<IValidator<UpdateUserDTO>, UpdateUserValidator>();
             return services;
         }
     }

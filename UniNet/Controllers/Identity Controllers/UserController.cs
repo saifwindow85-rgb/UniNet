@@ -38,7 +38,7 @@ namespace UniNet.Controllers.Identity_Controllers
             return Ok(user);
         }
 
-        [HttpPost]
+        [HttpPost("add")]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -46,6 +46,18 @@ namespace UniNet.Controllers.Identity_Controllers
         {
             var userId = _currentUserService.UserId;
             var response = await _userService.AddUser(newUser,userId);
+            return response.ToActionResult();
+        }
+
+        [HttpPut("update")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<AddUpdateServiceResponse<UserDTO>>> UpdateUser([FromQuery] RequestParameters requestParameter,UpdateUserDTO updatedUser)
+        {
+            var userId = _currentUserService.UserId;
+            var response = await _userService.UpdateUser(requestParameter.Id, updatedUser, userId);
             return response.ToActionResult();
         }
     }

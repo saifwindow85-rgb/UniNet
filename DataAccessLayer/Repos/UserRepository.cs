@@ -26,6 +26,8 @@ namespace DataAccessLayer.Repos
             CreatedByUserId = u.CreatedByUserId,
             UpdatedAt = u.UpdatedAt,
             UpdatedByUserId = u.UpdatedByUserId,
+            CreatorUserName = u.CreatedByUser.UserName,
+            UpdaterUserName = u.UpdatedByUser.UserName,
         };
 
         public readonly AppDbcontext _context;
@@ -52,6 +54,11 @@ namespace DataAccessLayer.Repos
         public async Task<User?> GetUserByUserName(string userName)
         {
             return await _context.Users.SingleOrDefaultAsync(u => u.UserName == userName);
+        }
+
+        public async Task<User?> GetUserEntityById(int Id)
+        {
+            return await _context.Users.FindAsync(Id);
         }
     }
 }

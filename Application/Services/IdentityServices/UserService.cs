@@ -18,16 +18,18 @@ namespace Application.Services.IdentityServices
     public class UserService : IUserService
     {
         private readonly IUnitOfWorkRepository _unitOfWork;
-        private readonly IValidator<AddUserDTO> _validaor;
-        public UserService(IUnitOfWorkRepository unitOfWork,IValidator <AddUserDTO>validator)
+        private readonly IValidator<AddUserDTO> _addUserValidaor;
+        private readonly IValidator<UpdateUserDTO> _updateUserValidator;
+        public UserService(IUnitOfWorkRepository unitOfWork,IValidator <AddUserDTO>addUserValidator,IValidator<UpdateUserDTO> updateUserValidator)
         {
             _unitOfWork = unitOfWork;
-            _validaor = validator;
+            _addUserValidaor = addUserValidator;
+            _updateUserValidator = updateUserValidator;
         }
 
         public async Task<AddUpdateServiceResponse<UserDTO>> AddUser(AddUserDTO newUser,int userId)
         {
-            var validation = _validaor.Validate(newUser);
+            var validation = _addUserValidaor.Validate(newUser);
             if(!validation.IsValid)
             {
                 return AddUpdateServiceResponse<UserDTO>.Failure(validation.Errors.Select
@@ -53,7 +55,7 @@ namespace Application.Services.IdentityServices
             await _unitOfWork.UserRepository.Add(userEntity);
             await _unitOfWork.CompleteAsync();
             var userDTO = await _unitOfWork.UserRepository.GetUserById(userEntity.UserId);
-            return AddUpdateServiceResponse<UserDTO>.Success(userDTO);
+            return AddUpdateServiceResponse<UserDTO>.Success(userDTO!);
         }
 
         public async Task<UserDTO?> FindById(int Id)
@@ -71,9 +73,39 @@ namespace Application.Services.IdentityServices
             return await _unitOfWork.UserRepository.IsUserExsist(userName);
         }
 
+        public async Task<AddUpdateServiceResponse<UserDTO>> UpdateUser(int updatedUserId, UpdateUserDTO updatedUser, int userId)
+        {
+            var user = await _unitOfWork.UserRepository.GetUserEntityById(updatedUserId);
+            if(user == null)
+            {
+                return AddUpdateServiceResponse<UserDTO>.ResourceDoesntExsist<User>();
+            }
+            var validationResult = _updateUserValidator.Validate(updatedUser);
+            if (!validationResult.IsValid)
+            {
+                return AddUpdateServiceResponse<UserDTO>
+                    .Failure(validationResult.Errors.Select(e => $"{e.PropertyName} : {e.ErrorMessage}").ToList(), EnErrorTypes.InvalidData);
+            }
+            if(await IsUserExists(updatedUser.UserName) && user.UserName != updatedUser.UserName)
+            {
+                return AddUpdateServiceResponse<UserDTO>.ExistedResource<User>(updatedUser.UserName);
+            }
+            user.FullName = updatedUser.FullName;
+            user.UserName = updatedUser.UserName;
+            user.Email = updatedUser.Email;
+            user.PhoneNumber = updatedUser.PhoneNumber;
+            user.UpdatedAt = DateTime.UtcNow;
+            user.UpdatedByUserId = userId;
+            user.IsActive = updatedUser.IsActive;
+            var userDTO = await FindById(user.UserId);
+            await _unitOfWork.CompleteAsync();
+            return AddUpdateServiceResponse<UserDTO>.Success(userDTO!);
+        }
+
         public bool VerifyPassword(string password,string passwordHash)
         {
             return BCrypt.Net.BCrypt.Verify(password, passwordHash);
         }
+
     }
 }
