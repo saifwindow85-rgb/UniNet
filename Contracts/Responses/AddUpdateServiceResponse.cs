@@ -36,11 +36,11 @@ namespace Contracts.Responses
 
         };
 
-        public static AddUpdateServiceResponse<T> ExistedResource<TEntity>() => new AddUpdateServiceResponse<T>
+        public static AddUpdateServiceResponse<T> AlreadyExists<TEntity>() => new AddUpdateServiceResponse<T>
         {
             IsSuccess = false,
             ErrorType = EnErrorTypes.ExistedResource,
-            Errors = new List<string>() { $"This {typeof(TEntity).Name} Already Exist!" }
+            Errors = new List<string>() { $"This {typeof(TEntity).Name} Already Exists!" }
         };
         public static AddUpdateServiceResponse<T> InValidUserId(EnErrorTypes errorType) => new AddUpdateServiceResponse<T>
         {
@@ -48,17 +48,17 @@ namespace Contracts.Responses
             ErrorType = errorType
         };
 
-        public static AddUpdateServiceResponse<T> ResourceDoesntExsist<TEntity>() => new AddUpdateServiceResponse<T>
+        public static AddUpdateServiceResponse<T> ResourceDoesntExist<TEntity>() => new AddUpdateServiceResponse<T>
         {
             IsSuccess = false,
             ErrorType = EnErrorTypes.ResourceNotFound,
-            Errors = new List<string>() { $"This {typeof(TEntity).Name} Doesnt Exist!" }
+            Errors = new List<string>() { $"This {typeof(TEntity).Name} Doesnt Exists!" }
         };
         public static AddUpdateServiceResponse<T> ExistedResource<TEntity>(string?proprty) => new AddUpdateServiceResponse<T>
         {
             IsSuccess = false,
             ErrorType = EnErrorTypes.ExistedResource,
-            Errors = new List<string>() { $" {typeof(TEntity).Name} With UserName : {proprty} Already Exist!" }
+            Errors = new List<string>() { $" {typeof(TEntity).Name} With UserName : {proprty} Already Exists!" }
         };
     }
 }

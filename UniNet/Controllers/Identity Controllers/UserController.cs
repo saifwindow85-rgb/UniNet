@@ -38,7 +38,7 @@ namespace UniNet.Controllers.Identity_Controllers
             return Ok(user);
         }
 
-        [HttpPost("add")]
+        [HttpPost("{Id}")]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -49,7 +49,7 @@ namespace UniNet.Controllers.Identity_Controllers
             return response.ToActionResult();
         }
 
-        [HttpPut("update")]
+        [HttpPut("{Id}")]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

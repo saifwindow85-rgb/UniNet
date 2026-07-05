@@ -38,7 +38,7 @@ namespace Application.Services.IdentityServices
 
             if(await _unitOfWork.UserRepository.IsUserExsist(newUser.UserName))
             {
-                return AddUpdateServiceResponse<UserDTO>.ExistedResource<User>();
+                return AddUpdateServiceResponse<UserDTO>.AlreadyExists<User>();
             }
 
             var userEntity = new User
@@ -78,7 +78,7 @@ namespace Application.Services.IdentityServices
             var user = await _unitOfWork.UserRepository.GetUserEntityById(updatedUserId);
             if(user == null)
             {
-                return AddUpdateServiceResponse<UserDTO>.ResourceDoesntExsist<User>();
+                return AddUpdateServiceResponse<UserDTO>.ResourceDoesntExist<User>();
             }
             var validationResult = _updateUserValidator.Validate(updatedUser);
             if (!validationResult.IsValid)
