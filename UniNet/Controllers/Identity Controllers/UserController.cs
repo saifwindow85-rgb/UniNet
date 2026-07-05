@@ -2,6 +2,7 @@
 using Contracts.Requests.RequestParameters;
 using Contracts.Requests.UserRequests;
 using Contracts.Responses;
+using Contracts.Responses.IdentityResponses;
 using Domain.Entities.Identity;
 using Domain.Interfaces.UnitOfWork;
 using Domain.Interfaces.UserInterfaces;

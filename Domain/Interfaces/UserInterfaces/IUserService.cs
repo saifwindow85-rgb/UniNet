@@ -1,5 +1,6 @@
 ﻿using Contracts.Requests.UserRequests;
 using Contracts.Responses;
+using Contracts.Responses.IdentityResponses;
 using Domain.Entities.Identity;
 using System;
 using System.Collections.Generic;

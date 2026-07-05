@@ -12,6 +12,7 @@ using FluentValidation;
 using Application.Validators;
 using Contracts.Enums;
 using Domain.Entities.Identity;
+using Contracts.Responses.IdentityResponses;
 
 namespace Application.Services.IdentityServices
 {

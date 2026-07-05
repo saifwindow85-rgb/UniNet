@@ -1,4 +1,4 @@
-﻿using Contracts.Responses;
+﻿using Contracts.Responses.IdentityResponses;
 using DataAccessLayer.Dbcontext;
 using Domain.Entities.Identity;
 using Domain.Interfaces.UserInterfaces;

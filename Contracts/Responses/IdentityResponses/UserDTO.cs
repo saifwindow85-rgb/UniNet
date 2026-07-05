@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Contracts.Responses
+namespace Contracts.Responses.IdentityResponses
 {
     public class UserDTO
     {
