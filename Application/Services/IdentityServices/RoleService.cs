@@ -95,7 +95,7 @@ namespace Application.Services.IdentityServices
         public async Task<AddUpdateServiceResponse<RoleDTO>> UpdateRole(AddRoleDTO updatedRole, int updatedRoleId, int currentUserId)
         {
             var validationResult = await _roleValidator.ValidateAsync(updatedRole);//Notice  that i used the same DTO for add and update in Role
-            var role = FindRoleEntityById(updatedRoleId);                          //becuse there is no need for another one currently they both share same proprties
+            var role = await FindRoleEntityById(updatedRoleId);                          //becuse there is no need for another one currently they both share same proprties
           
             if(role == null)
             {
@@ -112,13 +112,10 @@ namespace Application.Services.IdentityServices
                 return AddUpdateServiceResponse<RoleDTO>.AlreadyExists<Role>();
             }
 
-            var roleEntity = new Role
-            {
-                Name = updatedRole.RoleName,
-            };
+            role.Name = updatedRole.RoleName;
 
             await _unitOfWorkRepository.CompleteAsync();
-            var roleDTO = roleEntity.ToDTO();
+            var roleDTO = role.ToDTO();
             return AddUpdateServiceResponse<RoleDTO>.Success(roleDTO);
         }
     }
