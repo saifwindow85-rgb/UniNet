@@ -21,5 +21,6 @@ namespace Domain.Interfaces.IdentityInterfaces.RoleInterfaces
         public Task<AddUpdateServiceResponse<RoleDTO>>UpdateRole(AddRoleDTO updatedRole,int updatedRoleId,int currentUserId);
         public Task<bool> IsRoleExists(string roleName);
         public Task<bool> IsRoleExists(int roleId);
+        public Task<bool> Delete(int roleId);
     }
 }

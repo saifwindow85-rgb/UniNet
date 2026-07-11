@@ -30,7 +30,7 @@ namespace Application.Services.IdentityServices
 
         public async Task<AddUpdateServiceResponse<UserDTO>> AddUser(AddUserDTO newUser,int userId)
         {
-            var validation = _addUserValidaor.Validate(newUser);
+            var validation = await _addUserValidaor.ValidateAsync(newUser);
             if(!validation.IsValid)
             {
                 return AddUpdateServiceResponse<UserDTO>.Failure(validation.Errors.Select
@@ -76,17 +76,20 @@ namespace Application.Services.IdentityServices
 
         public async Task<AddUpdateServiceResponse<UserDTO>> UpdateUser(int updatedUserId, UpdateUserDTO updatedUser, int userId)
         {
-            var user = await _unitOfWork.UserRepository.GetUserEntityById(updatedUserId);
-            if(user == null)
-            {
-                return AddUpdateServiceResponse<UserDTO>.ResourceDoesntExist<User>();
-            }
-            var validationResult = _updateUserValidator.Validate(updatedUser);
+
+            var validationResult = await _updateUserValidator.ValidateAsync(updatedUser);
             if (!validationResult.IsValid)
             {
                 return AddUpdateServiceResponse<UserDTO>
                     .Failure(validationResult.Errors.Select(e => $"{e.PropertyName} : {e.ErrorMessage}").ToList(), EnErrorTypes.InvalidData);
             }
+
+            var user = await _unitOfWork.UserRepository.GetUserEntityById(updatedUserId);
+            if(user == null)
+            {
+                return AddUpdateServiceResponse<UserDTO>.ResourceDoesntExist<User>();
+            }
+         
             if(await IsUserExists(updatedUser.UserName) && user.UserName != updatedUser.UserName)
             {
                 return AddUpdateServiceResponse<UserDTO>.ExistedResource<User>(updatedUser.UserName);

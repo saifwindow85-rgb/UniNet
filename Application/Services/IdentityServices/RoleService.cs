@@ -51,6 +51,11 @@ namespace Application.Services.IdentityServices
             return AddUpdateServiceResponse<RoleDTO>.Success(roleDTO);
         }
 
+        public async Task<bool> Delete(int roleId)
+        {
+            return await _unitOfWorkRepository.RoleRepository.Delete(roleId);
+        }
+
         public async Task<RoleDTO?> FindRoleDTOById(int roleId)
         {
             return await _unitOfWorkRepository.RoleRepository.GetRoleDTOById(roleId);

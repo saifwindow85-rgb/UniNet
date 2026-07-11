@@ -1,4 +1,4 @@
-﻿using Contracts.Messages;
+﻿using Contracts.Common.Messages;
 using Contracts.Requests.RequestParameters;
 using Contracts.Requests.UserRequests;
 using Contracts.Responses;
@@ -30,7 +30,7 @@ namespace UniNet.Controllers.Identity_Controllers
         [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<UserDTO>> GetUserById([FromQuery]RequestParameters @param)
+        public async Task<ActionResult<UserDTO>> GetUserById([FromQuery]IdParameter @param)
         {
             var user = await _userService.FindById(param.Id);
             if (user == null)
@@ -55,7 +55,7 @@ namespace UniNet.Controllers.Identity_Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<AddUpdateServiceResponse<UserDTO>>> UpdateUser([FromQuery] RequestParameters requestParameter,UpdateUserDTO updatedUser)
+        public async Task<ActionResult<AddUpdateServiceResponse<UserDTO>>> UpdateUser([FromQuery] IdParameter requestParameter,UpdateUserDTO updatedUser)
         {
             var userId = _currentUserService.UserId;
             var response = await _userService.UpdateUser(requestParameter.Id, updatedUser, userId);
