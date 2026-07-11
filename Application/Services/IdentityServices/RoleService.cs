@@ -53,7 +53,13 @@ namespace Application.Services.IdentityServices
 
         public async Task<bool> Delete(int roleId)
         {
-            return await _unitOfWorkRepository.RoleRepository.Delete(roleId);
+            var result = await _unitOfWorkRepository.RoleRepository.Delete(roleId);
+            if(result)
+            {
+                await _unitOfWorkRepository.CompleteAsync();
+                return result;
+            }
+            return result;
         }
 
         public async Task<RoleDTO?> FindRoleDTOById(int roleId)
