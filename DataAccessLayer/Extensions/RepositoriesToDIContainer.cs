@@ -1,4 +1,6 @@
 ﻿using DataAccessLayer.Repos;
+using DataAccessLayer.Repos.IdentityRepositories;
+using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
 using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
 using Domain.Interfaces.UnitOfWork;
@@ -18,6 +20,7 @@ namespace DataAccessLayer.Extensions
             services.AddScoped<IUnitOfWorkRepository, UnitOfWorkRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+            services.AddScoped<IRoleRepository, RoleRepository>();
             return services;
         }
     }

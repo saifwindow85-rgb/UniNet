@@ -67,7 +67,7 @@ namespace UniNet.Controllers.Identity_Controllers
         }
 
         [Authorize]
-        [HttpDelete("{id}", Name = "DeleteRoleById")]
+        [HttpDelete("id", Name = "DeleteRoleById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

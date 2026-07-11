@@ -20,7 +20,7 @@
         "JWT__Key": "a9F$k2@L9xP!z7QwR8vB3mN6tY1cD4eZ",
         "JWT__Issuer": "UniNetAPI",
         "JWT__Audience": "UniNetAPIUsers",
-        "AccessTokenLifetimeInMinutes": "30"
+        "AccessTokenLifetimeInMinutes": "60"
       }
     },
     "https": {
@@ -34,7 +34,7 @@
         "JWT__Key": "a9F$k2@L9xP!z7QwR8vB3mN6tY1cD4eZ",
         "JWT__Issuer": "UniNetAPI",
         "JWT__Audience": "UniNetAPIUsers",
-        "AccessTokenLifetimeInMinutes": "30"
+        "AccessTokenLifetimeInMinutes": "60"
       }
     },
     "IIS Express": {
