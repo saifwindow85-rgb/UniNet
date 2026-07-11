@@ -1,10 +1,13 @@
-﻿using Contracts.Requests.IdentityRequests.RoleRequests;
+﻿using Application.Mappers.IdentityMappers;
+using Contracts.Enums;
+using Contracts.Requests.IdentityRequests.RoleRequests;
 using Contracts.Responses;
 using Contracts.Responses.IdentityResponses.RoleResponses;
 using Contracts.Results;
 using Domain.Entities.Identity;
 using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
 using Domain.Interfaces.UnitOfWork;
+using FluentValidation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,14 +19,36 @@ namespace Application.Services.IdentityServices
     public class RoleService : IRoleService
     {
         private readonly IUnitOfWorkRepository _unitOfWorkRepository;
-        public RoleService(IUnitOfWorkRepository unitOfWorkRepository)
+        private readonly IValidator<AddRoleDTO> _roleValidator;
+
+        public RoleService(IUnitOfWorkRepository unitOfWorkRepository,IValidator<AddRoleDTO>roleValidator)
         {
             _unitOfWorkRepository = unitOfWorkRepository;
+            _roleValidator = roleValidator;
         }
 
-        public Task<AddUpdateServiceResponse<RoleDTO>> AddRole(AddRoleDTO newRole, int currentUserId)
+        public async Task<AddUpdateServiceResponse<RoleDTO>> AddRole(AddRoleDTO newRole, int currentUserId)
         {
-            throw new NotImplementedException();
+            var validationResult = await _roleValidator.ValidateAsync(newRole);
+            if(!validationResult.IsValid)
+            {
+                return AddUpdateServiceResponse<RoleDTO>.Failure(validationResult.Errors
+                    .Select(x => $"{x.PropertyName} : {x.ErrorMessage}").ToList(), EnErrorTypes.InvalidData);
+            }
+            if(await IsRoleExists(newRole.RoleName))
+            {
+                return AddUpdateServiceResponse<RoleDTO>.AlreadyExists<Role>();
+            }
+
+            var roleEntity = new Role
+            {
+                Name = newRole.RoleName
+            };
+
+            await _unitOfWorkRepository.RoleRepository.AddRole(roleEntity);
+            await _unitOfWorkRepository.CompleteAsync();
+            var roleDTO = roleEntity.ToDTO();
+            return AddUpdateServiceResponse<RoleDTO>.Success(roleDTO);
         }
 
         public async Task<RoleDTO?> FindRoleDTOById(int roleId)
@@ -51,9 +76,39 @@ namespace Application.Services.IdentityServices
             return await _unitOfWorkRepository.RoleRepository.IsRoleExists(roleName);
         }
 
-        public Task<AddUpdateServiceResponse<RoleDTO>> UpdateRole(AddRoleDTO updatedRole, int updatedRoleId, int currentUserId)
+        public async Task<bool> IsRoleExists(int roleId)
         {
-            throw new NotImplementedException();
+            return await _unitOfWorkRepository.RoleRepository.IsRoleExists(roleId);
+        }
+
+        public async Task<AddUpdateServiceResponse<RoleDTO>> UpdateRole(AddRoleDTO updatedRole, int updatedRoleId, int currentUserId)
+        {
+            var validationResult = await _roleValidator.ValidateAsync(updatedRole);//Notice  that i used the same DTO for add and update in Role
+            var role = FindRoleEntityById(updatedRoleId);                          //becuse there is no need for another one currently they both share same proprties
+          
+            if(role == null)
+            {
+                return AddUpdateServiceResponse<RoleDTO>.ResourceDoesntExist<Role>();
+            }
+            if(!validationResult.IsValid)
+            {
+                return AddUpdateServiceResponse<RoleDTO>.Failure(validationResult.Errors
+                  .Select(x => $"{x.PropertyName} : {x.ErrorMessage}").ToList(), EnErrorTypes.InvalidData);
+            }
+
+           if(await IsRoleExists(updatedRole.RoleName))
+            {
+                return AddUpdateServiceResponse<RoleDTO>.AlreadyExists<Role>();
+            }
+
+            var roleEntity = new Role
+            {
+                Name = updatedRole.RoleName,
+            };
+
+            await _unitOfWorkRepository.CompleteAsync();
+            var roleDTO = roleEntity.ToDTO();
+            return AddUpdateServiceResponse<RoleDTO>.Success(roleDTO);
         }
     }
 }

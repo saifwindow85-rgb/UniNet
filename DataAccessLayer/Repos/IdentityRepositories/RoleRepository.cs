@@ -65,5 +65,10 @@ namespace DataAccessLayer.Repos.IdentityRepositories
         {
             return await _context.Roles.AnyAsync(r=>r.Name == roleName);
         }
+
+        public async Task<bool> IsRoleExists(int roleId)
+        {
+            return await _context.Roles.AnyAsync(r=>r.RoleId == roleId);
+        }
     }
 }

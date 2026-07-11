@@ -19,5 +19,6 @@ namespace Domain.Interfaces.IdentityInterfaces.RoleInterfaces
         public Task<RoleDTO?>GetRoleDTOByRoleName(string  roleName);
         public Task<bool> Delete(int roleId);
         public Task<bool> IsRoleExists(string roleName);
+        public Task<bool> IsRoleExists(int roleId);
     }
 }
