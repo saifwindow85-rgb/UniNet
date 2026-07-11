@@ -46,6 +46,11 @@ namespace DataAccessLayer.Repos.IdentityRepositories
             return await _context.Roles.AsNoTracking().Select(ToDTO).SingleOrDefaultAsync(r => r.RoleId == roleId);
         }
 
+        public async Task<RoleDTO?> GetRoleDTOByRoleName(string roleName)
+        {
+            return await _context.Roles.AsNoTracking().Select(ToDTO).SingleOrDefaultAsync(r => r.RoleName == roleName);
+        }
+
         public async Task<Role?> GetRoleEntityById(int roleId)
         {
             return await _context.Roles.FindAsync(roleId);
@@ -54,6 +59,11 @@ namespace DataAccessLayer.Repos.IdentityRepositories
         public async Task<PagedResult<RoleDTO>> GetRoles(int pageNumber, int pageSize)
         {
             return await _context.Roles.AsNoTracking().Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
+        }
+
+        public async Task<bool> IsRoleExists(string roleName)
+        {
+            return await _context.Roles.AnyAsync(r=>r.Name == roleName);
         }
     }
 }

@@ -1,4 +1,6 @@
 ﻿using DataAccessLayer.Dbcontext;
+using DataAccessLayer.Repos.IdentityRepositories;
+using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
 using Domain.Interfaces.LoginInterfaces;
 using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
@@ -20,12 +22,15 @@ namespace DataAccessLayer.Repos
 
         public IRefreshTokenRepository RefreshTokenRepository { get; private set; }
 
+        public IRoleRepository RoleRepository { get; private set; }
+
         public UnitOfWorkRepository(AppDbcontext context)
         {
             _context = context;
             UserRepository = new UserRepository(context);
             LoginRepository = new LoginRepository(context);
             RefreshTokenRepository = new RefreshTokenRepository(context);
+            RoleRepository = new RoleRepository(context);
         }
         public async Task<int> CompleteAsync()
         {
