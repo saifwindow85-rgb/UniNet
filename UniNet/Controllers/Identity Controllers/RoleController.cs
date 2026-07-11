@@ -38,7 +38,7 @@ namespace UniNet.Controllers.Identity_Controllers
         }
 
         [Authorize]
-        [HttpGet("{id}",Name ="GetRoleById")]
+        [HttpGet(Name ="GetRoleById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -52,7 +52,7 @@ namespace UniNet.Controllers.Identity_Controllers
         }
 
         [Authorize]
-        [HttpGet("name",Name ="GetRoleByName")]
+        [HttpGet(Name ="GetRoleByName")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -88,7 +88,7 @@ namespace UniNet.Controllers.Identity_Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<AddUpdateServiceResponse<RoleDTO>>>AddRole(AddRoleDTO newRole)
         {
-            var response = await _roleService.AddRole(newRole, _currentUserService.UserId);
+            var response = await _roleService.AddRole(newRole);
             return response.ToActionResult();
         }
 
@@ -99,7 +99,7 @@ namespace UniNet.Controllers.Identity_Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<AddUpdateServiceResponse<RoleDTO>>>UpdateRole(AddRoleDTO updatedRole, [FromQuery]IdParameter @parameter)
         {
-            var response = await _roleService.UpdateRole(updatedRole, parameter.Id, _currentUserService.UserId);
+            var response = await _roleService.UpdateRole(updatedRole, parameter.Id);
             return response.ToActionResult();
         }
     }

@@ -17,8 +17,8 @@ namespace Domain.Interfaces.IdentityInterfaces.RoleInterfaces
         public Task<RoleDTO?> FindRoleDTOById(int roleId);
         public Task<Role?> FindRoleEntityById(int roleId);
         public Task<RoleDTO?> FindRoleDTOByRoleName(string roleName);
-        public Task<AddUpdateServiceResponse<RoleDTO>> AddRole(AddRoleDTO newRole, int currentUserId);
-        public Task<AddUpdateServiceResponse<RoleDTO>>UpdateRole(AddRoleDTO updatedRole,int updatedRoleId,int currentUserId);
+        public Task<AddUpdateServiceResponse<RoleDTO>> AddRole(AddRoleDTO newRole);
+        public Task<AddUpdateServiceResponse<RoleDTO>>UpdateRole(AddRoleDTO updatedRole,int updatedRoleId);
         public Task<bool> IsRoleExists(string roleName);
         public Task<bool> IsRoleExists(int roleId);
         public Task<bool> Delete(int roleId);
