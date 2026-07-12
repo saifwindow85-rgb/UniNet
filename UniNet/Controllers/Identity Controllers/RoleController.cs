@@ -28,7 +28,7 @@ namespace UniNet.Controllers.Identity_Controllers
         }
 
         [Authorize]
-        [HttpGet]
+        [HttpGet(Name ="GetRoles")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<PagedResult<RoleDTO>>> GetRoles([FromQuery]PagedResultParameters parameters)
@@ -38,7 +38,7 @@ namespace UniNet.Controllers.Identity_Controllers
         }
 
         [Authorize]
-        [HttpGet(Name ="GetRoleById")]
+        [HttpGet("by-id",Name ="GetRoleById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -52,7 +52,7 @@ namespace UniNet.Controllers.Identity_Controllers
         }
 
         [Authorize]
-        [HttpGet(Name ="GetRoleByName")]
+        [HttpGet("by-name",Name ="GetRoleByName")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -67,7 +67,7 @@ namespace UniNet.Controllers.Identity_Controllers
         }
 
         [Authorize]
-        [HttpDelete("id", Name = "DeleteRoleById")]
+        [HttpDelete( Name = "DeleteRoleById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
