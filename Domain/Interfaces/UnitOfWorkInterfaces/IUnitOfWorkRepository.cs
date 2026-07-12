@@ -1,5 +1,6 @@
 ﻿using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
+using Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces;
 using Domain.Interfaces.LoginInterfaces;
 using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
 using System;
@@ -16,6 +17,7 @@ namespace Domain.Interfaces.UnitOfWork
         public ILoginRepository LoginRepository { get; }
         public IRefreshTokenRepository RefreshTokenRepository { get; }
         public IRoleRepository RoleRepository { get; }
+        public IUserRoleRepository UserRoleRepository { get; }
 
         public Task<int> CompleteAsync();
     }

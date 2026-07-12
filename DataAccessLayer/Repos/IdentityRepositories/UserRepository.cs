@@ -60,5 +60,10 @@ namespace DataAccessLayer.Repos
         {
             return await _context.Users.FindAsync(Id);
         }
+
+        public async Task<bool> IsUserExists(int userId)
+        {
+            return await _context.Users.AnyAsync(u=>u.UserId == userId);
+        }
     }
 }

@@ -2,6 +2,7 @@
 using DataAccessLayer.Repos.IdentityRepositories;
 using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
+using Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces;
 using Domain.Interfaces.LoginInterfaces;
 using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
 using Domain.Interfaces.UnitOfWork;
@@ -23,6 +24,7 @@ namespace DataAccessLayer.Repos
         public IRefreshTokenRepository RefreshTokenRepository { get; private set; }
 
         public IRoleRepository RoleRepository { get; private set; }
+        public IUserRoleRepository UserRoleRepository { get; private set; }
 
         public UnitOfWorkRepository(AppDbcontext context)
         {
@@ -31,6 +33,7 @@ namespace DataAccessLayer.Repos
             LoginRepository = new LoginRepository(context);
             RefreshTokenRepository = new RefreshTokenRepository(context);
             RoleRepository = new RoleRepository(context);
+            UserRoleRepository = new UserRoleRepository(context);
         }
         public async Task<int> CompleteAsync()
         {

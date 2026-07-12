@@ -19,6 +19,7 @@ using Contracts.Requests.IdentityRequests.RoleRequests;
 using Application.Validators.IdentityValidators.RoleValidators;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
 using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
+using Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces;
 
 namespace Application.Extensions
 {
@@ -30,6 +31,7 @@ namespace Application.Extensions
             services.AddScoped<IRefreshTokenService, RefreshTokenService>();
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IRoleService, RoleService>();
+            services.AddScoped<IUserRoleService, UserRoleService>();
             return services;
         }
         public static IServiceCollection Validators(this IServiceCollection services)
