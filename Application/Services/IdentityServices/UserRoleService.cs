@@ -24,7 +24,7 @@ namespace Application.Services.IdentityServices
         public async Task<AddUpdateServiceResponse<UserRoleDTO>> AddUserRole(AddUserRoleDTO addUserRoleDTO)
         {
             if(! await _unitOfWorkRepository.UserRepository.IsUserExists(addUserRoleDTO.UserId)
-                &&! await _unitOfWorkRepository.RoleRepository.IsRoleExists(addUserRoleDTO.RoleId))
+                ||! await _unitOfWorkRepository.RoleRepository.IsRoleExists(addUserRoleDTO.RoleId))
             {
                 return AddUpdateServiceResponse<UserRoleDTO>.InvalidRelatedData();
             }
@@ -41,6 +41,8 @@ namespace Application.Services.IdentityServices
             };
             await _unitOfWorkRepository.UserRoleRepository.Add(userRoleEntity);
             await _unitOfWorkRepository.CompleteAsync();
+
+            // this is for projection because userRoleDTO have UserName & RoleName it takes it from navigation proprties from UserRole Entity
             var userRoleDTO = await FindUserRoleDTOById(userRoleEntity.UserId, userRoleEntity.RoleId);
             return AddUpdateServiceResponse<UserRoleDTO>.Success(userRoleDTO!);
         }
@@ -81,18 +83,6 @@ namespace Application.Services.IdentityServices
             return await _unitOfWorkRepository.UserRoleRepository.IsUserRoleExists(userId, roleId);
         }
 
-        public async Task<AddUpdateServiceResponse<UserRoleDTO>> UpdateUserRole(UpdateUserRoleDTO updateUserRoleDTO, int userId, int roleId)
-        {
-            var userRole = await FindUserRoleEntityById(userId, roleId);
-            if(userRole == null)
-            {
-                return AddUpdateServiceResponse<UserRoleDTO>.ResourceDoesntExist<UserRole>();
-            }
-
-            userRole.RoleId = updateUserRoleDTO.RoleId;
-            await _unitOfWorkRepository.CompleteAsync();
-            var userRoleDTO = await FindUserRoleDTOById(userRole.UserId, userRole.RoleId);
-            return AddUpdateServiceResponse<UserRoleDTO>.Success(userRoleDTO!);
-        }
+      
     }
 }

@@ -19,7 +19,6 @@ namespace Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces
         public Task<PagedResult<UserRoleDTO>> GetUserRolesPerRoleId(int roleId, int pageNumber, int pageSize);
         public Task<bool> Delete(int userId, int roleId);
         public Task<AddUpdateServiceResponse<UserRoleDTO>>AddUserRole(AddUserRoleDTO addUserRoleDTO);
-        public Task<AddUpdateServiceResponse<UserRoleDTO>>UpdateUserRole(UpdateUserRoleDTO upateUserRoleDTO,int userId,int roleId);
         public Task<bool> IsUserRoleExists(int userId, int roleId);
     }
 }
