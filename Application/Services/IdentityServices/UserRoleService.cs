@@ -68,7 +68,7 @@ namespace Application.Services.IdentityServices
             return await _unitOfWorkRepository.UserRoleRepository.GetUserRoleEntityById(userId, roleId);
         }
 
-        public async Task<PagedResult<UserRoleDTO>> GetAllUserRoleDTOs(int pageNumber, int pageSize)
+        public async Task<PagedResult<UserRoleDTO>> GetAllUserRole(int pageNumber, int pageSize)
         {
             return await _unitOfWorkRepository.UserRoleRepository.GetUserRoles(pageNumber, pageSize);
         }

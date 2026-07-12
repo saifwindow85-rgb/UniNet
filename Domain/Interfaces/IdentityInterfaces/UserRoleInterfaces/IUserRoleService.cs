@@ -15,7 +15,7 @@ namespace Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces
     {
         public Task<UserRoleDTO?> FindUserRoleDTOById(int userId, int roleId);
         public Task<UserRole?>FindUserRoleEntityById(int userId, int roleId);
-        public Task<PagedResult<UserRoleDTO>> GetAllUserRoleDTOs(int pageNumber,int pageSize);
+        public Task<PagedResult<UserRoleDTO>> GetAllUserRole(int pageNumber,int pageSize);
         public Task<PagedResult<UserRoleDTO>> GetUserRolesPerRoleId(int roleId, int pageNumber, int pageSize);
         public Task<bool> Delete(int userId, int roleId);
         public Task<AddUpdateServiceResponse<UserRoleDTO>>AddUserRole(AddUserRoleDTO addUserRoleDTO);
