@@ -20,6 +20,10 @@ using Application.Validators.IdentityValidators.RoleValidators;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
 using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces;
+using Domain.Interfaces.AcademicStructureInterfaces.UniversityInterfaces;
+using Application.Services.AcademicServices;
+using Contracts.Requests.AcademicRequests.UniversityRequests;
+using Application.Validators.AcademicValidators.UniversityValidators;
 
 namespace Application.Extensions
 {
@@ -32,6 +36,7 @@ namespace Application.Extensions
             services.AddScoped<ICurrentUserService, CurrentUserService>();
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IUserRoleService, UserRoleService>();
+            services.AddScoped<IUniversityService, UniversityService>();
             return services;
         }
         public static IServiceCollection Validators(this IServiceCollection services)
@@ -40,6 +45,8 @@ namespace Application.Extensions
             services.AddScoped<IValidator<AddUserDTO>, AddUserValidator>();
             services.AddScoped<IValidator<UpdateUserDTO>, UpdateUserValidator>();
             services.AddScoped<IValidator<AddRoleDTO>, AddRoleValidator>();
+            services.AddScoped<IValidator<AddUniversityDTO>, AddUniversityValidator>();
+            services.AddScoped<IValidator<UpdateUniversityDTO>, UpdateUniversityValidator>();
             return services;
         }
     }

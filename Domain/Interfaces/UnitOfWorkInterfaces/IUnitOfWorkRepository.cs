@@ -1,4 +1,5 @@
-﻿using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
+﻿using Domain.Interfaces.AcademicStructureInterfaces.UniversityInterfaces;
+using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces;
 using Domain.Interfaces.LoginInterfaces;
@@ -18,7 +19,7 @@ namespace Domain.Interfaces.UnitOfWork
         public IRefreshTokenRepository RefreshTokenRepository { get; }
         public IRoleRepository RoleRepository { get; }
         public IUserRoleRepository UserRoleRepository { get; }
-
+        public IUniversityRepository UniversityRepository { get; }
         public Task<int> CompleteAsync();
     }
 }

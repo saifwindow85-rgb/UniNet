@@ -26,6 +26,8 @@ namespace Application.Validators.AcademicValidators.UniversityValidators
             RuleFor(u => u.Description)
                 .MaximumLength(5000).WithMessage("Description cannot exceed 5000 characters.")
                 .When(u => !string.IsNullOrEmpty(u.Description));
+
+            
         }
 
     }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Contracts.Requests.AcademicRequests.UniversityRequests
 {
-    public class UpdateUniversityDTO : UpdateServiceAbstract
+    public class UpdateUniversityDTO 
     {
         public string UniversityName { get; set; } = null!;
         public string? Description { get; set; }

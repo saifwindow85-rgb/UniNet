@@ -1,5 +1,7 @@
 ﻿using DataAccessLayer.Dbcontext;
+using DataAccessLayer.Repos.AcademicRepositories;
 using DataAccessLayer.Repos.IdentityRepositories;
+using Domain.Interfaces.AcademicStructureInterfaces.UniversityInterfaces;
 using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces;
@@ -26,6 +28,8 @@ namespace DataAccessLayer.Repos
         public IRoleRepository RoleRepository { get; private set; }
         public IUserRoleRepository UserRoleRepository { get; private set; }
 
+        public IUniversityRepository UniversityRepository {  get; private set; }
+
         public UnitOfWorkRepository(AppDbcontext context)
         {
             _context = context;
@@ -34,6 +38,7 @@ namespace DataAccessLayer.Repos
             RefreshTokenRepository = new RefreshTokenRepository(context);
             RoleRepository = new RoleRepository(context);
             UserRoleRepository = new UserRoleRepository(context);
+            UniversityRepository = new UniversityRepository(context);
         }
         public async Task<int> CompleteAsync()
         {
