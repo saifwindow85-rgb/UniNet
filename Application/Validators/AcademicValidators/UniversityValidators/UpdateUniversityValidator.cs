@@ -10,7 +10,7 @@ namespace Application.Validators.AcademicValidators.UniversityValidators
 {
     public class UpdateUniversityValidator : AbstractValidator<UpdateUniversityDTO>
     {
-        UpdateUniversityValidator()
+      public  UpdateUniversityValidator()
         {
             RuleFor(u => u.UniversityName)
             .Cascade(CascadeMode.StopOnFirstFailure) // Stops validation after the first failure
