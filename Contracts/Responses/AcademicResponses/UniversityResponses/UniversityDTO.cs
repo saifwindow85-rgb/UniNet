@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Contracts.Common;
 
-namespace Contracts.Responses.AcademicResponses
+namespace Contracts.Responses.AcademicResponses.UniversityResponses
 {
     public  class UniversityDTO : AddUpdateServiceAbstract
     {

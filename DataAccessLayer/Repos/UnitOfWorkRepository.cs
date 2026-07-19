@@ -1,6 +1,8 @@
-﻿using DataAccessLayer.Dbcontext;
+﻿using Contracts.Results;
+using DataAccessLayer.Dbcontext;
 using DataAccessLayer.Repos.AcademicRepositories;
 using DataAccessLayer.Repos.IdentityRepositories;
+using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
 using Domain.Interfaces.AcademicStructureInterfaces.UniversityInterfaces;
 using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
@@ -8,6 +10,7 @@ using Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces;
 using Domain.Interfaces.LoginInterfaces;
 using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
 using Domain.Interfaces.UnitOfWork;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,6 +33,8 @@ namespace DataAccessLayer.Repos
 
         public IUniversityRepository UniversityRepository {  get; private set; }
 
+        public ICollegeRepository CollegeRepository {  get; private set; }
+
         public UnitOfWorkRepository(AppDbcontext context)
         {
             _context = context;
@@ -39,6 +44,7 @@ namespace DataAccessLayer.Repos
             RoleRepository = new RoleRepository(context);
             UserRoleRepository = new UserRoleRepository(context);
             UniversityRepository = new UniversityRepository(context);
+            CollegeRepository = new CollegeRepository(context);
         }
         public async Task<int> CompleteAsync()
         {
@@ -48,6 +54,9 @@ namespace DataAccessLayer.Repos
         public void Dispose()
         {
             _context.Dispose();
+        }
+
+
         }
     }
 }

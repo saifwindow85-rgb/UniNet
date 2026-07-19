@@ -1,6 +1,6 @@
 ﻿using Contracts.Requests.AcademicRequests.UniversityRequests;
 using Contracts.Responses;
-using Contracts.Responses.AcademicResponses;
+using Contracts.Responses.AcademicResponses.UniversityResponses;
 using Contracts.Results;
 using Domain.Entities.Academic_Structure;
 using System;

@@ -1,4 +1,4 @@
-﻿using Contracts.Responses.AcademicResponses;
+﻿using Contracts.Responses.AcademicResponses.UniversityResponses;
 using Contracts.Results;
 using DataAccessLayer.Dbcontext;
 using DataAccessLayer.Extensions;
