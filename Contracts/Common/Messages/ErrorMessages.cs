@@ -16,5 +16,13 @@ namespace Contracts.Common.Messages
         {
             return $"No {typeof(TEntity).Name} Found With Name = {name}";
         }
+        public static string NotFound(string EntityName,int Id)
+        {
+            return $"No {EntityName} Found With Id = {Id}";
+        }
+        public static string NotFound(string EntityName, string name)
+        {
+            return $"No {EntityName} Found With Id = {name}";
+        }
     }
 }

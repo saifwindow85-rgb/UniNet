@@ -20,8 +20,8 @@ namespace Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces
         public Task<bool> IsCollegeExists(int universityId,string collegeName);
         public Task<CollegeDTO?> GetCollegeDTOById(int collegeId);
         public Task<College?> GetCollegeEntityById(int collegeId);
-        public Task<CollegeDTO?> GetCollegeDTOByName(string collegeName);
-        public Task<College?>GetCollegeEntityByName(string collegeName);
+        public Task<CollegeDTO?> GetCollegeDTOByName(int universityId,string collegeName);
+        public Task<College?>GetCollegeEntityByName(int universityId,string collegeName);
 
     }
 }

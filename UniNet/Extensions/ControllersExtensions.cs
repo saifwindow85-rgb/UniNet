@@ -1,4 +1,5 @@
-﻿using Contracts.Enums;
+﻿using Contracts.Common.Messages;
+using Contracts.Enums;
 using Contracts.Responses;
 using Contracts.Results;
 using Microsoft.AspNetCore.Mvc;
@@ -21,7 +22,7 @@ namespace UniNet.Extensions
                 {
                     Status = 404,
                     Title = "Not Found",
-                    Detail = response.Errors.FirstOrDefault() ?? "The requested resource was not found."
+                    Detail = response.Errors!.FirstOrDefault() ?? "The requested resource was not found."
                 }),
 
                 EnErrorTypes.InvalidData => new BadRequestObjectResult(new
@@ -58,6 +59,15 @@ namespace UniNet.Extensions
         public static ActionResult<PagedResult<T>> ToPagedActioneResult<T>(this PagedResult<T> pagedResult)
         {
             return pagedResult.Data != null ? new ObjectResult(pagedResult) : new NotFoundObjectResult(new { Status = 404, Title = "No Result Found ?" });
+        }
+
+        public static ActionResult<T>GetResourceEndpoints<T>(this T? resource,int Id,string EntityName)
+        {
+            return resource != null ? new OkObjectResult(resource) : new NotFoundObjectResult(ErrorMessages.NotFound(EntityName, Id));
+        }
+        public static ActionResult<T> GetResourceEndpoints<T>(this T? resource, string name, string EntityName)
+        {
+            return resource != null ? new OkObjectResult(resource) : new NotFoundObjectResult(ErrorMessages.NotFound(EntityName, name));
         }
     }
 }

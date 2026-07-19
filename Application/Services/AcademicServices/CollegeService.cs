@@ -64,49 +64,73 @@ namespace Application.Services.AcademicServices
             return result;
         }
 
-        public Task<CollegeDTO?> GetCollegeDTOById(int collegeId)
+        public async Task<CollegeDTO?> GetCollegeDTOById(int collegeId)
         {
-            throw new NotImplementedException();
+            return await _unitOfWorkRepository.CollegeRepository.GetCollegeDTOById(collegeId);
         }
 
-        public Task<CollegeDTO?> GetCollegeDTOByName(string collegeName)
+        public async Task<CollegeDTO?> GetCollegeDTOByName(int universityId, string collegeName)
         {
-            throw new NotImplementedException();
+            return await _unitOfWorkRepository.CollegeRepository.GetCollegeDTOByName(universityId,collegeName);
         }
 
-        public Task<College?> GetCollegeEntityById(int collegeId)
+        public async Task<College?> GetCollegeEntityById(int collegeId)
         {
-            throw new NotImplementedException();
+            return await _unitOfWorkRepository.CollegeRepository.GetCollegeEntityById(collegeId);
         }
 
-        public Task<College?> GetCollegeEntityByName(string collegeName)
+        public async Task<College?> GetCollegeEntityByName(int universityId, string collegeName)
         {
-            throw new NotImplementedException();
+            return await _unitOfWorkRepository.CollegeRepository.GetCollegeEntityByName(universityId,collegeName);
         }
 
-        public Task<PagedResult<CollegeDTO>> GetColleges(int pageNumber, int pageSize)
+        public async Task<PagedResult<CollegeDTO>> GetColleges(int pageNumber, int pageSize)
         {
-            throw new NotImplementedException();
+            return await _unitOfWorkRepository.CollegeRepository.GetAllColleges(pageNumber, pageSize);
         }
 
-        public Task<PagedResult<CollegeDTO>> GetCollegesPerUniversity(int universityId, int pageNumber, int pageSize)
+        public async Task<PagedResult<CollegeDTO>> GetCollegesPerUniversity(int universityId, int pageNumber, int pageSize)
         {
-            throw new NotImplementedException();
+            return await _unitOfWorkRepository.CollegeRepository.GetAllCollegesPerUniversity(universityId, pageNumber, pageSize);
         }
 
-        public Task<bool> IsCollegeExists(int universityId, int collegeId)
+        public async Task<bool> IsCollegeExists(int universityId, int collegeId)
         {
-            throw new NotImplementedException();
+            return await _unitOfWorkRepository.CollegeRepository.IsCollegeExists(universityId, collegeId);
         }
 
-        public Task<bool> IsCollegeExists(int universityId, string collegeName)
+        public async Task<bool> IsCollegeExists(int universityId, string collegeName)
         {
-            throw new NotImplementedException();
+            return await _unitOfWorkRepository.CollegeRepository.IsCollegeExists(universityId, collegeName);
         }
 
-        public Task<AddUpdateServiceResponse<CollegeDTO>> UpdateCollege(int collegeId, UpdateCollegeDTO updatedCollege, int currentUserId)
+        public async Task<AddUpdateServiceResponse<CollegeDTO>> UpdateCollege(int collegeId, UpdateCollegeDTO updatedCollege, int currentUserId)
         {
-            throw new NotImplementedException();
+            var validationResult = await _updateCollegeValidator.ValidateAsync(updatedCollege);
+            if(!validationResult.IsValid)
+            {
+                return AddUpdateServiceResponse<CollegeDTO>.Failure(validationResult.Errors.
+                                   Select(x => $"{x.PropertyName} : {x.ErrorMessage}").ToList(), EnErrorTypes.InvalidData);
+            }
+
+            var college = await GetCollegeEntityById(collegeId);
+            if(college == null)
+            {
+                return AddUpdateServiceResponse<CollegeDTO>.ResourceDoesntExist<College>();
+            }
+
+            if(await IsCollegeExists(college.UniversityId,updatedCollege.CollegeName) && college.Name != updatedCollege.CollegeName)
+            {
+                return AddUpdateServiceResponse<CollegeDTO>.AlreadyExists<College>();
+            }
+
+            college.Name = updatedCollege.CollegeName;
+            college.Description = updatedCollege.Description;
+            college.UpdatedAt = DateTime.UtcNow;
+            college.UpdatedByUserId = currentUserId;
+            await _unitOfWorkRepository.CompleteAsync();
+            var collegeDTO = await GetCollegeDTOById(college.CollegeId);
+            return AddUpdateServiceResponse<CollegeDTO>.Success(collegeDTO!);
         }
     }
 }

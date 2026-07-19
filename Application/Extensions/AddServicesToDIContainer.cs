@@ -24,6 +24,9 @@ using Domain.Interfaces.AcademicStructureInterfaces.UniversityInterfaces;
 using Application.Services.AcademicServices;
 using Contracts.Requests.AcademicRequests.UniversityRequests;
 using Application.Validators.AcademicValidators.UniversityValidators;
+using Contracts.Requests.AcademicRequests.CollegeRequests;
+using Application.Validators.AcademicValidators.CollegeValidators;
+using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
 
 namespace Application.Extensions
 {
@@ -37,6 +40,7 @@ namespace Application.Extensions
             services.AddScoped<IRoleService, RoleService>();
             services.AddScoped<IUserRoleService, UserRoleService>();
             services.AddScoped<IUniversityService, UniversityService>();
+            services.AddScoped<ICollegeService, CollegeService>();
             return services;
         }
         public static IServiceCollection Validators(this IServiceCollection services)
@@ -47,6 +51,8 @@ namespace Application.Extensions
             services.AddScoped<IValidator<AddRoleDTO>, AddRoleValidator>();
             services.AddScoped<IValidator<AddUniversityDTO>, AddUniversityValidator>();
             services.AddScoped<IValidator<UpdateUniversityDTO>, UpdateUniversityValidator>();
+            services.AddScoped<IValidator<AddCollegeDTO>, AddCollegeValidator>();
+            services.AddScoped<IValidator<UpdateCollegeDTO>, UpdateCollegeValidator>();
             return services;
         }
     }
