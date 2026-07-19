@@ -22,7 +22,6 @@ namespace Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces
         public Task<College?> GetCollegeEntityById(int collegeId);
         public Task<CollegeDTO?> GetCollegeDTOByName(string collegeName);
         public Task<College?>GetCollegeEntityByName(string collegeName);
-        public Task<DeleteValidationResult> HasFaculties(int collegeId);
 
     }
 }

@@ -1,4 +1,5 @@
-﻿using Contracts.Results;
+﻿using Contracts.Exceptions;
+using Contracts.Results;
 using DataAccessLayer.Dbcontext;
 using DataAccessLayer.Repos.AcademicRepositories;
 using DataAccessLayer.Repos.IdentityRepositories;
@@ -10,6 +11,7 @@ using Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces;
 using Domain.Interfaces.LoginInterfaces;
 using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
 using Domain.Interfaces.UnitOfWork;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -48,7 +50,19 @@ namespace DataAccessLayer.Repos
         }
         public async Task<int> CompleteAsync()
         {
-            return await _context.SaveChangesAsync();
+            try
+            {
+                return await _context.SaveChangesAsync();
+            }
+            catch(DbUpdateException ex)
+            {
+                if(ex.InnerException is SqlException sqlException)
+                {
+                    if (sqlException.Number == 547)
+                        throw new DeleteRestrictedException("Cannot delete this resource because it has related resources.");
+                }
+            }
+            throw new Exception();
         }
 
         public void Dispose()
@@ -59,4 +73,3 @@ namespace DataAccessLayer.Repos
 
         }
     }
-}

@@ -91,11 +91,6 @@ namespace DataAccessLayer.Repos.AcademicRepositories
             return await _context.Colleges.SingleOrDefaultAsync(c => c.Name == collegeName);
         }
 
-        public async Task<DeleteValidationResult> HasFaculties(int collegeId)
-        {
-            if(await _context.Departments.AnyAsync(d=>d.CollegeId == collegeId))
-                return 
-
-        }
+       
     }
 }

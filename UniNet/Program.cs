@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json;
+using UniNet.MiddleWares;
 
 namespace UniNet
 {
@@ -172,6 +173,7 @@ builder.Configuration.GetConnectionString("DefaultConnection")));
 
             app.UseHttpsRedirection();
             app.UseCors("UniNetPolicy");
+            app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
             app.UseAuthentication();
             app.UseAuthorization();
 
