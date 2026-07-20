@@ -36,6 +36,11 @@ namespace Application.Services.AcademicServices
                     Select(x => $"{x.PropertyName} : {x.ErrorMessage}").ToList(), EnErrorTypes.InvalidData);
             }
 
+            if(!await _unitOfWorkRepository.UniversityRepository.IsUniversityExists(newCollege.UniversityId))
+            {
+                return AddUpdateServiceResponse<CollegeDTO>.InvalidRelatedData();
+            }
+
             if(await IsCollegeExists(newCollege.UniversityId,newCollege.CollegeName))
             {
                 return AddUpdateServiceResponse<CollegeDTO>.AlreadyExists<College>();

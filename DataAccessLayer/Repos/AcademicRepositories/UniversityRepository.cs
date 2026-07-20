@@ -35,7 +35,7 @@ namespace DataAccessLayer.Repos.AcademicRepositories
         {
             _context = context;
         }
-        public async void Add(University university)
+        public  void Add(University university)
         {
             _context.Universities.Add(university);
         }

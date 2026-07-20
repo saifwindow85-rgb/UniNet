@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Application.Services.IdentityServices
 {
-    internal class UserRoleService : IUserRoleService
+    public class UserRoleService : IUserRoleService
     {
         private readonly IUnitOfWorkRepository _unitOfWorkRepository;
         public UserRoleService(IUnitOfWorkRepository unitOfWorkRepository)
