@@ -1,5 +1,6 @@
 ﻿using Contracts.Results;
 using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
+using Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces;
 using Domain.Interfaces.AcademicStructureInterfaces.UniversityInterfaces;
 using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
@@ -23,6 +24,7 @@ namespace Domain.Interfaces.UnitOfWork
         public IUserRoleRepository UserRoleRepository { get; }
         public IUniversityRepository UniversityRepository { get; }
         public ICollegeRepository CollegeRepository { get; }
+        public IDepartmentRepository DepartmentRepository { get; }
         public Task<int> CompleteAsync();
     }
 }

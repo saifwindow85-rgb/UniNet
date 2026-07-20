@@ -1,6 +1,7 @@
 ﻿using Contracts.Requests.AcademicRequests.DepartmentRequests;
 using Contracts.Responses;
 using Contracts.Responses.AcademicResponses.DepartmentResponses;
+using Contracts.Results;
 using Domain.Entities.Academic_Structure;
 using System;
 using System.Collections.Generic;
@@ -12,8 +13,8 @@ namespace Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces
 {
     public  interface IDepartmentService
     {
-        public Task<DepartmentDTO> GetAllDepartments(int pageNumber, int pageSize);
-        public Task<DepartmentDTO>GetDepartmentsPerCollege(int collegeId,int pageNumber,int pageSize);
+        public Task<PagedResult<DepartmentDTO>> GetAllDepartments(int pageNumber, int pageSize);
+        public Task<PagedResult<DepartmentDTO>>GetDepartmentsPerCollege(int collegeId,int pageNumber,int pageSize);
         public Task<DepartmentDTO?> GetDTOById(int departmentId);
         public Task<Department?>GetEntityById(int departmentId);
         public Task<DepartmentDTO?> GetDTOByName(int collegeId, string name);

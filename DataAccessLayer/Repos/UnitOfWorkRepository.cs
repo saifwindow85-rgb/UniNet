@@ -4,6 +4,7 @@ using DataAccessLayer.Dbcontext;
 using DataAccessLayer.Repos.AcademicRepositories;
 using DataAccessLayer.Repos.IdentityRepositories;
 using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
+using Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces;
 using Domain.Interfaces.AcademicStructureInterfaces.UniversityInterfaces;
 using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
@@ -37,6 +38,8 @@ namespace DataAccessLayer.Repos
 
         public ICollegeRepository CollegeRepository {  get; private set; }
 
+        public IDepartmentRepository DepartmentRepository {  get; private set; }
+
         public UnitOfWorkRepository(AppDbcontext context)
         {
             _context = context;
@@ -47,6 +50,7 @@ namespace DataAccessLayer.Repos
             UserRoleRepository = new UserRoleRepository(context);
             UniversityRepository = new UniversityRepository(context);
             CollegeRepository = new CollegeRepository(context);
+            DepartmentRepository = new DepartmentRepository(context);
         }
         public async Task<int> CompleteAsync()
         {
