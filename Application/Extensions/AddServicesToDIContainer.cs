@@ -27,6 +27,8 @@ using Application.Validators.AcademicValidators.UniversityValidators;
 using Contracts.Requests.AcademicRequests.CollegeRequests;
 using Application.Validators.AcademicValidators.CollegeValidators;
 using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
+using Contracts.Requests.AcademicRequests.DepartmentRequests;
+using Application.Validators.AcademicValidators.DepartmentValidators;
 
 namespace Application.Extensions
 {
@@ -53,6 +55,8 @@ namespace Application.Extensions
             services.AddScoped<IValidator<UpdateUniversityDTO>, UpdateUniversityValidator>();
             services.AddScoped<IValidator<AddCollegeDTO>, AddCollegeValidator>();
             services.AddScoped<IValidator<UpdateCollegeDTO>, UpdateCollegeValidator>();
+            services.AddScoped<IValidator<AddDepartmentDTO>, AddDepartmentValidator>();
+            services.AddScoped<IValidator<UpdateDepartmentDTO>, UpdateDepartmentValidator>();
             return services;
         }
     }

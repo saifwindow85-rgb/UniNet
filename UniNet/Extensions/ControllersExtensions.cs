@@ -47,7 +47,7 @@ namespace UniNet.Extensions
 
                 EnErrorTypes.ExistedResource => new BadRequestObjectResult(new
                 {
-                    StatusCode = 400,
+                    StatusCode = 409,
                     Errors = response.Errors
                 }),
 
