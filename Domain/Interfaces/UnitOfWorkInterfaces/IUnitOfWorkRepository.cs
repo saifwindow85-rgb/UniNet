@@ -1,4 +1,5 @@
 ﻿using Contracts.Results;
+using Domain.Interfaces.AcademicStructureInterfaces.BatchInterfaces;
 using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
 using Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces;
 using Domain.Interfaces.AcademicStructureInterfaces.UniversityInterfaces;
@@ -25,6 +26,7 @@ namespace Domain.Interfaces.UnitOfWork
         public IUniversityRepository UniversityRepository { get; }
         public ICollegeRepository CollegeRepository { get; }
         public IDepartmentRepository DepartmentRepository { get; }
+        public IBatchRepository BatchRepository { get; }
         public Task<int> CompleteAsync();
     }
 }
