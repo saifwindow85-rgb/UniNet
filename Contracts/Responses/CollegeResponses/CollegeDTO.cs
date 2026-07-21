@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Contracts.Responses.CollegeResponses
 {
-    public class CollegeDTO : AddUpdateServiceAbstract
+    public class CollegeDTO : DTOsBaseEntity
     {
         public int CollegeId { get; set; }
         public string CollegeName { get; set; } = null!;

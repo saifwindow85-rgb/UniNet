@@ -7,7 +7,7 @@ using Contracts.Common;
 
 namespace Contracts.Responses.AcademicResponses.UniversityResponses
 {
-    public  class UniversityDTO : AddUpdateServiceAbstract
+    public  class UniversityDTO : DTOsBaseEntity
     {
         public int UniversityId { get; set; }
         public string UniversityName { get; set; } = null!;

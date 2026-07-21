@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Contracts.Common
 {
-    public abstract class AddUpdateServiceAbstract
+    public abstract class DTOsBaseEntity
     {
         public DateTime CreatedAt { get; set; }
         public int CreatedByUserId { get; set; }
