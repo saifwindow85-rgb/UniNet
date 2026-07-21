@@ -108,7 +108,7 @@ namespace Application.Services.AcademicServices
 
         public async Task<AddUpdateServiceResponse<DepartmentDTO>> UpdateDepartment(int departmentId, UpdateDepartmentDTO updatedDepartment, int currentUserId)
         {
-            var validationResult = await _addValidator.ValidateAsync(updatedDepartment);
+            var validationResult = await _updateValidator.ValidateAsync(updatedDepartment);
 
             if(!validationResult.IsValid)
             {
