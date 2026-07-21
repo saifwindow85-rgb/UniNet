@@ -29,6 +29,7 @@ using Application.Validators.AcademicValidators.CollegeValidators;
 using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
 using Contracts.Requests.AcademicRequests.DepartmentRequests;
 using Application.Validators.AcademicValidators.DepartmentValidators;
+using Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces;
 
 namespace Application.Extensions
 {
@@ -43,6 +44,7 @@ namespace Application.Extensions
             services.AddScoped<IUserRoleService, UserRoleService>();
             services.AddScoped<IUniversityService, UniversityService>();
             services.AddScoped<ICollegeService, CollegeService>();
+            services.AddScoped<IDepartmentService, DepartmentService>();
             return services;
         }
         public static IServiceCollection Validators(this IServiceCollection services)

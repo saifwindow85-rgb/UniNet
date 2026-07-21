@@ -71,9 +71,9 @@ namespace DataAccessLayer.Repos.AcademicRepositories
             return await _context.Colleges.FindAsync(collegeId);
         }
 
-        public async Task<bool> IsCollegeExists(int universityId,int collegeId)
+        public async Task<bool> IsCollegeExists(int collegeId)
         {
-            return await _context.Colleges.AnyAsync(c => c.CollegeId == collegeId && c.UniversityId == universityId);
+            return await _context.Colleges.AnyAsync(c => c.CollegeId == collegeId);
         }
 
         public async Task<bool> IsCollegeExists(int universityId,string collegeName)

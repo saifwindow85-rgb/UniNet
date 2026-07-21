@@ -58,7 +58,7 @@ namespace UniNet.Extensions
 
         public static ActionResult<PagedResult<T>> ToPagedActioneResult<T>(this PagedResult<T> pagedResult)
         {
-            return pagedResult.Data != null ? new ObjectResult(pagedResult) : new NotFoundObjectResult(new { Status = 404, Title = "No Result Found ?" });
+            return pagedResult.Data != null ? new OkObjectResult(pagedResult) : new NotFoundObjectResult(new { Status = 404, Title = "No Result Found ?" });
         }
 
         public static ActionResult<T>GetResourceEndpoints<T>(this T? resource,int Id,string EntityName)

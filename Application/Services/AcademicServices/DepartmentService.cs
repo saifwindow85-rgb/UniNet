@@ -35,12 +35,17 @@ namespace Application.Services.AcademicServices
                 return AddUpdateServiceResponse<DepartmentDTO>.Failure
                     (validationResult.Errors.Select(x => $"{x.PropertyName} : {x.ErrorMessage}").ToList(),EnErrorTypes.InvalidData);
             }
+            if(! await _unitOfWork.CollegeRepository.IsCollegeExists(newDepartment.CollegeId))
+            {
+                return AddUpdateServiceResponse<DepartmentDTO>.InvalidRelatedData();
+            }
             if(await ExistsByName(newDepartment.CollegeId,newDepartment.DepartmentName))
             {
                 return AddUpdateServiceResponse<DepartmentDTO>.AlreadyExists<Department>();
             }
             var departmentEntity = new Department
             {
+               CollegeId = newDepartment.CollegeId,
                 Name = newDepartment.DepartmentName,
                 Description = newDepartment.Description,
                 CreatedAt = DateTime.UtcNow,

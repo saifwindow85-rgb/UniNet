@@ -16,7 +16,7 @@ namespace Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces
 
         public void Add(College college);
         public Task<bool> Delete(int collegeId);
-        public Task<bool> IsCollegeExists(int universityId,int collegeId);
+        public Task<bool> IsCollegeExists(int collegeId);
         public Task<bool> IsCollegeExists(int universityId,string collegeName);
         public Task<CollegeDTO?> GetCollegeDTOById(int collegeId);
         public Task<College?> GetCollegeEntityById(int collegeId);

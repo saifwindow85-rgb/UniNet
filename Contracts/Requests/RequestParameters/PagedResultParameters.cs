@@ -16,4 +16,17 @@ namespace Contracts.Requests.RequestParameters
         [Range(1, int.MaxValue, ErrorMessage = "PageNumber  Format!/PageNumber Must Be > 0")]
         public int PageNumber { get; set; }
     }
+
+    public class DepartmentIdParameter
+    {
+        [Range(1, int.MaxValue, ErrorMessage = "DepartmentId  Format!/DepartmentId Must Be > 0")]
+        public int DepartmentId { get; set; }
+    }
+
+    public class CollegeIdParameter
+    {
+        [Range(1, int.MaxValue, ErrorMessage = "CollegeId  Format!/CollegeId Must Be > 0")]
+        public int CollegeId { get; set; }
+    }
+
 }

@@ -99,9 +99,9 @@ namespace Application.Services.AcademicServices
             return await _unitOfWorkRepository.CollegeRepository.GetAllCollegesPerUniversity(universityId, pageNumber, pageSize);
         }
 
-        public async Task<bool> IsCollegeExists(int universityId, int collegeId)
+        public async Task<bool> IsCollegeExists( int collegeId)
         {
-            return await _unitOfWorkRepository.CollegeRepository.IsCollegeExists(universityId, collegeId);
+            return await _unitOfWorkRepository.CollegeRepository.IsCollegeExists( collegeId);
         }
 
         public async Task<bool> IsCollegeExists(int universityId, string collegeName)

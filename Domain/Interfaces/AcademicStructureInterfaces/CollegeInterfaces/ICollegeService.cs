@@ -20,7 +20,7 @@ namespace Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces
         public Task<CollegeDTO?> GetCollegeDTOByName(int universityId,string collegeName);
         public Task<College?>GetCollegeEntityByName(int universityId, string collegeName);
         public Task<bool> Delete(int collegeId);
-        public Task<bool>IsCollegeExists(int universityId,int collegeId);
+        public Task<bool>IsCollegeExists(int collegeId);
         public Task<bool> IsCollegeExists(int universityId,string collegeName);
         public Task<AddUpdateServiceResponse<CollegeDTO>> AddCollege(AddCollegeDTO newCollege, int currentUserId);
         public Task<AddUpdateServiceResponse<CollegeDTO>> UpdateCollege(int collegeId, UpdateCollegeDTO updatedCollege, int currentUserId);
