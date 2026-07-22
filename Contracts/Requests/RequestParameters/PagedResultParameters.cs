@@ -48,4 +48,10 @@ namespace Contracts.Requests.RequestParameters
         public int RoleId { get; set; }
     }
 
+    public class UserIdParameter
+    {
+        [Range(1, int.MaxValue, ErrorMessage = "UserId  Format!/UserId Must Be > 0")]
+        public int UserId { get; set; }
+    }
+
 }

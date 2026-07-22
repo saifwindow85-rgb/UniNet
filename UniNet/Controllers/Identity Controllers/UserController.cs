@@ -28,21 +28,23 @@ namespace UniNet.Controllers.Identity_Controllers
 
         [HttpGet("Id", Name = "GetUserById")]
         [Authorize]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<UserDTO>> GetUserById([FromQuery]IdParameter @param)
+        public async Task<ActionResult<UserDTO>> GetUserById([FromQuery]UserIdParameter userIdparameter)
         {
-            var user = await _userService.FindById(param.Id);
-            if (user == null)
-                return NotFound(ErrorMessages.NotFound<User>(param.Id));
-
-            return Ok(user);
+            var user = await _userService.FindById(userIdparameter.UserId);
+            return user.GetResourceEndpoints(userIdparameter.UserId, typeof(User).Name);
         }
 
         [HttpPost("")]
         [Authorize]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<AddUpdateServiceResponse<UserDTO>>>AddUser(AddUserDTO newUser)
         {
             var userId = _currentUserService.UserId;
@@ -52,13 +54,16 @@ namespace UniNet.Controllers.Identity_Controllers
 
         [HttpPut("")]
         [Authorize]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<AddUpdateServiceResponse<UserDTO>>> UpdateUser([FromQuery] IdParameter requestParameter,UpdateUserDTO updatedUser)
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<AddUpdateServiceResponse<UserDTO>>> UpdateUser([FromQuery] UserIdParameter userIdparameter,UpdateUserDTO updatedUser)
         {
             var userId = _currentUserService.UserId;
-            var response = await _userService.UpdateUser(requestParameter.Id, updatedUser, userId);
+            var response = await _userService.UpdateUser(userIdparameter.UserId, updatedUser, userId);
             return response.ToActionResult();
         }
     }
