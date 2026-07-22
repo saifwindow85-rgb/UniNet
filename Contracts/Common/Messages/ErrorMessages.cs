@@ -22,7 +22,7 @@ namespace Contracts.Common.Messages
         }
         public static string NotFound(string EntityName, string name)
         {
-            return $"No {EntityName} Found With Id = {name}";
+            return $"No {EntityName} Found With Name = {name}";
         }
     }
 }

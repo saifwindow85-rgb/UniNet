@@ -30,6 +30,9 @@ using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
 using Contracts.Requests.AcademicRequests.DepartmentRequests;
 using Application.Validators.AcademicValidators.DepartmentValidators;
 using Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces;
+using Domain.Interfaces.AcademicStructureInterfaces.BatchInterfaces;
+using Contracts.Requests.AcademicRequests.BatchRequests;
+using Application.Validators.AcademicValidators.BatchValidators;
 
 namespace Application.Extensions
 {
@@ -45,6 +48,7 @@ namespace Application.Extensions
             services.AddScoped<IUniversityService, UniversityService>();
             services.AddScoped<ICollegeService, CollegeService>();
             services.AddScoped<IDepartmentService, DepartmentService>();
+            services.AddScoped<IBatchService, BatchService>();
             return services;
         }
         public static IServiceCollection Validators(this IServiceCollection services)
@@ -59,6 +63,9 @@ namespace Application.Extensions
             services.AddScoped<IValidator<UpdateCollegeDTO>, UpdateCollegeValidator>();
             services.AddScoped<IValidator<AddDepartmentDTO>, AddDepartmentValidator>();
             services.AddScoped<IValidator<UpdateDepartmentDTO>, UpdateDepartmentValidator>();
+            services.AddScoped<IValidator<AddBatchDTO>, AddBatchValidator>();
+            services.AddScoped<IValidator<UpdateBatchDTO>, UpdateBatchValidator>();
+
             return services;
         }
     }

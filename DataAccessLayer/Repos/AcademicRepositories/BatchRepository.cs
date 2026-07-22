@@ -82,7 +82,7 @@ namespace DataAccessLayer.Repos.AcademicRepositories
 
         public async Task<BatchDTO?> GetDTOByName(int departmentId, string name)
         {
-           return await _context.Batches.Select(ToDTO).SingleOrDefaultAsync(b=>b.DepartmentId == departmentId&& b.DepartmentName==name);
+            return await _context.Batches.Where(b => b.DepartmentId == departmentId).Select(ToDTO).SingleOrDefaultAsync(b => b.BatchName == name);
         }
 
         public async Task<Batch?> GetEntityById(int batchId)

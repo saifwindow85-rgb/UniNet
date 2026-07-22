@@ -69,5 +69,13 @@ namespace UniNet.Extensions
         {
             return resource != null ? new OkObjectResult(resource) : new NotFoundObjectResult(ErrorMessages.NotFound(EntityName, name));
         }
+
+        public static ActionResult ToDeleteActionResult<TEntity>( this bool result,int Id)
+        {
+            if (!result)
+                return new NotFoundObjectResult($"Deletaion faield/{typeof(TEntity).Name} with Id = {Id} NotFound!");
+
+            return new NoContentResult();
+        }
     }
 }

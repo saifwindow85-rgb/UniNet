@@ -15,7 +15,11 @@ namespace Contracts.Common.Messages
 
         public static string DeletionFailed<TEntity>(int id)
         {
-            return $"Failed to delete {typeof(TEntity).Name} with id = {id}";
+            return $"Failed to delete/{typeof(TEntity).Name} with id = {id} NotFound!";
+        }
+        public static string DeletionFailed<TEntity>(string name)
+        {
+            return $"Failed to delete/{typeof(TEntity).Name} with name = {name} NotFound!";
         }
     }
 }

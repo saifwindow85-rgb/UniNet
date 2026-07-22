@@ -70,7 +70,7 @@ namespace Application.Services.AcademicServices
 
         public async Task<bool> ExistsById(int batchId)
         {
-            return await _unitOfWorkRepository.BatchRepository.ExistsById(batchId)
+            return await _unitOfWorkRepository.BatchRepository.ExistsById(batchId);
         }
 
         public async Task<bool> ExistsByName(int departmentId, string name)
