@@ -6,6 +6,7 @@ using Contracts.Responses.IdentityResponses.UserRoleResponse;
 using Contracts.Results;
 using Domain.Entities.Identity;
 using Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using UniNet.Extensions;
@@ -23,6 +24,9 @@ namespace UniNet.Controllers.Identity_Controllers
         }
 
         [HttpGet(Name ="GetAllUserUserRoles")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<PagedResult<UserRoleDTO>>> GetAllUserRoles([FromQuery]PagedResultParameters @parameter)
@@ -31,14 +35,20 @@ namespace UniNet.Controllers.Identity_Controllers
         }
 
         [HttpGet("roleid",Name = "GetFiltredUserRoles")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<PagedResult<UserRoleDTO>>> GetUserRolesPerRoleId([FromQuery] PagedResultParameters @parameter,int roleId)
+        public async Task<ActionResult<PagedResult<UserRoleDTO>>> GetUserRolesPerRoleId([FromQuery] PagedResultParameters @parameter,RoleIdParameter roleIdParameter)
         {
-            return await _userRoleService.GetUserRolesPerRoleId(roleId, parameter.PageNumber, parameter.PageSize);
+            return await _userRoleService.GetUserRolesPerRoleId(roleIdParameter.RoleId, parameter.PageNumber, parameter.PageSize);
         }
 
         [HttpGet("by-id",Name ="GetUserRoleById")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType (StatusCodes.Status400BadRequest)]
@@ -51,20 +61,28 @@ namespace UniNet.Controllers.Identity_Controllers
         }
 
         [HttpDelete(Name ="DeleteUserRole")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<bool>> Delete([FromQuery]UserRoleParameters @parameter)
         {
             var result = await _userRoleService.Delete(parameter.UserId, parameter.RoleId);
             if (!result)
                 return NotFound($"UserRole with ids({parameter.UserId},{parameter.RoleId}) NotFound!");
 
-            return Ok("UserRole Deleted Successfuly");
+            return NoContent();
         }
 
         [HttpPost(Name ="AddUserRole")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<AddUpdateServiceResponse<UserRoleDTO>>>AddUserRole(AddUserRoleDTO userRoleDTO)
         {
             var response = await _userRoleService.AddUserRole(userRoleDTO);

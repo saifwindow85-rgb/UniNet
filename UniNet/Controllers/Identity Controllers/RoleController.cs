@@ -29,6 +29,8 @@ namespace UniNet.Controllers.Identity_Controllers
 
         [Authorize]
         [HttpGet(Name ="GetRoles")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<PagedResult<RoleDTO>>> GetRoles([FromQuery]PagedResultParameters parameters)
@@ -39,53 +41,51 @@ namespace UniNet.Controllers.Identity_Controllers
 
         [Authorize]
         [HttpGet("by-id",Name ="GetRoleById")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<RoleDTO>> GetRoleById([FromQuery]IdParameter @parameter)
+        public async Task<ActionResult<RoleDTO>> GetRoleById([FromQuery]RoleIdParameter roleIdParameter)
         {
-            var role = await _roleService.FindRoleDTOById(parameter.Id);
-            if (role == null)
-                return NotFound(ErrorMessages.NotFound<Role>(parameter.Id));
-
-            return Ok(role);
+            var role = await _roleService.FindRoleDTOById(roleIdParameter.RoleId);
+            return role.GetResourceEndpoints(roleIdParameter.RoleId, typeof(Role).Name);
         }
 
         [Authorize]
         [HttpGet("by-name",Name ="GetRoleByName")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<RoleDTO>> GetRolebyName([FromQuery]BaseStringParametre parametre)
         {
             var role = await _roleService.FindRoleDTOByRoleName(parametre.Name);
-
-            if (role == null)
-                return NotFound(ErrorMessages.NotFound<Role>(parametre.Name));
-
-            return Ok(role);
+            return role.GetResourceEndpoints(parametre.Name, typeof(Role).Name);
         }
 
         [Authorize]
         [HttpDelete( Name = "DeleteRoleById")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-         public async Task<ActionResult<bool>> DeleteRole([FromQuery]IdParameter @parameter)
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<bool>> DeleteRole([FromQuery]RoleIdParameter roleIdParameter)
         {
-            var result = await _roleService.Delete(parameter.Id);
-            if(!result)
-            {
-                return NotFound(DeleteMessage.DeletionFailed<Role>(parameter.Id));
-            }
-
-            return Ok(DeleteMessage.DeletedSuccessfuly<Role>(parameter.Id));
+            var result = await _roleService.Delete(roleIdParameter.RoleId);
+            return result.ToDeleteActionResult<Role>(roleIdParameter.RoleId);
         }
 
         [Authorize]
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<AddUpdateServiceResponse<RoleDTO>>>AddRole(AddRoleDTO newRole)
         {
             var response = await _roleService.AddRole(newRole);
@@ -94,12 +94,15 @@ namespace UniNet.Controllers.Identity_Controllers
 
         [Authorize]
         [HttpPut]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<AddUpdateServiceResponse<RoleDTO>>>UpdateRole(AddRoleDTO updatedRole, [FromQuery]IdParameter @parameter)
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<AddUpdateServiceResponse<RoleDTO>>>UpdateRole(AddRoleDTO updatedRole, [FromQuery]RoleIdParameter roleIdParameter)
         {
-            var response = await _roleService.UpdateRole(updatedRole, parameter.Id);
+            var response = await _roleService.UpdateRole(updatedRole, roleIdParameter.RoleId);
             return response.ToActionResult();
         }
     }

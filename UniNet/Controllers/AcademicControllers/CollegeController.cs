@@ -40,9 +40,9 @@ namespace UniNet.Controllers.AcademicControllers
         [HttpGet("by-universityId",Name = "GetCollegesPerUniversity")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<PagedResult<CollegeDTO>>> GetCollegesPerUniversity([FromQuery]CollegeIdParameter @collegeIdParameter, [FromQuery]PagedResultParameters @parameters)
+        public async Task<ActionResult<PagedResult<CollegeDTO>>> GetCollegesPerUniversity([FromQuery]UniversityIdParameter universityIdParameter, [FromQuery]PagedResultParameters @parameters)
         {
-            var colleges = await _collegeService.GetCollegesPerUniversity(@collegeIdParameter.CollegeId,parameters.PageNumber,parameters.PageSize);
+            var colleges = await _collegeService.GetCollegesPerUniversity(universityIdParameter.UniversityId,parameters.PageNumber,parameters.PageSize);
             return colleges.ToPagedActioneResult();
         }
 

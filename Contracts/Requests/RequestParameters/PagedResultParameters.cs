@@ -41,4 +41,11 @@ namespace Contracts.Requests.RequestParameters
         public int UniversityId { get; set; }
     }
 
+
+    public class RoleIdParameter
+    {
+        [Range(1, int.MaxValue, ErrorMessage = "RoleId  Format!/RoleId Must Be > 0")]
+        public int RoleId { get; set; }
+    }
+
 }

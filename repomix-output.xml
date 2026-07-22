@@ -47,29 +47,39 @@ Application/HelperClasses/UserHelper.cs
 Application/Mappers/IdentityMappers/RoleMapper.cs
 Application/Mappers/IdentityMappers/UserRoleMapper.cs
 Application/Mappers/TokenUserInfoMapper.cs
+Application/Services/AcademicServices/BatchService.cs
 Application/Services/AcademicServices/CollegeService.cs
+Application/Services/AcademicServices/DepartmentService.cs
 Application/Services/AcademicServices/UniversityService.cs
 Application/Services/IdentityServices/CurrentUserService.cs
 Application/Services/IdentityServices/RoleService.cs
 Application/Services/IdentityServices/UserRoleService.cs
 Application/Services/IdentityServices/UserService.cs
 Application/Services/Login Service/RefreshTokenService.cs
+Application/Validators/AcademicValidators/BatchValidators/AddBatchValidator.cs
+Application/Validators/AcademicValidators/BatchValidators/UpdateBatchValidator.cs
 Application/Validators/AcademicValidators/CollegeValidators/AddCollegeValidator.cs
 Application/Validators/AcademicValidators/CollegeValidators/UpdateCollegeValidator.cs
+Application/Validators/AcademicValidators/DepartmentValidators/AddDepartmentValidator.cs
+Application/Validators/AcademicValidators/DepartmentValidators/UpdateDepartmentValidator.cs
 Application/Validators/AcademicValidators/UniversityValidators/AddUniversityValidator.cs
 Application/Validators/AcademicValidators/UniversityValidators/UpdateUniversityValidator.cs
 Application/Validators/IdentityValidators/RoleValidators/AddRoleValidator.cs
 Application/Validators/IdentityValidators/UserValidators/AddUserValidator.cs
 Application/Validators/IdentityValidators/UserValidators/UpdateUserValidator.cs
 Application/Validators/LoginRequestValidator.cs
-Contracts/Common/AddUpdateServiceAbstract.cs
 Contracts/Common/DTOs/User&Token DTOs/TokenUserInfoDTO.cs
+Contracts/Common/DTOsBaseEntity.cs
 Contracts/Common/Messages/DeleteMessage.cs
 Contracts/Common/Messages/ErrorMessages.cs
 Contracts/Enums/ErrorTypes.cs
 Contracts/Exceptions/DeleteRestrictedException.cs
+Contracts/Requests/AcademicRequests/BatchRequests/AddBatchDTO.cs
+Contracts/Requests/AcademicRequests/BatchRequests/UpdateBatchDTO.cs
 Contracts/Requests/AcademicRequests/CollegeRequests/AddCollegeDTO.cs
 Contracts/Requests/AcademicRequests/CollegeRequests/UpdateCollegeDTO.cs
+Contracts/Requests/AcademicRequests/DepartmentRequests/AddDepartmentDTO.cs
+Contracts/Requests/AcademicRequests/DepartmentRequests/UpdateDepartmentDTO.cs
 Contracts/Requests/AcademicRequests/UniversityRequests/AddUniversityDTO.cs
 Contracts/Requests/AcademicRequests/UniversityRequests/UpdateUniversityDTO.cs
 Contracts/Requests/IdentityRequests/RoleRequests/AddRoleDTO.cs
@@ -83,6 +93,8 @@ Contracts/Requests/RequestParameters/BaseStringParametre.cs
 Contracts/Requests/RequestParameters/IdParameter.cs
 Contracts/Requests/RequestParameters/PagedResultParameters.cs
 Contracts/Requests/RequestParameters/UserRoleParameters.cs
+Contracts/Responses/AcademicResponses/BatchResponses/BatchDTO.cs
+Contracts/Responses/AcademicResponses/DepartmentResponses/DepartmentDTO.cs
 Contracts/Responses/AcademicResponses/UniversityResponses/UniversityDTO.cs
 Contracts/Responses/AddUpdateServiceResponse.cs
 Contracts/Responses/CollegeResponses/CollegeDTO.cs
@@ -120,7 +132,9 @@ DataAccessLayer/Migrations/20260701081809_Initial Migration .Designer.cs
 DataAccessLayer/Migrations/20260703134953_Add Refresh Token Entitiy.cs
 DataAccessLayer/Migrations/20260703134953_Add Refresh Token Entitiy.Designer.cs
 DataAccessLayer/Migrations/AppDbcontextModelSnapshot.cs
+DataAccessLayer/Repos/AcademicRepositories/BatchRepository.cs
 DataAccessLayer/Repos/AcademicRepositories/CollegeRepository.cs
+DataAccessLayer/Repos/AcademicRepositories/DepartmentRepository.cs
 DataAccessLayer/Repos/AcademicRepositories/UniversityRepository.cs
 DataAccessLayer/Repos/IdentityRepositories/RoleRepository.cs
 DataAccessLayer/Repos/IdentityRepositories/UserRepository.cs
@@ -150,8 +164,12 @@ Domain/Entities/Study/Semester.cs
 Domain/Entities/Study/StudentResult.cs
 Domain/Entities/Study/Subject.cs
 Domain/Entities/Token/RefreshToken.cs
+Domain/Interfaces/AcademicStructureInterfaces/BatchInterfaces/IBatchRepository.cs
+Domain/Interfaces/AcademicStructureInterfaces/BatchInterfaces/IBatchService.cs
 Domain/Interfaces/AcademicStructureInterfaces/CollegeInterfaces/ICollegeRepository.cs
 Domain/Interfaces/AcademicStructureInterfaces/CollegeInterfaces/ICollegeService.cs
+Domain/Interfaces/AcademicStructureInterfaces/DepartmentInterfaces/IDepartmentRepository.cs
+Domain/Interfaces/AcademicStructureInterfaces/DepartmentInterfaces/IDepartmentService.cs
 Domain/Interfaces/AcademicStructureInterfaces/UniversityInterfaces/IUniversityRepository.cs
 Domain/Interfaces/AcademicStructureInterfaces/UniversityInterfaces/IUniversityService.cs
 Domain/Interfaces/IdentityInterfaces/RoleInterfaces/IRoleRepository.cs
@@ -166,7 +184,9 @@ Domain/Interfaces/LoginInterfaces/ILoginService.cs
 Domain/Interfaces/LoginInterfaces/TokenInterfaces/IRefreshTokenRepository.cs
 Domain/Interfaces/LoginInterfaces/TokenInterfaces/IRefreshTokenService.cs
 Domain/Interfaces/UnitOfWorkInterfaces/IUnitOfWorkRepository.cs
+UniNet/Controllers/AcademicControllers/BatchController.cs
 UniNet/Controllers/AcademicControllers/CollegeController.cs
+UniNet/Controllers/AcademicControllers/DepartmentController.cs
 UniNet/Controllers/AcademicControllers/UniversityController.cs
 UniNet/Controllers/Identity Controllers/Auth/LoginController.cs
 UniNet/Controllers/Identity Controllers/RoleController.cs
@@ -257,6 +277,86 @@ namespace Application.Mappers
 }
 </file>
 
+<file path="Application/Validators/AcademicValidators/BatchValidators/AddBatchValidator.cs">
+using Contracts.Requests.AcademicRequests.BatchRequests;
+using FluentValidation;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Application.Validators.AcademicValidators.BatchValidators
+{
+    public class AddBatchValidator : AbstractValidator<AddBatchDTO>
+    {
+        public AddBatchValidator() 
+        {
+            // Batch Name Validation
+            RuleFor(b => b.BatchName)
+                .Cascade(CascadeMode.StopOnFirstFailure) // Stops validation after the first failure
+                .NotEmpty().WithMessage("Batch name is required.")
+                .MaximumLength(250).WithMessage("Batch name cannot exceed 250 characters.")
+                .MinimumLength(3).WithMessage("Batch name must be at least 3 characters long.")
+                .Must(name => name.Trim().Length > 0).WithMessage("Batch name cannot be empty or whitespace.");
+
+            //BatchYear Validation
+            RuleFor(b => b.BatchYear)
+                .InclusiveBetween(2000, 2026).WithMessage("BatchYear must be between 2000 & 2026 !");
+            // TODO: Replace the upper bound with DateTime.UtcNow.Year before production.
+
+
+            // Description Validation
+            // Even for "unlimited" text, it is professional to set a reasonable technical limit 
+            // to prevent database bloat or memory issues.
+            RuleFor(b => b.Description)
+                .MaximumLength(5000).WithMessage("Description cannot exceed 5000 characters.")
+                .When(c => !string.IsNullOrEmpty(c.Description));
+        }
+    }
+}
+</file>
+
+<file path="Application/Validators/AcademicValidators/BatchValidators/UpdateBatchValidator.cs">
+using Contracts.Requests.AcademicRequests.BatchRequests;
+using FluentValidation;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Application.Validators.AcademicValidators.BatchValidators
+{
+    public class UpdateBatchValidator : AbstractValidator<UpdateBatchDTO>
+    {
+        public UpdateBatchValidator() 
+        {
+            // Batch Name Validation
+            RuleFor(b => b.BatchName)
+                .Cascade(CascadeMode.StopOnFirstFailure) // Stops validation after the first failure
+                .NotEmpty().WithMessage("Batch name is required.")
+                .MaximumLength(250).WithMessage("Batch name cannot exceed 250 characters.")
+                .MinimumLength(3).WithMessage("Batch name must be at least 3 characters long.")
+                .Must(name => name.Trim().Length > 0).WithMessage("Batch name cannot be empty or whitespace.");
+
+            //BatchYear Validation
+            RuleFor(b => b.BatchYear)
+                .InclusiveBetween(2000, 2026).WithMessage("BatchYear must be between 2000 & 2026 !");
+            // TODO: Replace the upper bound with DateTime.UtcNow.Year before production.
+
+
+            // Description Validation
+            // Even for "unlimited" text, it is professional to set a reasonable technical limit 
+            // to prevent database bloat or memory issues.
+            RuleFor(b => b.Description)
+                .MaximumLength(5000).WithMessage("Description cannot exceed 5000 characters.")
+                .When(c => !string.IsNullOrEmpty(c.Description));
+        }
+    }
+}
+</file>
+
 <file path="Application/Validators/AcademicValidators/CollegeValidators/AddCollegeValidator.cs">
 using Contracts.Requests.AcademicRequests.CollegeRequests;
 using FluentValidation;
@@ -313,6 +413,75 @@ namespace Application.Validators.AcademicValidators.CollegeValidators
                 .MaximumLength(250).WithMessage("College name cannot exceed 250 characters.")
                 .MinimumLength(3).WithMessage("College name must be at least 3 characters long.")
                 .Must(name => name.Trim().Length > 0).WithMessage("College name cannot be empty or whitespace.");
+
+            // Description Validation
+            // Even for "unlimited" text, it is professional to set a reasonable technical limit 
+            // to prevent database bloat or memory issues.
+            RuleFor(c => c.Description)
+                .MaximumLength(5000).WithMessage("Description cannot exceed 5000 characters.")
+                .When(c => !string.IsNullOrEmpty(c.Description));
+        }
+    }
+}
+</file>
+
+<file path="Application/Validators/AcademicValidators/DepartmentValidators/AddDepartmentValidator.cs">
+using Contracts.Requests.AcademicRequests.DepartmentRequests;
+using FluentValidation;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Application.Validators.AcademicValidators.DepartmentValidators
+{
+    public class AddDepartmentValidator : AbstractValidator<AddDepartmentDTO>
+    {
+        public AddDepartmentValidator()
+        {
+            // Department Name Validation
+            RuleFor(d => d.DepartmentName)
+                .Cascade(CascadeMode.StopOnFirstFailure) // Stops validation after the first failure
+                .NotEmpty().WithMessage("Department name is required.")
+                .MaximumLength(250).WithMessage("Department name cannot exceed 250 characters.")
+                .MinimumLength(3).WithMessage("Department name must be at least 3 characters long.")
+                .Must(name => name.Trim().Length > 0).WithMessage("Department name cannot be empty or whitespace.");
+
+            // Description Validation
+            // Even for "unlimited" text, it is professional to set a reasonable technical limit 
+            // to prevent database bloat or memory issues.
+            RuleFor(c => c.Description)
+                .MaximumLength(5000).WithMessage("Description cannot exceed 5000 characters.")
+                .When(c => !string.IsNullOrEmpty(c.Description));
+        }
+    }
+}
+</file>
+
+<file path="Application/Validators/AcademicValidators/DepartmentValidators/UpdateDepartmentValidator.cs">
+using Contracts.Requests.AcademicRequests.CollegeRequests;
+using Contracts.Requests.AcademicRequests.DepartmentRequests;
+using FluentValidation;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Application.Validators.AcademicValidators.DepartmentValidators
+{
+    public class UpdateDepartmentValidator : AbstractValidator<UpdateDepartmentDTO>
+    {
+        public UpdateDepartmentValidator() 
+        {
+            // Department Name Validation
+            RuleFor(d => d.DepartmentName)
+                .Cascade(CascadeMode.StopOnFirstFailure) // Stops validation after the first failure
+                .NotEmpty().WithMessage("Department name is required.")
+                .MaximumLength(250).WithMessage("Department name cannot exceed 250 characters.")
+                .MinimumLength(3).WithMessage("Department name must be at least 3 characters long.")
+                .Must(name => name.Trim().Length > 0).WithMessage("Department name cannot be empty or whitespace.");
 
             // Description Validation
             // Even for "unlimited" text, it is professional to set a reasonable technical limit 
@@ -459,28 +628,6 @@ namespace Application.Validators.User_Validators
 }
 </file>
 
-<file path="Contracts/Common/AddUpdateServiceAbstract.cs">
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Contracts.Common
-{
-    public abstract class AddUpdateServiceAbstract
-    {
-        public DateTime CreatedAt { get; set; }
-        public int CreatedByUserId { get; set; }
-        public string CreatedByUserName { get; set; } = null!;
-
-        public DateTime? UpdatedAt { get; set; }
-        public int? UpdatedByUserId { get; set; }
-        public string? UpdatedByUserName { get; set; }
-    }
-}
-</file>
-
 <file path="Contracts/Common/DTOs/User&Token DTOs/TokenUserInfoDTO.cs">
 using System;
 using System.Collections.Generic;
@@ -498,26 +645,24 @@ namespace Contracts.Common.DTOs.User_Token_DTOs
 }
 </file>
 
-<file path="Contracts/Common/Messages/DeleteMessage.cs">
+<file path="Contracts/Common/DTOsBaseEntity.cs">
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Contracts.Common.Messages
+namespace Contracts.Common
 {
-    public  class DeleteMessage
+    public abstract class DTOsBaseEntity
     {
-        public static string DeletedSuccessfuly<TEntity>(int id)
-        {
-            return $"{typeof(TEntity).Name} with id  = {id} deleted successfuly";
-        }
+        public DateTime CreatedAt { get; set; }
+        public int CreatedByUserId { get; set; }
+        public string CreatedByUserName { get; set; } = null!;
 
-        public static string DeletionFailed<TEntity>(int id)
-        {
-            return $"Failed to delete {typeof(TEntity).Name} with id = {id}";
-        }
+        public DateTime? UpdatedAt { get; set; }
+        public int? UpdatedByUserId { get; set; }
+        public string? UpdatedByUserName { get; set; }
     }
 }
 </file>
@@ -534,6 +679,43 @@ namespace Contracts.Exceptions
     public class DeleteRestrictedException : Exception
     {
         public DeleteRestrictedException(string message) : base(message) { }
+    }
+}
+</file>
+
+<file path="Contracts/Requests/AcademicRequests/BatchRequests/AddBatchDTO.cs">
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Contracts.Requests.AcademicRequests.BatchRequests
+{
+    public class AddBatchDTO
+    {
+        public int DepartmentId { get; set; }
+        public string BatchName { get; set; } = null!;
+        public int BatchYear { get; set; }
+        public string?Description { get; set; }
+    }
+}
+</file>
+
+<file path="Contracts/Requests/AcademicRequests/BatchRequests/UpdateBatchDTO.cs">
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Contracts.Requests.AcademicRequests.BatchRequests
+{
+    public class UpdateBatchDTO
+    {
+        public string BatchName { get; set; } = null!;
+        public int BatchYear { get; set; }
+        public string? Description { get; set; }
     }
 }
 </file>
@@ -570,6 +752,41 @@ namespace Contracts.Requests.AcademicRequests.CollegeRequests
     {
         public string CollegeName { get; set; } = null!;
         public string? Description { get; set; }
+    }
+}
+</file>
+
+<file path="Contracts/Requests/AcademicRequests/DepartmentRequests/AddDepartmentDTO.cs">
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Contracts.Requests.AcademicRequests.DepartmentRequests
+{
+    public class AddDepartmentDTO
+    {
+        public int CollegeId { get; set; }
+        public string DepartmentName { get; set; } = null!;
+        public string? Description { get; set; }
+    }
+}
+</file>
+
+<file path="Contracts/Requests/AcademicRequests/DepartmentRequests/UpdateDepartmentDTO.cs">
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Contracts.Requests.AcademicRequests.DepartmentRequests
+{
+    public class UpdateDepartmentDTO
+    {
+        public string DepartmentName { get; set; } = null!;
+        public string?Description { get; set; }
     }
 }
 </file>
@@ -735,28 +952,6 @@ namespace Contracts.Requests.RequestParameters
 }
 </file>
 
-<file path="Contracts/Requests/RequestParameters/PagedResultParameters.cs">
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Contracts.Requests.RequestParameters
-{
-    public class PagedResultParameters
-    {
-        [Range(1, int.MaxValue, ErrorMessage = "PageSize  Format!/PageSize Must Be > 0")]
-        public int PageSize { get; set; }
-
-
-        [Range(1, int.MaxValue, ErrorMessage = "PageNumber  Format!/PageNumber Must Be > 0")]
-        public int PageNumber { get; set; }
-    }
-}
-</file>
-
 <file path="Contracts/Requests/RequestParameters/UserRoleParameters.cs">
 using System;
 using System.Collections.Generic;
@@ -779,27 +974,7 @@ namespace Contracts.Requests.RequestParameters
 }
 </file>
 
-<file path="Contracts/Responses/AcademicResponses/UniversityResponses/UniversityDTO.cs">
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Contracts.Common;
-
-namespace Contracts.Responses.AcademicResponses.UniversityResponses
-{
-    public  class UniversityDTO : AddUpdateServiceAbstract
-    {
-        public int UniversityId { get; set; }
-        public string UniversityName { get; set; } = null!;
-        public string ?Description { get; set; } = null!;
-   
-    }
-}
-</file>
-
-<file path="Contracts/Responses/CollegeResponses/CollegeDTO.cs">
+<file path="Contracts/Responses/AcademicResponses/BatchResponses/BatchDTO.cs">
 using Contracts.Common;
 using System;
 using System.Collections.Generic;
@@ -807,15 +982,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Contracts.Responses.CollegeResponses
+namespace Contracts.Responses.AcademicResponses.BatchResponses
 {
-    public class CollegeDTO : AddUpdateServiceAbstract
+    public class BatchDTO : DTOsBaseEntity
     {
-        public int CollegeId { get; set; }
-        public string CollegeName { get; set; } = null!;
-        public int UniversityId { get; set; }
-        public string UniversityName { get; set; } = null!;
-        public string ?Description {  get; set; } 
+        public int BatchId { get; set; }
+        public string BatchName { get; set; } = null!;
+        public int DepartmentId { get; set; }
+        public string DepartmentName { get; set; } = null!;
+        public int BatchYear { get; set; }
+        public string?Description { get; set; }
     }
 }
 </file>
@@ -5901,6 +6077,102 @@ namespace DataAccessLayer.Migrations
 }
 </file>
 
+<file path="DataAccessLayer/Repos/AcademicRepositories/DepartmentRepository.cs">
+using Contracts.Responses.AcademicResponses.DepartmentResponses;
+using Contracts.Results;
+using DataAccessLayer.Dbcontext;
+using DataAccessLayer.Extensions;
+using Domain.Entities.Academic_Structure;
+using Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataAccessLayer.Repos.AcademicRepositories
+{
+    public class DepartmentRepository : IDepartmentRepository
+    {
+        private readonly AppDbcontext _context;
+        private readonly Expression<Func<Department, DepartmentDTO>> ToDTO = d => new DepartmentDTO
+        {
+            DepartmentId = d.DepartmentId,
+            DepartmentName = d.Name,
+            Description = d.Description,
+            CreatedAt = d.CreatedAt,
+            CreatedByUserId = d.CreatedByUserId,
+            CreatedByUserName = d.CreatedByUser.UserName,
+            UpdatedAt = d.UpdatedAt,
+            UpdatedByUserId = d.UpdatedByUserId,
+            UpdatedByUserName = d.UpdatedByUser == null ? null : d.UpdatedByUser.UserName,
+        };
+        public DepartmentRepository(AppDbcontext context)
+        {
+            _context = context;
+        }
+
+        public void Add(Department department)
+        {
+            _context.Departments.Add(department);
+        }
+
+        public async Task<bool> Delete(int DepartmentId)
+        {
+            var department = await _context.Departments.FindAsync(DepartmentId);
+            if (department == null)
+                return false;
+
+            _context.Departments.Remove(department);
+            return true;
+        }
+
+        public async Task<bool> ExistsById(int departmentId)
+        {
+            return await _context.Departments.AnyAsync(d => d.DepartmentId == departmentId);
+        }
+
+        public async Task<bool> ExistsByName(int collegeId, string name)
+        {
+            return await _context.Departments.AnyAsync(d=>d.CollegeId == collegeId&& d.Name == name);
+        }
+
+        public async Task<PagedResult<DepartmentDTO>> GetAllDepartments(int pageNumber, int pageSize)
+        {
+           return await _context.Departments.Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
+        }
+
+        public async Task<PagedResult<DepartmentDTO>> GetDepartmentsPerCollege(int collegeId, int pageNumber, int pageSize)
+        {
+            return await _context.Departments.Where(d=>d.CollegeId == collegeId)
+                .Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
+        }
+
+        public async Task<DepartmentDTO?> GetDTOById(int departmentId)
+        {
+            return await _context.Departments.Select(ToDTO).SingleOrDefaultAsync(d=>d.DepartmentId == departmentId);
+        }
+
+        public async Task<DepartmentDTO?> GetDTOByName(int collegeId, string name)
+        {
+            return await _context.Departments.Where(d => d.CollegeId == collegeId).Select(ToDTO).SingleOrDefaultAsync(d => d.DepartmentName == name);
+        }
+
+        public async Task<Department?> GetEntityById(int departmentId)
+        {
+            return await _context.Departments.FindAsync(departmentId);
+        }
+
+        public async Task<Department?> GetEntityByName(int collegeId, string name)
+        {
+            return await _context.Departments.SingleOrDefaultAsync(d=>d.CollegeId == collegeId && d.Name == name);
+        }
+    }
+}
+</file>
+
 <file path="DataAccessLayer/Repos/IdentityRepositories/UserRoleRepository.cs">
 using Contracts.Responses.IdentityResponses;
 using Contracts.Responses.IdentityResponses.UserRoleResponse;
@@ -6532,6 +6804,93 @@ namespace Domain.Entities.Token
 }
 </file>
 
+<file path="Domain/Interfaces/AcademicStructureInterfaces/BatchInterfaces/IBatchRepository.cs">
+using Contracts.Responses.AcademicResponses.BatchResponses;
+using Contracts.Results;
+using Domain.Entities.Academic_Structure;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Domain.Interfaces.AcademicStructureInterfaces.BatchInterfaces
+{
+    public interface IBatchRepository
+    {
+        public Task<PagedResult<BatchDTO>> GetAllBatches(int pageNumber, int pageSize);
+        public Task<PagedResult<BatchDTO>>GetBatchesPerDepartment(int departmentId,int pageNumber, int pageSize);
+        public Task<BatchDTO?> GetDTOById(int batchId);
+        public Task<Batch?>GetEntityById(int batchId);
+        public Task<BatchDTO?>GetDTOByName(int departmentId,string name);
+        public Task<Batch?> GetEntityByName(int departmentId, string name);
+        public Task<bool> Delete(int batchId);
+        public Task<bool>ExistsById(int batchId);
+        public Task<bool>ExistsByName(int departmentId,string name);
+        public void Add(Batch batch);
+    }
+}
+</file>
+
+<file path="Domain/Interfaces/AcademicStructureInterfaces/BatchInterfaces/IBatchService.cs">
+using Contracts.Requests.AcademicRequests.BatchRequests;
+using Contracts.Responses;
+using Contracts.Responses.AcademicResponses.BatchResponses;
+using Contracts.Results;
+using Domain.Entities.Academic_Structure;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Domain.Interfaces.AcademicStructureInterfaces.BatchInterfaces
+{
+    public interface IBatchService
+    {
+        public Task<PagedResult<BatchDTO>> GetAllBatches(int pageNumber, int pageSize);
+        public Task<PagedResult<BatchDTO>> GetBatchesPerDepartment(int departmentId, int pageNumber, int pageSize);
+        public Task<BatchDTO?> GetDTOById(int batchId);
+        public Task<Batch?> GetEntityById(int batchId);
+        public Task<BatchDTO?> GetDTOByName(int departmentId, string name);
+        public Task<Batch?> GetEntityByName(int departmentId, string name);
+        public Task<bool> Delete(int batchId);
+        public Task<bool> ExistsById(int batchId);
+        public Task<bool> ExistsByName(int departmentId, string name);
+        public Task<AddUpdateServiceResponse<BatchDTO>> AddBatch(AddBatchDTO newBatch, int currentUserId);
+        public Task<AddUpdateServiceResponse<BatchDTO>> UpdateBatch(int batchId, UpdateBatchDTO updatedBatch, int currentUserId);
+    }
+}
+</file>
+
+<file path="Domain/Interfaces/AcademicStructureInterfaces/DepartmentInterfaces/IDepartmentRepository.cs">
+using Contracts.Responses.AcademicResponses.DepartmentResponses;
+using Contracts.Results;
+using Domain.Entities.Academic_Structure;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces
+{
+    public interface IDepartmentRepository
+    {
+        public Task<PagedResult<DepartmentDTO>> GetAllDepartments(int pageNumber, int pageSize);
+        public Task<PagedResult<DepartmentDTO>>GetDepartmentsPerCollege(int collegeId, int pageNumber, int pageSize);
+        public Task<DepartmentDTO?> GetDTOById(int departmentId);
+        public Task<Department?>GetEntityById(int departmentId);
+        public Task<DepartmentDTO?> GetDTOByName(int collegeId, string name);
+        public Task<Department?> GetEntityByName(int collegeId, string name);
+        public void Add(Department department);
+        public Task<bool> Delete(int DepartmentId);
+        public Task<bool> ExistsById(int departmentId);
+        public Task<bool> ExistsByName(int collegeId, string name);
+    }
+}
+</file>
+
 <file path="Domain/Interfaces/IdentityInterfaces/UserInterfaces/ICurrentUserService.cs">
 using System;
 using System.Collections.Generic;
@@ -6631,116 +6990,127 @@ namespace Domain.Interfaces.LoginInterfaces
 }
 </file>
 
-<file path="UniNet/Controllers/AcademicControllers/CollegeController.cs">
-using Contracts.Common.Messages;
-using Contracts.Requests.AcademicRequests.CollegeRequests;
+<file path="UniNet/Controllers/AcademicControllers/BatchController.cs">
 using Contracts.Requests.RequestParameters;
-using Contracts.Responses;
-using Contracts.Responses.CollegeResponses;
+using Contracts.Responses.AcademicResponses.BatchResponses;
 using Contracts.Results;
 using Domain.Entities.Academic_Structure;
-using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
+using Domain.Interfaces.AcademicStructureInterfaces.BatchInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using UniNet.Extensions;
+using Contracts.Common.Messages;
+using Contracts.Responses;
+using Contracts.Requests.AcademicRequests.BatchRequests;
 
 namespace UniNet.Controllers.AcademicControllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CollegeController : ControllerBase
+    public class BatchController : ControllerBase
     {
-        private readonly ICollegeService _collegeService;
+        private readonly IBatchService _batchService;
         private readonly ICurrentUserService _currentUserService;
-        public CollegeController(ICollegeService collegeService, ICurrentUserService currentUserService)
+        public BatchController(IBatchService batchService, ICurrentUserService currentUserService)
         {
-            _collegeService = collegeService;
+            _batchService = batchService;
             _currentUserService = currentUserService;
         }
 
+
         [Authorize]
-        [HttpGet(Name ="GetAllColleges")]
+        [HttpGet(Name ="GetAllBatches")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<PagedResult<CollegeDTO>>> GetAllColleges([FromQuery]PagedResultParameters @parameters)
+        public async Task<ActionResult<PagedResult<BatchDTO>>> GetBatches([FromQuery]PagedResultParameters @pagedResultParameters)
         {
-            var colleges = await _collegeService.GetColleges(parameters.PageNumber, parameters.PageSize);
-            return  colleges.ToPagedActioneResult();
+            var batches = await _batchService.GetAllBatches(pagedResultParameters.PageNumber, @pagedResultParameters.PageSize);
+            return batches.ToPagedActioneResult();
         }
 
         [Authorize]
-        [HttpGet("by-universityId",Name = "GetCollegesPerUniversity")]
+        [HttpGet("by-departmentId",Name = "GetBatchesPerDepartment")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<PagedResult<CollegeDTO>>> GetCollegesPerUniversity([FromQuery]IdParameter @idParameter, [FromQuery]PagedResultParameters @parameters)
+        public async Task<ActionResult<PagedResult<BatchDTO>>> GetBatchesPerDepartment
+            ([FromQuery] PagedResultParameters @pagedResultParameters, [FromQuery]DepartmentIdParameter @departmentIdParameter)
         {
-            var colleges = await _collegeService.GetCollegesPerUniversity(idParameter.Id,parameters.PageNumber,parameters.PageSize);
-            return colleges.ToPagedActioneResult();
-        }
-
-
-        [Authorize]
-        [HttpGet("by-id",Name ="GetCollegeById")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<CollegeDTO>> GetCollegeById([FromQuery]IdParameter @idParameter)
-        {
-            var college = await _collegeService.GetCollegeDTOById(idParameter.Id);
-            return college.GetResourceEndpoints(idParameter.Id, typeof(College).Name);
+            var batches = await _batchService.GetBatchesPerDepartment(departmentIdParameter.DepartmentId,pagedResultParameters.PageNumber, @pagedResultParameters.PageSize);
+            return batches.ToPagedActioneResult();
         }
 
         [Authorize]
-        [HttpGet("by-name", Name = "GetCollegeByName")]
+        [HttpGet("by-id", Name = "GetBatchById")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<CollegeDTO>> GetCollegeByName([FromQuery]IdParameter @universityId,[FromQuery] BaseStringParametre @Parameter)
+        public async Task<ActionResult<BatchDTO>> GetBatchById([FromQuery]BatchIdParameter @batchIdParameter)
         {
-            var college = await _collegeService.GetCollegeDTOByName(universityId.Id,Parameter.Name);
-            return college.GetResourceEndpoints(Parameter.Name, typeof(College).Name);
+            var batch = await _batchService.GetDTOById(batchIdParameter.BatchId);
+            return batch.GetResourceEndpoints(batchIdParameter.BatchId, typeof(Batch).Name);
         }
 
         [Authorize]
-        [HttpDelete(Name ="DeleteCollege")]
+        [HttpGet("by-name", Name = "GetBatchByName")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult> Delete([FromQuery]IdParameter @idParameter)
+        public async Task<ActionResult<BatchDTO>> GetBatchByName
+            ([FromQuery]DepartmentIdParameter @departmentIdParameter,[FromQuery] BaseStringParametre @stringparameter)
         {
-            var result = await _collegeService.Delete(idParameter.Id);
-            if(!result)
-                return NotFound(DeleteMessage.DeletionFailed<College>(idParameter.Id));
-
-            return Ok(DeleteMessage.DeletedSuccessfuly<College>(idParameter.Id));
+            var batch = await _batchService.GetDTOByName(departmentIdParameter.DepartmentId,stringparameter.Name);
+            return batch.GetResourceEndpoints(stringparameter.Name, typeof(Batch).Name);
         }
 
         [Authorize]
-        [HttpPost(Name ="AddCollege")]
+        [HttpDelete(Name = "DeleteBatch")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> Delete([FromQuery]BatchIdParameter @batchIdParameter)
+        {
+            var result = await _batchService.Delete(batchIdParameter.BatchId);
+          return result.ToDeleteActionResult<Batch>(batchIdParameter.BatchId);
+        }
+
+        [Authorize]
+        [HttpPost(Name = "AddBatch")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<AddUpdateServiceResponse<CollegeDTO>>> AddCollege([FromBody]AddCollegeDTO newCollege)
+        public async Task<ActionResult<AddUpdateServiceResponse<BatchDTO>>> AddBatch([FromBody]AddBatchDTO newBatch)
         {
-            var response = await _collegeService.AddCollege(newCollege, _currentUserService.UserId);
+            var response = await _batchService.AddBatch(newBatch, _currentUserService.UserId);
             return response.ToActionResult();
         }
 
         [Authorize]
-        [HttpPut(Name = "UpdateCollege")]
+        [HttpPut(Name = "UpdateBatch")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<AddUpdateServiceResponse<CollegeDTO>>> UpdateCollege([FromQuery]IdParameter @parameter,[FromBody] UpdateCollegeDTO updatedCollege)
+        public async Task<ActionResult<AddUpdateServiceResponse<BatchDTO>>> UpdateBatch
+            ([FromQuery]BatchIdParameter @batchIdParameter, [FromBody]UpdateBatchDTO updatedBatch)
         {
-            var response = await _collegeService.UpdateCollege(parameter.Id,updatedCollege, _currentUserService.UserId);
+            var response = await _batchService.UpdateBatch(batchIdParameter.BatchId,updatedBatch, _currentUserService.UserId);
             return response.ToActionResult();
         }
-
     }
 }
 </file>
@@ -6822,14 +7192,14 @@ namespace UniNet.Controllers.Identity_Controllers
 }
 </file>
 
-<file path="Application/Services/AcademicServices/CollegeService.cs">
+<file path="Application/Services/AcademicServices/BatchService.cs">
 using Contracts.Enums;
-using Contracts.Requests.AcademicRequests.CollegeRequests;
+using Contracts.Requests.AcademicRequests.BatchRequests;
 using Contracts.Responses;
-using Contracts.Responses.CollegeResponses;
+using Contracts.Responses.AcademicResponses.BatchResponses;
 using Contracts.Results;
 using Domain.Entities.Academic_Structure;
-using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
+using Domain.Interfaces.AcademicStructureInterfaces.BatchInterfaces;
 using Domain.Interfaces.UnitOfWork;
 using FluentValidation;
 using System;
@@ -6840,122 +7210,125 @@ using System.Threading.Tasks;
 
 namespace Application.Services.AcademicServices
 {
-    public class CollegeService : ICollegeService
+    public class BatchService : IBatchService
     {
         private readonly IUnitOfWorkRepository _unitOfWorkRepository;
-        private readonly IValidator<AddCollegeDTO> _addValidator;
-        private readonly IValidator<UpdateCollegeDTO> _updateCollegeValidator;
-        public CollegeService(IUnitOfWorkRepository unitOfWorkRepository
-            , IValidator<AddCollegeDTO>addValidator,IValidator<UpdateCollegeDTO>updateValidator)
+        private readonly IValidator<AddBatchDTO> _addValidator;
+        private readonly IValidator<UpdateBatchDTO> _updateValidator;
+        public BatchService(IUnitOfWorkRepository unitOfWorkRepository,
+            IValidator<AddBatchDTO> addValidator,IValidator<UpdateBatchDTO> updateValidator)
         {
-           _unitOfWorkRepository = unitOfWorkRepository;
+            _unitOfWorkRepository = unitOfWorkRepository;
             _addValidator = addValidator;
-            _updateCollegeValidator = updateValidator;
+            _updateValidator = updateValidator;
         }
-        public async Task<AddUpdateServiceResponse<CollegeDTO>> AddCollege(AddCollegeDTO newCollege, int currentUserId)
+        public async Task<AddUpdateServiceResponse<BatchDTO>> AddBatch(AddBatchDTO newBatch, int currentUserId)
         {
-            var validationResult = await _addValidator.ValidateAsync(newCollege);
+            var validationResult = await _addValidator.ValidateAsync(newBatch);
             if(!validationResult.IsValid)
             {
-                return AddUpdateServiceResponse<CollegeDTO>.Failure(validationResult.Errors.
-                    Select(x => $"{x.PropertyName} : {x.ErrorMessage}").ToList(), EnErrorTypes.InvalidData);
+                return AddUpdateServiceResponse<BatchDTO>.Failure(validationResult.Errors
+                    .Select(x => $"{x.PropertyName} : {x.ErrorMessage}").ToList(), EnErrorTypes.InvalidData);
+            }
+            if(!await _unitOfWorkRepository.DepartmentRepository.ExistsById(newBatch.DepartmentId))
+            {
+                return AddUpdateServiceResponse<BatchDTO>.InvalidRelatedData();
+            }
+            if(await ExistsByName(newBatch.DepartmentId,newBatch.BatchName))
+            {
+                return AddUpdateServiceResponse<BatchDTO>.AlreadyExists<Batch>();
             }
 
-            if(await IsCollegeExists(newCollege.UniversityId,newCollege.CollegeName))
+            var batchEntity = new Batch
             {
-                return AddUpdateServiceResponse<CollegeDTO>.AlreadyExists<College>();
-            }
-
-            var collegeEntity = new College
-            {
-                Name = newCollege.CollegeName,
-                Description = newCollege.Description,
-                UniversityId = newCollege.UniversityId, // Just for now user can enter universityId until authentication get Completed
+                DepartmentId = newBatch.DepartmentId,
+                Name = newBatch.BatchName,
+                BatchYear = newBatch.BatchYear,
+                Description = newBatch.Description,
                 CreatedAt = DateTime.UtcNow,
-                CreatedByUserId = currentUserId,
-
+                CreatedByUserId = currentUserId
             };
-            _unitOfWorkRepository.CollegeRepository.Add(collegeEntity);
+            _unitOfWorkRepository.BatchRepository.Add(batchEntity);
             await _unitOfWorkRepository.CompleteAsync();
-            var collegeDTO = await GetCollegeDTOById(collegeEntity.CollegeId);
-            return AddUpdateServiceResponse<CollegeDTO>.Success(collegeDTO!);
+            var batchDTO = await GetDTOById(batchEntity.BatchId);
+            return AddUpdateServiceResponse<BatchDTO>.Success(batchDTO!);
         }
 
-        public async Task<bool> Delete(int collegeId)
+        public async Task<bool> Delete(int batchId)
         {
-            var result = await _unitOfWorkRepository.CollegeRepository.Delete(collegeId);
+            var result = await _unitOfWorkRepository.BatchRepository.Delete(batchId);
             if (result)
                 await _unitOfWorkRepository.CompleteAsync();
+
             return result;
         }
 
-        public async Task<CollegeDTO?> GetCollegeDTOById(int collegeId)
+        public async Task<bool> ExistsById(int batchId)
         {
-            return await _unitOfWorkRepository.CollegeRepository.GetCollegeDTOById(collegeId);
+            return await _unitOfWorkRepository.BatchRepository.ExistsById(batchId);
         }
 
-        public async Task<CollegeDTO?> GetCollegeDTOByName(int universityId, string collegeName)
+        public async Task<bool> ExistsByName(int departmentId, string name)
         {
-            return await _unitOfWorkRepository.CollegeRepository.GetCollegeDTOByName(universityId,collegeName);
+            return await _unitOfWorkRepository.BatchRepository.ExistsByName(departmentId, name); 
         }
 
-        public async Task<College?> GetCollegeEntityById(int collegeId)
+        public async Task<PagedResult<BatchDTO>> GetAllBatches(int pageNumber, int pageSize)
         {
-            return await _unitOfWorkRepository.CollegeRepository.GetCollegeEntityById(collegeId);
+            return await _unitOfWorkRepository.BatchRepository.GetAllBatches(pageNumber, pageSize);
         }
 
-        public async Task<College?> GetCollegeEntityByName(int universityId, string collegeName)
+        public async Task<PagedResult<BatchDTO>> GetBatchesPerDepartment(int departmentId, int pageNumber, int pageSize)
         {
-            return await _unitOfWorkRepository.CollegeRepository.GetCollegeEntityByName(universityId,collegeName);
+            return await _unitOfWorkRepository.BatchRepository.GetBatchesPerDepartment(departmentId, pageNumber, pageSize);
         }
 
-        public async Task<PagedResult<CollegeDTO>> GetColleges(int pageNumber, int pageSize)
+        public async Task<BatchDTO?> GetDTOById(int batchId)
         {
-            return await _unitOfWorkRepository.CollegeRepository.GetAllColleges(pageNumber, pageSize);
+            return await _unitOfWorkRepository.BatchRepository.GetDTOById(batchId);
         }
 
-        public async Task<PagedResult<CollegeDTO>> GetCollegesPerUniversity(int universityId, int pageNumber, int pageSize)
+        public async Task<BatchDTO?> GetDTOByName(int departmentId, string name)
         {
-            return await _unitOfWorkRepository.CollegeRepository.GetAllCollegesPerUniversity(universityId, pageNumber, pageSize);
+            return await _unitOfWorkRepository.BatchRepository.GetDTOByName(departmentId, name);
         }
 
-        public async Task<bool> IsCollegeExists(int universityId, int collegeId)
+        public async Task<Batch?> GetEntityById(int batchId)
         {
-            return await _unitOfWorkRepository.CollegeRepository.IsCollegeExists(universityId, collegeId);
+            return await _unitOfWorkRepository.BatchRepository.GetEntityById(batchId);
         }
 
-        public async Task<bool> IsCollegeExists(int universityId, string collegeName)
+        public async Task<Batch?> GetEntityByName(int departmentId, string name)
         {
-            return await _unitOfWorkRepository.CollegeRepository.IsCollegeExists(universityId, collegeName);
+            return await _unitOfWorkRepository.BatchRepository.GetEntityByName(departmentId, name);
         }
 
-        public async Task<AddUpdateServiceResponse<CollegeDTO>> UpdateCollege(int collegeId, UpdateCollegeDTO updatedCollege, int currentUserId)
+        public async Task<AddUpdateServiceResponse<BatchDTO>> UpdateBatch(int batchId, UpdateBatchDTO updatedBatch, int currentUserId)
         {
-            var validationResult = await _updateCollegeValidator.ValidateAsync(updatedCollege);
+            var validationResult = await _updateValidator.ValidateAsync(updatedBatch);
+
             if(!validationResult.IsValid)
             {
-                return AddUpdateServiceResponse<CollegeDTO>.Failure(validationResult.Errors.
-                                   Select(x => $"{x.PropertyName} : {x.ErrorMessage}").ToList(), EnErrorTypes.InvalidData);
+                return AddUpdateServiceResponse<BatchDTO>.Failure(validationResult.Errors
+                    .Select(x => $"{x.PropertyName} : {x.ErrorMessage}").ToList(), EnErrorTypes.InvalidData);
             }
 
-            var college = await GetCollegeEntityById(collegeId);
-            if(college == null)
+            var batch = await GetEntityById(batchId);
+            if(await ExistsByName(batch!.DepartmentId,updatedBatch.BatchName)&&batch.Name  != updatedBatch.BatchName)
             {
-                return AddUpdateServiceResponse<CollegeDTO>.ResourceDoesntExist<College>();
+                return AddUpdateServiceResponse<BatchDTO>.AlreadyExists<Batch>();
             }
 
-            if(await IsCollegeExists(college.UniversityId,updatedCollege.CollegeName) && college.Name != updatedCollege.CollegeName)
-            {
-                return AddUpdateServiceResponse<CollegeDTO>.AlreadyExists<College>();
-            }
 
-            college.Name = updatedCollege.CollegeName;
-            college.Description = updatedCollege.Description;
-            college.UpdatedAt = DateTime.UtcNow;
-            college.UpdatedByUserId = currentUserId;
+            batch.Name = updatedBatch.BatchName;
+            batch.BatchYear = updatedBatch.BatchYear;
+            batch.Description = updatedBatch.Description;
+            batch.UpdatedAt = DateTime.UtcNow;
+            batch.UpdatedByUserId = currentUserId;
+
             await _unitOfWorkRepository.CompleteAsync();
-            var collegeDTO = await GetCollegeDTOById(college.CollegeId);
-            return AddUpdateServiceResponse<CollegeDTO>.Success(collegeDTO!);
+            var batchDTO = await GetDTOById(batch.BatchId);
+            return AddUpdateServiceResponse<BatchDTO>.Success (batchDTO!);
         }
     }
 }
@@ -7222,7 +7595,7 @@ namespace Application.Validators.LoginRequestValidator
 }
 </file>
 
-<file path="Contracts/Common/Messages/ErrorMessages.cs">
+<file path="Contracts/Common/Messages/DeleteMessage.cs">
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7231,23 +7604,20 @@ using System.Threading.Tasks;
 
 namespace Contracts.Common.Messages
 {
-    public class ErrorMessages
+    public  class DeleteMessage
     {
-        public static string NotFound<TEntity>(int Id)
+        public static string DeletedSuccessfuly<TEntity>(int id)
         {
-            return $"No {typeof(TEntity).Name} Found With Id = {Id}";
+            return $"{typeof(TEntity).Name} with id  = {id} deleted successfuly";
         }
-        public static string NotFound<TEntity>(string name)
+
+        public static string DeletionFailed<TEntity>(int id)
         {
-            return $"No {typeof(TEntity).Name} Found With Name = {name}";
+            return $"Failed to delete/{typeof(TEntity).Name} with id = {id} NotFound!";
         }
-        public static string NotFound(string EntityName,int Id)
+        public static string DeletionFailed<TEntity>(string name)
         {
-            return $"No {EntityName} Found With Id = {Id}";
-        }
-        public static string NotFound(string EntityName, string name)
-        {
-            return $"No {EntityName} Found With Id = {name}";
+            return $"Failed to delete/{typeof(TEntity).Name} with name = {name} NotFound!";
         }
     }
 }
@@ -7325,6 +7695,66 @@ namespace Contracts.Requests.RequestParameters
         [Required(ErrorMessage = "Name is required.")]
         [StringLength(250, MinimumLength = 2, ErrorMessage = "Name must be between 2 and 250 characters.")]
         public string Name { get; set; } = null!;
+    }
+}
+</file>
+
+<file path="Contracts/Responses/AcademicResponses/DepartmentResponses/DepartmentDTO.cs">
+using Contracts.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Contracts.Responses.AcademicResponses.DepartmentResponses
+{
+    public class DepartmentDTO : DTOsBaseEntity
+    {
+        public int DepartmentId { get; set; }
+        public string DepartmentName { get; set; } = null!;
+        public string?Description { get; set; } = null!;
+    }
+}
+</file>
+
+<file path="Contracts/Responses/AcademicResponses/UniversityResponses/UniversityDTO.cs">
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Contracts.Common;
+
+namespace Contracts.Responses.AcademicResponses.UniversityResponses
+{
+    public  class UniversityDTO : DTOsBaseEntity
+    {
+        public int UniversityId { get; set; }
+        public string UniversityName { get; set; } = null!;
+        public string ?Description { get; set; } = null!;
+   
+    }
+}
+</file>
+
+<file path="Contracts/Responses/CollegeResponses/CollegeDTO.cs">
+using Contracts.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Contracts.Responses.CollegeResponses
+{
+    public class CollegeDTO : DTOsBaseEntity
+    {
+        public int CollegeId { get; set; }
+        public string CollegeName { get; set; } = null!;
+        public int UniversityId { get; set; }
+        public string UniversityName { get; set; } = null!;
+        public string ?Description {  get; set; } 
     }
 }
 </file>
@@ -8917,15 +9347,14 @@ namespace DataAccessLayer.Migrations
 }
 </file>
 
-<file path="DataAccessLayer/Repos/AcademicRepositories/UniversityRepository.cs">
-using Contracts.Responses.AcademicResponses.UniversityResponses;
+<file path="DataAccessLayer/Repos/AcademicRepositories/BatchRepository.cs">
+using Contracts.Responses.AcademicResponses.BatchResponses;
 using Contracts.Results;
 using DataAccessLayer.Dbcontext;
 using DataAccessLayer.Extensions;
 using Domain.Entities.Academic_Structure;
-using Domain.Interfaces.AcademicStructureInterfaces.UniversityInterfaces;
+using Domain.Interfaces.AcademicStructureInterfaces.BatchInterfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8935,63 +9364,85 @@ using System.Threading.Tasks;
 
 namespace DataAccessLayer.Repos.AcademicRepositories
 {
-    public class UniversityRepository : IUniversityRepository
+    public class BatchRepository : IBatchRepository
     {
         private readonly AppDbcontext _context;
-        private readonly Expression<Func<University, UniversityDTO>> ToDTO = u => new UniversityDTO
+        private readonly Expression<Func<Batch, BatchDTO>> ToDTO = b => new BatchDTO
         {
-            UniversityId = u.UniversityId,
-            UniversityName = u.Name,
-            Description = u.Description,
-            CreatedAt = u.CreatedAt,
-            CreatedByUserId = u.CreatedByUserId,
-            CreatedByUserName = u.CreatedByUser.UserName,
-            UpdatedAt = u.UpdatedAt,
-            UpdatedByUserId = u.UpdatedByUserId,
-            UpdatedByUserName = u.UpdatedByUser == null ? null : u.UpdatedByUser.UserName,
-
+            BatchId = b.BatchId,
+            BatchName = b.Name,
+            DepartmentId = b.DepartmentId,
+            DepartmentName = b.Department.Name,
+            BatchYear = b.BatchYear,
+            Description = b.Description,
+            CreatedAt = b.CreatedAt,
+            CreatedByUserId = b.CreatedByUserId,
+            CreatedByUserName = b.CreatedByUser.UserName,
+            UpdatedAt = b.UpdatedAt,
+            UpdatedByUserId = b.UpdatedByUserId,
+            UpdatedByUserName = b.UpdatedByUser == null ? null : b.UpdatedByUser.UserName,
         };
-        public UniversityRepository(AppDbcontext context)
+
+        public BatchRepository(AppDbcontext context)
         {
             _context = context;
         }
-        public async void Add(University university)
+
+        public void Add(Batch batch)
         {
-            _context.Universities.Add(university);
+             _context.Batches.Add(batch);
         }
 
-        public async Task<bool> Delete(int UniversityId)
+        public async Task<bool> Delete(int batchId)
         {
-            var university = await _context.Universities.FindAsync(UniversityId);
-            if (university == null)
+            var batch = await _context.Batches.FindAsync(batchId);
+            if (batch == null)
                 return false;
-            _context.Universities.Remove(university);
+            _context.Remove(batch);
             return true;
         }
 
-        public async Task<PagedResult<UniversityDTO>> GetAllUniversities(int pageNumber, int pageSize)
+        public async Task<bool> ExistsById(int batchId)
         {
-            return await _context.Universities.Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
+            return await _context.Batches.AnyAsync(b=>b.BatchId == batchId);
         }
 
-        public async Task<UniversityDTO?> GetUniversityDTOById(int universityId)
+        public async Task<bool> ExistsByName(int departmentId, string name)
         {
-            return await _context.Universities.Select(ToDTO).SingleOrDefaultAsync(u=>u.UniversityId == universityId);
+            return await _context.Batches.AnyAsync(b => b.DepartmentId == departmentId && b.Name == name);
         }
 
-        public async Task<University?> GetUniversityEntityById(int universityId)
+        public async Task<PagedResult<BatchDTO>> GetAllBatches(int pageNumber, int pageSize)
         {
-            return await _context.Universities.FindAsync(universityId);
+            return await _context.Batches.AsNoTracking().OrderBy(b=>b.DepartmentId).Select(ToDTO)
+                .ToPagedResultAsync(pageNumber, pageSize);
         }
 
-        public async Task<bool> IsUniversityExists(int universityId)
+        public async Task<PagedResult<BatchDTO>> GetBatchesPerDepartment(int departmentId, int pageNumber, int pageSize)
         {
-            return await _context.Universities.AnyAsync(u => u.UniversityId == universityId);
+            return await _context.Batches.AsNoTracking()
+                .Where(b=>b.DepartmentId == departmentId).OrderBy(b => b.DepartmentId).Select(ToDTO)
+                        .ToPagedResultAsync(pageNumber, pageSize);
         }
 
-        public Task<bool> IsUniversityExists(string universityName)
+        public async Task<BatchDTO?> GetDTOById(int batchId)
         {
-            return _context.Universities.AnyAsync(u => u.Name == universityName);
+            return await _context.Batches.Select(ToDTO).SingleOrDefaultAsync(b=>b.BatchId==batchId);
+        }
+
+        public async Task<BatchDTO?> GetDTOByName(int departmentId, string name)
+        {
+            return await _context.Batches.Where(b => b.DepartmentId == departmentId).Select(ToDTO).SingleOrDefaultAsync(b => b.BatchName == name);
+        }
+
+        public async Task<Batch?> GetEntityById(int batchId)
+        {
+            return await _context.Batches.FindAsync(batchId);
+        }
+
+        public async Task<Batch?> GetEntityByName(int departmentId, string name)
+        {
+            return await _context.Batches.SingleOrDefaultAsync(b=>b.DepartmentId  == departmentId&& b.Name ==name);
         }
     }
 }
@@ -9291,10 +9742,10 @@ namespace Domain.Entities.Study
 }
 </file>
 
-<file path="Domain/Interfaces/AcademicStructureInterfaces/CollegeInterfaces/ICollegeService.cs">
-using Contracts.Requests.AcademicRequests.CollegeRequests;
+<file path="Domain/Interfaces/AcademicStructureInterfaces/DepartmentInterfaces/IDepartmentService.cs">
+using Contracts.Requests.AcademicRequests.DepartmentRequests;
 using Contracts.Responses;
-using Contracts.Responses.CollegeResponses;
+using Contracts.Responses.AcademicResponses.DepartmentResponses;
 using Contracts.Results;
 using Domain.Entities.Academic_Structure;
 using System;
@@ -9303,21 +9754,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces
+namespace Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces
 {
-    public interface ICollegeService
+    public  interface IDepartmentService
     {
-        public Task<PagedResult<CollegeDTO>>GetColleges(int pageNumber, int pageSize);
-        public Task<PagedResult<CollegeDTO>>GetCollegesPerUniversity(int universityId,int pageNumber, int pageSize);
-        public Task<CollegeDTO?> GetCollegeDTOById(int collegeId);
-        public Task<College?>GetCollegeEntityById(int collegeId);
-        public Task<CollegeDTO?> GetCollegeDTOByName(int universityId,string collegeName);
-        public Task<College?>GetCollegeEntityByName(int universityId, string collegeName);
-        public Task<bool> Delete(int collegeId);
-        public Task<bool>IsCollegeExists(int universityId,int collegeId);
-        public Task<bool> IsCollegeExists(int universityId,string collegeName);
-        public Task<AddUpdateServiceResponse<CollegeDTO>> AddCollege(AddCollegeDTO newCollege, int currentUserId);
-        public Task<AddUpdateServiceResponse<CollegeDTO>> UpdateCollege(int collegeId, UpdateCollegeDTO updatedCollege, int currentUserId);
+        public Task<PagedResult<DepartmentDTO>> GetAllDepartments(int pageNumber, int pageSize);
+        public Task<PagedResult<DepartmentDTO>>GetDepartmentsPerCollege(int collegeId,int pageNumber,int pageSize);
+        public Task<DepartmentDTO?> GetDTOById(int departmentId);
+        public Task<Department?>GetEntityById(int departmentId);
+        public Task<DepartmentDTO?> GetDTOByName(int collegeId, string name);
+        public Task<Department?>GetEntityByName(int departmentId, string name);
+        public Task<AddUpdateServiceResponse<DepartmentDTO>> AddDepartment(AddDepartmentDTO newDepartment, int currentUserId);
+        public Task<AddUpdateServiceResponse<DepartmentDTO>>UpdateDepartment(int departmentId,UpdateDepartmentDTO updatedDepartment,int currentUserId);
+        public Task<bool> ExistsById(int departmentId);
+        public Task<bool>ExistsByName(int collegeId,string name);
+        public Task<bool> Delete(int departmentId);
+
     }
 }
 </file>
@@ -9417,15 +9869,15 @@ namespace Domain.Interfaces.LoginInterfaces.TokenInterfaces
 }
 </file>
 
-<file path="UniNet/Controllers/AcademicControllers/UniversityController.cs">
+<file path="UniNet/Controllers/AcademicControllers/CollegeController.cs">
 using Contracts.Common.Messages;
-using Contracts.Requests.AcademicRequests.UniversityRequests;
+using Contracts.Requests.AcademicRequests.CollegeRequests;
 using Contracts.Requests.RequestParameters;
 using Contracts.Responses;
-using Contracts.Responses.AcademicResponses.UniversityResponses;
+using Contracts.Responses.CollegeResponses;
 using Contracts.Results;
 using Domain.Entities.Academic_Structure;
-using Domain.Interfaces.AcademicStructureInterfaces.UniversityInterfaces;
+using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -9436,74 +9888,205 @@ namespace UniNet.Controllers.AcademicControllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UniversityController : ControllerBase
+    public class CollegeController : ControllerBase
     {
-        private readonly IUniversityService _uinversityService;
+        private readonly ICollegeService _collegeService;
         private readonly ICurrentUserService _currentUserService;
-        public UniversityController(IUniversityService universityService, ICurrentUserService currentUserService)
+        public CollegeController(ICollegeService collegeService, ICurrentUserService currentUserService)
         {
-            _uinversityService = universityService;
+            _collegeService = collegeService;
             _currentUserService = currentUserService;
         }
 
-
         [Authorize]
-        [HttpGet(Name ="GetAllUniversities")]
+        [HttpGet(Name ="GetAllColleges")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<PagedResult<UniversityDTO>>> GetAllUniversities([FromQuery]PagedResultParameters @parameters)
-        {
-            var universities = await _uinversityService.GetAllUniversities(parameters.PageNumber, parameters.PageSize);
-            return universities.ToPagedActioneResult();
-        }
-
-        [Authorize]
-        [HttpGet("by-id",Name ="GetUniversityById")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<UniversityDTO>> GetUniversityById([FromQuery]IdParameter @parameter)
+        public async Task<ActionResult<PagedResult<CollegeDTO>>> GetAllColleges([FromQuery]PagedResultParameters @parameters)
         {
-            var university = await _uinversityService.FindUniversityDTOById(@parameter.Id);
-            if(university == null)
-                return NotFound(ErrorMessages.NotFound<University>(parameter.Id));
-
-            return Ok(university);
+            var colleges = await _collegeService.GetColleges(parameters.PageNumber, parameters.PageSize);
+            return  colleges.ToPagedActioneResult();
         }
 
-
         [Authorize]
-        [HttpDelete(Name ="DeleteUniversity")]
+        [HttpGet("by-universityId",Name = "GetCollegesPerUniversity")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult> Delete([FromQuery] IdParameter @parameter)
+        public async Task<ActionResult<PagedResult<CollegeDTO>>> GetCollegesPerUniversity([FromQuery]CollegeIdParameter @collegeIdParameter, [FromQuery]PagedResultParameters @parameters)
         {
-            var result = await _uinversityService.Delete(parameter.Id);
-            if (!result)
-                return NotFound(DeleteMessage.DeletionFailed<University>(parameter.Id));
-            return Ok(DeleteMessage.DeletedSuccessfuly<University>(parameter.Id));
+            var colleges = await _collegeService.GetCollegesPerUniversity(@collegeIdParameter.CollegeId,parameters.PageNumber,parameters.PageSize);
+            return colleges.ToPagedActioneResult();
+        }
+
+
+        [Authorize]
+        [HttpGet("by-id",Name ="GetCollegeById")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<CollegeDTO>> GetCollegeById([FromQuery]CollegeIdParameter @collegeIdParameter)
+        {
+            var college = await _collegeService.GetCollegeDTOById(@collegeIdParameter.CollegeId);
+            return college.GetResourceEndpoints(@collegeIdParameter.CollegeId, typeof(College).Name);
         }
 
         [Authorize]
-        [HttpPost(Name ="AddUniversity")]
+        [HttpGet("by-name", Name = "GetCollegeByName")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<CollegeDTO>> GetCollegeByName([FromQuery]UniversityIdParameter @universityIdParameter,[FromQuery] BaseStringParametre @Parameter)
+        {
+            var college = await _collegeService.GetCollegeDTOByName(@universityIdParameter.UniversityId, Parameter.Name);
+            return college.GetResourceEndpoints(Parameter.Name, typeof(College).Name);
+        }
+
+        [Authorize]
+        [HttpDelete(Name ="DeleteCollege")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult> Delete([FromQuery]CollegeIdParameter @collegeIdParameter)
+        {
+            var result = await _collegeService.Delete(collegeIdParameter.CollegeId);
+            return result.ToDeleteActionResult<College>(collegeIdParameter.CollegeId);
+        }
+
+        [Authorize]
+        [HttpPost(Name ="AddCollege")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<AddUpdateServiceResponse<UniversityDTO>>> AddUniversity([FromBody]AddUniversityDTO newUniversity)
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<AddUpdateServiceResponse<CollegeDTO>>> AddCollege([FromBody]AddCollegeDTO newCollege)
         {
-            var response = await _uinversityService.AddUniversity(newUniversity, _currentUserService.UserId);
+            var response = await _collegeService.AddCollege(newCollege, _currentUserService.UserId);
             return response.ToActionResult();
         }
 
         [Authorize]
-        [HttpPut(Name ="UpdateUniversity")]
+        [HttpPut(Name = "UpdateCollege")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<AddUpdateServiceResponse<CollegeDTO>>> UpdateCollege([FromQuery]CollegeIdParameter @collegeIdParameter,[FromBody] UpdateCollegeDTO updatedCollege)
+        {
+            var response = await _collegeService.UpdateCollege(collegeIdParameter.CollegeId, updatedCollege, _currentUserService.UserId);
+            return response.ToActionResult();
+        }
+
+    }
+}
+</file>
+
+<file path="UniNet/Controllers/AcademicControllers/DepartmentController.cs">
+using Contracts.Common.Messages;
+using Contracts.Requests.AcademicRequests.DepartmentRequests;
+using Contracts.Requests.RequestParameters;
+using Contracts.Responses;
+using Contracts.Responses.AcademicResponses.DepartmentResponses;
+using Contracts.Results;
+using Domain.Entities.Academic_Structure;
+using Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces;
+using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using UniNet.Extensions;
+
+namespace UniNet.Controllers.AcademicControllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class DepartmentController : ControllerBase
+    {
+        private readonly IDepartmentService _departmentService;
+        private readonly ICurrentUserService _currentUserService;
+        public DepartmentController(IDepartmentService departmentService, ICurrentUserService currentUserService)
+        {
+            _departmentService = departmentService;
+            _currentUserService = currentUserService;
+        }
+
+        [Authorize]
+        [HttpGet(Name ="GetAllDepartments")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<PagedResult<DepartmentDTO>>> GetAllDepartments([FromQuery]PagedResultParameters @pagedResultParameters)
+        {
+            var departments = await _departmentService.GetAllDepartments(@pagedResultParameters.PageNumber, @pagedResultParameters.PageSize);
+            return departments.ToPagedActioneResult();
+        }
+
+        [Authorize]
+        [HttpGet("collegeId",Name = "GetDepartmentsPerCollege")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<PagedResult<DepartmentDTO>>> GetDepartmentsPerCollege
+            ([FromQuery]CollegeIdParameter @collegeParameter, [FromQuery]PagedResultParameters @pagedResultParameters)
+        {
+            var departments = await _departmentService.GetDepartmentsPerCollege(collegeParameter.CollegeId,pagedResultParameters.PageNumber,@pagedResultParameters.PageSize);
+            return departments.ToPagedActioneResult();
+        }
+
+
+        [Authorize]
+        [HttpGet("by-id",Name ="GetDepartmentById")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<AddUpdateServiceResponse<UniversityDTO>>> UpdateUniversity([FromQuery]IdParameter @parameter,
-            [FromBody]UpdateUniversityDTO updatedUniversity)
+        public async Task<ActionResult<DepartmentDTO>> GetDepartmentById([FromQuery]DepartmentIdParameter @departmentParameter)
         {
-            var response = await _uinversityService.UpdateUniversity(parameter.Id, updatedUniversity, _currentUserService.UserId);
+            var department = await _departmentService.GetDTOById(departmentParameter.DepartmentId);
+            return department.GetResourceEndpoints(departmentParameter.DepartmentId, typeof(Department).Name);
+        }
+
+
+        [Authorize]
+        [HttpPost( Name = "AddDepartment")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<AddUpdateServiceResponse<DepartmentDTO>>> AddDepartment([FromBody]AddDepartmentDTO newDepartment)
+        {
+            var response = await _departmentService.AddDepartment(newDepartment, _currentUserService.UserId);
             return response.ToActionResult();
+        }
+        [Authorize]
+        [HttpPut(Name = "UpdateDepartment")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+
+        public async Task<ActionResult<AddUpdateServiceResponse<DepartmentDTO>>> UpdateDepartment
+            ([FromQuery]DepartmentIdParameter @departmentIdParameter,[FromBody] UpdateDepartmentDTO UpdatedDepartment)
+        {
+            var response = await _departmentService.UpdateDepartment(departmentIdParameter.DepartmentId,UpdatedDepartment, _currentUserService.UserId);
+            return response.ToActionResult();
+        }
+
+        [Authorize]
+        [HttpDelete(Name = "Delete")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult> Delete([FromQuery]DepartmentIdParameter @departmentIdParameter)
+        {
+            var result = await _departmentService.Delete(departmentIdParameter.DepartmentId);
+            return result.ToDeleteActionResult<Department>(departmentIdParameter.DepartmentId);
         }
     }
 }
@@ -9609,93 +10192,171 @@ namespace Application.HelperClasses
 }
 </file>
 
-<file path="Application/Services/IdentityServices/UserRoleService.cs">
-using Contracts.Requests.IdentityRequests.UserRoleRequsets;
+<file path="Application/Services/AcademicServices/DepartmentService.cs">
+using Contracts.Enums;
+using Contracts.Requests.AcademicRequests.DepartmentRequests;
 using Contracts.Responses;
-using Contracts.Responses.IdentityResponses.UserRoleResponse;
+using Contracts.Responses.AcademicResponses.DepartmentResponses;
 using Contracts.Results;
-using Domain.Entities.Identity;
-using Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces;
+using Domain.Entities.Academic_Structure;
+using Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces;
 using Domain.Interfaces.UnitOfWork;
+using FluentValidation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Services.IdentityServices
+namespace Application.Services.AcademicServices
 {
-    internal class UserRoleService : IUserRoleService
+    public class DepartmentService : IDepartmentService
     {
-        private readonly IUnitOfWorkRepository _unitOfWorkRepository;
-        public UserRoleService(IUnitOfWorkRepository unitOfWorkRepository)
+        private readonly IUnitOfWorkRepository _unitOfWork;
+        private readonly IValidator<AddDepartmentDTO> _addValidator;
+        private readonly IValidator<UpdateDepartmentDTO> _updateValidator;
+        public DepartmentService(IUnitOfWorkRepository unitOfWork
+            , IValidator<AddDepartmentDTO>addValidator, IValidator<UpdateDepartmentDTO> updateValidator)
         {
-            _unitOfWorkRepository = unitOfWorkRepository;
+            _unitOfWork = unitOfWork;
+            _addValidator = addValidator;
+            _updateValidator = updateValidator;
         }
-
-        public async Task<AddUpdateServiceResponse<UserRoleDTO>> AddUserRole(AddUserRoleDTO addUserRoleDTO)
+        public async Task<AddUpdateServiceResponse<DepartmentDTO>> AddDepartment(AddDepartmentDTO newDepartment, int currentUserId)
         {
-            if(! await _unitOfWorkRepository.UserRepository.IsUserExists(addUserRoleDTO.UserId)
-                ||! await _unitOfWorkRepository.RoleRepository.IsRoleExists(addUserRoleDTO.RoleId))
+            var validationResult = await _addValidator.ValidateAsync(newDepartment);
+            if(!validationResult.IsValid)
             {
-                return AddUpdateServiceResponse<UserRoleDTO>.InvalidRelatedData();
+                return AddUpdateServiceResponse<DepartmentDTO>.Failure
+                    (validationResult.Errors.Select(x => $"{x.PropertyName} : {x.ErrorMessage}").ToList(),EnErrorTypes.InvalidData);
             }
-
-            if(await IsUserRoleExists(addUserRoleDTO.UserId,addUserRoleDTO.RoleId))
+            if(! await _unitOfWork.CollegeRepository.IsCollegeExists(newDepartment.CollegeId))
             {
-                return AddUpdateServiceResponse<UserRoleDTO>.AlreadyExists<UserRole>();
+                return AddUpdateServiceResponse<DepartmentDTO>.InvalidRelatedData();
             }
-
-            var userRoleEntity = new UserRole
+            if(await ExistsByName(newDepartment.CollegeId,newDepartment.DepartmentName))
             {
-                UserId = addUserRoleDTO.UserId,
-                RoleId = addUserRoleDTO.RoleId,
+                return AddUpdateServiceResponse<DepartmentDTO>.AlreadyExists<Department>();
+            }
+            var departmentEntity = new Department
+            {
+               CollegeId = newDepartment.CollegeId,
+                Name = newDepartment.DepartmentName,
+                Description = newDepartment.Description,
+                CreatedAt = DateTime.UtcNow,
+                CreatedByUserId = currentUserId
             };
-            await _unitOfWorkRepository.UserRoleRepository.Add(userRoleEntity);
-            await _unitOfWorkRepository.CompleteAsync();
-
-            // this is for projection because userRoleDTO have UserName & RoleName it takes it from navigation proprties from UserRole Entity
-            var userRoleDTO = await FindUserRoleDTOById(userRoleEntity.UserId, userRoleEntity.RoleId);
-            return AddUpdateServiceResponse<UserRoleDTO>.Success(userRoleDTO!);
+            _unitOfWork.DepartmentRepository.Add(departmentEntity);
+            await _unitOfWork.CompleteAsync();
+            var departmentDTO = await GetDTOById(departmentEntity.DepartmentId);
+            return AddUpdateServiceResponse<DepartmentDTO>.Success(departmentDTO!);
         }
 
-        public async Task<bool> Delete(int userId, int roleId)
+        public async Task<bool> Delete(int departmentId)
         {
-            var result = await _unitOfWorkRepository.UserRoleRepository.Delete(userId, roleId);
-            if(result)
-            {
-               await _unitOfWorkRepository.CompleteAsync();
-                return result;
-            }
+            var result = await _unitOfWork.DepartmentRepository.Delete(departmentId);
+            if (result)
+                await _unitOfWork.CompleteAsync();
+
             return result;
         }
 
-        public async Task<UserRoleDTO?> FindUserRoleDTOById(int userId, int roleId)
+        public async Task<bool> ExistsById(int departmentId)
         {
-            return await _unitOfWorkRepository.UserRoleRepository.GetUserRoleDTOById(userId, roleId);
+            return await _unitOfWork.DepartmentRepository.ExistsById(departmentId);
         }
 
-        public async Task<UserRole?> FindUserRoleEntityById(int userId, int roleId)
+        public async Task<bool> ExistsByName(int collegeId, string name)
         {
-            return await _unitOfWorkRepository.UserRoleRepository.GetUserRoleEntityById(userId, roleId);
+            return await _unitOfWork.DepartmentRepository.ExistsByName(collegeId, name);
         }
 
-        public async Task<PagedResult<UserRoleDTO>> GetAllUserRole(int pageNumber, int pageSize)
+        public async Task<PagedResult<DepartmentDTO>> GetAllDepartments(int pageNumber, int pageSize)
         {
-            return await _unitOfWorkRepository.UserRoleRepository.GetUserRoles(pageNumber, pageSize);
+            return await _unitOfWork.DepartmentRepository.GetAllDepartments(pageNumber, pageSize); 
         }
 
-        public async Task<PagedResult<UserRoleDTO>> GetUserRolesPerRoleId(int roleId, int pageNumber, int pageSize)
+        public async Task<PagedResult<DepartmentDTO>> GetDepartmentsPerCollege(int collegeId, int pageNumber, int pageSize)
         {
-            return await _unitOfWorkRepository.UserRoleRepository.GetUsersPerRoleId(roleId, pageNumber, pageSize);
+            return await _unitOfWork.DepartmentRepository.GetDepartmentsPerCollege(collegeId, pageNumber, pageSize);
         }
 
-        public async Task<bool> IsUserRoleExists(int userId, int roleId)
+        public async Task<DepartmentDTO?> GetDTOById(int departmentId)
         {
-            return await _unitOfWorkRepository.UserRoleRepository.IsUserRoleExists(userId, roleId);
+            return await _unitOfWork.DepartmentRepository.GetDTOById(departmentId);
         }
 
-      
+        public async Task<DepartmentDTO?> GetDTOByName(int collegeId, string name)
+        {
+            return await _unitOfWork.DepartmentRepository.GetDTOByName(collegeId, name);
+        }
+
+        public async Task<Department?> GetEntityById(int departmentId)
+        {
+            return await _unitOfWork.DepartmentRepository.GetEntityById(departmentId);
+        }
+
+        public async Task<Department?> GetEntityByName(int departmentId, string name)
+        {
+            return await _unitOfWork.DepartmentRepository.GetEntityByName(departmentId, name);
+        }
+
+        public async Task<AddUpdateServiceResponse<DepartmentDTO>> UpdateDepartment(int departmentId, UpdateDepartmentDTO updatedDepartment, int currentUserId)
+        {
+            var validationResult = await _updateValidator.ValidateAsync(updatedDepartment);
+
+            if(!validationResult.IsValid)
+            {
+                return AddUpdateServiceResponse<DepartmentDTO>.Failure
+                   (validationResult.Errors.Select(x => $"{x.PropertyName} : {x.ErrorMessage}").ToList(), EnErrorTypes.InvalidData);
+            }
+
+            var department = await GetEntityById(departmentId);
+
+            if(await ExistsByName(department!.CollegeId,updatedDepartment.DepartmentName)&& department.Name != updatedDepartment.DepartmentName)
+            {
+                return AddUpdateServiceResponse<DepartmentDTO>.AlreadyExists<Department>();
+            }
+            department.Name = updatedDepartment.DepartmentName;
+            department.Description = updatedDepartment.Description;
+            department.UpdatedAt = DateTime.UtcNow;
+            department.UpdatedByUserId = currentUserId;
+
+            await _unitOfWork.CompleteAsync();
+            var departmentDTO = await GetDTOById(department.DepartmentId);
+            return AddUpdateServiceResponse<DepartmentDTO>.Success(departmentDTO!);
+        }
+    }
+}
+</file>
+
+<file path="Contracts/Common/Messages/ErrorMessages.cs">
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Contracts.Common.Messages
+{
+    public class ErrorMessages
+    {
+        public static string NotFound<TEntity>(int Id)
+        {
+            return $"No {typeof(TEntity).Name} Found With Id = {Id}";
+        }
+        public static string NotFound<TEntity>(string name)
+        {
+            return $"No {typeof(TEntity).Name} Found With Name = {name}";
+        }
+        public static string NotFound(string EntityName,int Id)
+        {
+            return $"No {EntityName} Found With Id = {Id}";
+        }
+        public static string NotFound(string EntityName, string name)
+        {
+            return $"No {EntityName} Found With Name = {name}";
+        }
     }
 }
 </file>
@@ -9767,14 +10428,15 @@ namespace DataAccessLayer.Configurations.ContentConfigurations
 }
 </file>
 
-<file path="DataAccessLayer/Repos/AcademicRepositories/CollegeRepository.cs">
-using Contracts.Responses.CollegeResponses;
+<file path="DataAccessLayer/Repos/AcademicRepositories/UniversityRepository.cs">
+using Contracts.Responses.AcademicResponses.UniversityResponses;
 using Contracts.Results;
 using DataAccessLayer.Dbcontext;
 using DataAccessLayer.Extensions;
 using Domain.Entities.Academic_Structure;
-using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
+using Domain.Interfaces.AcademicStructureInterfaces.UniversityInterfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9784,85 +10446,64 @@ using System.Threading.Tasks;
 
 namespace DataAccessLayer.Repos.AcademicRepositories
 {
-    public class CollegeRepository : ICollegeRepository
+    public class UniversityRepository : IUniversityRepository
     {
-        private Expression<Func<College, CollegeDTO>> ToDTO = c => new CollegeDTO
-        {
-            CollegeId = c.CollegeId,
-            CollegeName = c.Name,
-            Description = c.Description,
-            UniversityId = c.UniversityId,
-            UniversityName = c.University.Name,
-            CreatedAt = c.CreatedAt,
-            CreatedByUserId = c.CreatedByUserId,
-            CreatedByUserName = c.CreatedByUser.UserName,
-            UpdatedAt = c.UpdatedAt,
-            UpdatedByUserId = c.UpdatedByUserId,
-            UpdatedByUserName = c.UpdatedByUser == null ? null : c.UpdatedByUser.UserName,
-        };
         private readonly AppDbcontext _context;
-        public CollegeRepository(AppDbcontext context)
+        private readonly Expression<Func<University, UniversityDTO>> ToDTO = u => new UniversityDTO
+        {
+            UniversityId = u.UniversityId,
+            UniversityName = u.Name,
+            Description = u.Description,
+            CreatedAt = u.CreatedAt,
+            CreatedByUserId = u.CreatedByUserId,
+            CreatedByUserName = u.CreatedByUser.UserName,
+            UpdatedAt = u.UpdatedAt,
+            UpdatedByUserId = u.UpdatedByUserId,
+            UpdatedByUserName = u.UpdatedByUser == null ? null : u.UpdatedByUser.UserName,
+
+        };
+        public UniversityRepository(AppDbcontext context)
         {
             _context = context;
         }
-        public void Add(College college)
+        public  void Add(University university)
         {
-            _context.Colleges.Add(college);
+            _context.Universities.Add(university);
         }
 
-        public async Task<bool> Delete(int collegeId)
+        public async Task<bool> Delete(int UniversityId)
         {
-         
-            var college = await _context.Colleges.FindAsync(collegeId);
-            if (college == null)
+            var university = await _context.Universities.FindAsync(UniversityId);
+            if (university == null)
                 return false;
-            _context.Colleges.Remove(college);
+            _context.Universities.Remove(university);
             return true;
         }
 
-        public async Task<PagedResult<CollegeDTO>> GetAllColleges(int pageNumber, int pageSize)
+        public async Task<PagedResult<UniversityDTO>> GetAllUniversities(int pageNumber, int pageSize)
         {
-            return await _context.Colleges.AsNoTracking().Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
+            return await _context.Universities.Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
         }
 
-        public async Task<PagedResult<CollegeDTO>> GetAllCollegesPerUniversity(int universityId, int pageNumber, int pageSize)
+        public async Task<UniversityDTO?> GetUniversityDTOById(int universityId)
         {
-            return await _context.Colleges.AsNoTracking().Where(c=>c.UniversityId == universityId)
-                .OrderBy(c=>c.CollegeId).Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
+            return await _context.Universities.Select(ToDTO).SingleOrDefaultAsync(u=>u.UniversityId == universityId);
         }
 
-        public async Task<CollegeDTO?> GetCollegeDTOById(int collegeId)
+        public async Task<University?> GetUniversityEntityById(int universityId)
         {
-            return await _context.Colleges.AsNoTracking().Select(ToDTO).SingleOrDefaultAsync(c => c.CollegeId == collegeId);
+            return await _context.Universities.FindAsync(universityId);
         }
 
-        public async Task<College?> GetCollegeEntityById(int collegeId)
+        public async Task<bool> IsUniversityExists(int universityId)
         {
-            return await _context.Colleges.FindAsync(collegeId);
+            return await _context.Universities.AnyAsync(u => u.UniversityId == universityId);
         }
 
-        public async Task<bool> IsCollegeExists(int universityId,int collegeId)
+        public Task<bool> IsUniversityExists(string universityName)
         {
-            return await _context.Colleges.AnyAsync(c => c.CollegeId == collegeId && c.UniversityId == universityId);
+            return _context.Universities.AnyAsync(u => u.Name == universityName);
         }
-
-        public async Task<bool> IsCollegeExists(int universityId,string collegeName)
-        {
-            return await _context.Colleges.AnyAsync(c => c.Name == collegeName && c.UniversityId == universityId);
-        }
-
-        public async Task<CollegeDTO?> GetCollegeDTOByName(int universityId,string collegeName)
-        {
-            return await _context.Colleges.AsNoTracking().Where(c=>c.UniversityId == universityId)
-                .Select(ToDTO).SingleOrDefaultAsync(c => c.CollegeName == collegeName);
-        }
-
-        public async Task<College?> GetCollegeEntityByName(int universityId, string collegeName)
-        {
-            return await _context.Colleges.Where(c=>c.UniversityId == universityId).SingleOrDefaultAsync(c => c.Name == collegeName);
-        }
-
-       
     }
 }
 </file>
@@ -10049,7 +10690,9 @@ namespace Domain.Entities.Images
 }
 </file>
 
-<file path="Domain/Interfaces/AcademicStructureInterfaces/CollegeInterfaces/ICollegeRepository.cs">
+<file path="Domain/Interfaces/AcademicStructureInterfaces/CollegeInterfaces/ICollegeService.cs">
+using Contracts.Requests.AcademicRequests.CollegeRequests;
+using Contracts.Responses;
 using Contracts.Responses.CollegeResponses;
 using Contracts.Results;
 using Domain.Entities.Academic_Structure;
@@ -10061,20 +10704,19 @@ using System.Threading.Tasks;
 
 namespace Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces
 {
-    public interface ICollegeRepository
+    public interface ICollegeService
     {
-        public Task<PagedResult<CollegeDTO>> GetAllColleges(int pageNumber, int pageSize);
-        public Task<PagedResult<CollegeDTO>> GetAllCollegesPerUniversity(int universityId,int pageNumber, int pageSize);
-
-        public void Add(College college);
-        public Task<bool> Delete(int collegeId);
-        public Task<bool> IsCollegeExists(int universityId,int collegeId);
-        public Task<bool> IsCollegeExists(int universityId,string collegeName);
+        public Task<PagedResult<CollegeDTO>>GetColleges(int pageNumber, int pageSize);
+        public Task<PagedResult<CollegeDTO>>GetCollegesPerUniversity(int universityId,int pageNumber, int pageSize);
         public Task<CollegeDTO?> GetCollegeDTOById(int collegeId);
-        public Task<College?> GetCollegeEntityById(int collegeId);
+        public Task<College?>GetCollegeEntityById(int collegeId);
         public Task<CollegeDTO?> GetCollegeDTOByName(int universityId,string collegeName);
-        public Task<College?>GetCollegeEntityByName(int universityId,string collegeName);
-
+        public Task<College?>GetCollegeEntityByName(int universityId, string collegeName);
+        public Task<bool> Delete(int collegeId);
+        public Task<bool>IsCollegeExists(int collegeId);
+        public Task<bool> IsCollegeExists(int universityId,string collegeName);
+        public Task<AddUpdateServiceResponse<CollegeDTO>> AddCollege(AddCollegeDTO newCollege, int currentUserId);
+        public Task<AddUpdateServiceResponse<CollegeDTO>> UpdateCollege(int collegeId, UpdateCollegeDTO updatedCollege, int currentUserId);
     }
 }
 </file>
@@ -10160,79 +10802,386 @@ namespace Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces
 }
 </file>
 
-<file path="UniNet/Extensions/ControllersExtensions.cs">
+<file path="UniNet/Controllers/AcademicControllers/UniversityController.cs">
 using Contracts.Common.Messages;
-using Contracts.Enums;
+using Contracts.Requests.AcademicRequests.UniversityRequests;
+using Contracts.Requests.RequestParameters;
 using Contracts.Responses;
+using Contracts.Responses.AcademicResponses.UniversityResponses;
 using Contracts.Results;
+using Domain.Entities.Academic_Structure;
+using Domain.Interfaces.AcademicStructureInterfaces.UniversityInterfaces;
+using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+using UniNet.Extensions;
 
-namespace UniNet.Extensions
+namespace UniNet.Controllers.AcademicControllers
 {
-    public static  class ControllersExtensions
+    [Route("api/[controller]")]
+    [ApiController]
+    public class UniversityController : ControllerBase
     {
-        public static ActionResult<AddUpdateServiceResponse<T>> ToActionResult<T>(this AddUpdateServiceResponse<T> response)
+        private readonly IUniversityService _uinversityService;
+        private readonly ICurrentUserService _currentUserService;
+        public UniversityController(IUniversityService universityService, ICurrentUserService currentUserService)
         {
-            if (response.IsSuccess)
-            {
-                return response.Data != null ? new OkObjectResult(response.Data) : new NoContentResult();
-            }
-
-            return response.ErrorType switch
-            {
-                EnErrorTypes.NotFound => new NotFoundObjectResult(new
-                {
-                    Status = 404,
-                    Title = "Not Found",
-                    Detail = response.Errors!.FirstOrDefault() ?? "The requested resource was not found."
-                }),
-
-                EnErrorTypes.InvalidData => new BadRequestObjectResult(new
-                {
-                    Status = 400,
-                    Title = "Validation Error",
-                    Errors = response.Errors
-                }),
-
-                EnErrorTypes.InvalidRefrenceData => new BadRequestObjectResult(new
-                {
-                    Status = 400,
-                    Title = "Invalid Related Entity",
-                    Errors = response.Errors
-                }),
-
-                EnErrorTypes.InvalidAuthenticatedUserId => new UnauthorizedObjectResult(new
-                {
-                    StatusCode = 401,
-                    Message = response.ErrorMessage
-                }),
-
-                EnErrorTypes.ExistedResource => new BadRequestObjectResult(new
-                {
-                    StatusCode = 400,
-                    Errors = response.Errors
-                }),
-
-                _ => new ObjectResult(new { Status = 500, Title = "Server Error" }) { StatusCode = 500 }
-            };
+            _uinversityService = universityService;
+            _currentUserService = currentUserService;
         }
 
 
-        public static ActionResult<PagedResult<T>> ToPagedActioneResult<T>(this PagedResult<T> pagedResult)
+        [Authorize]
+        [HttpGet(Name ="GetAllUniversities")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<PagedResult<UniversityDTO>>> GetAllUniversities([FromQuery]PagedResultParameters @parameters)
         {
-            return pagedResult.Data != null ? new ObjectResult(pagedResult) : new NotFoundObjectResult(new { Status = 404, Title = "No Result Found ?" });
+            var universities = await _uinversityService.GetAllUniversities(parameters.PageNumber, parameters.PageSize);
+            return universities.ToPagedActioneResult();
         }
 
-        public static ActionResult<T>GetResourceEndpoints<T>(this T? resource,int Id,string EntityName)
+        [Authorize]
+        [HttpGet("by-id",Name ="GetUniversityById")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<UniversityDTO>> GetUniversityById([FromQuery]UniversityIdParameter @universityIdParameter)
         {
-            return resource != null ? new OkObjectResult(resource) : new NotFoundObjectResult(ErrorMessages.NotFound(EntityName, Id));
+            var university = await _uinversityService.FindUniversityDTOById(@universityIdParameter.UniversityId);
+            return university.GetResourceEndpoints(universityIdParameter.UniversityId, typeof(University).Name);
         }
-        public static ActionResult<T> GetResourceEndpoints<T>(this T? resource, string name, string EntityName)
+
+
+        [Authorize]
+        [HttpDelete(Name ="DeleteUniversity")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult> Delete([FromQuery] UniversityIdParameter @universityIdParameter)
         {
-            return resource != null ? new OkObjectResult(resource) : new NotFoundObjectResult(ErrorMessages.NotFound(EntityName, name));
+            var result = await _uinversityService.Delete(universityIdParameter.UniversityId);
+            return result.ToDeleteActionResult<University>(universityIdParameter.UniversityId);
+        }
+
+        [Authorize]
+        [HttpPost(Name ="AddUniversity")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<AddUpdateServiceResponse<UniversityDTO>>> AddUniversity([FromBody]AddUniversityDTO newUniversity)
+        {
+            var response = await _uinversityService.AddUniversity(newUniversity, _currentUserService.UserId);
+            return response.ToActionResult();
+        }
+
+        [Authorize]
+        [HttpPut(Name ="UpdateUniversity")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<AddUpdateServiceResponse<UniversityDTO>>> UpdateUniversity([FromQuery]UniversityIdParameter @universityIdParameter,
+            [FromBody]UpdateUniversityDTO updatedUniversity)
+        {
+            var response = await _uinversityService.UpdateUniversity(universityIdParameter.UniversityId, updatedUniversity, _currentUserService.UserId);
+            return response.ToActionResult();
         }
     }
+}
+</file>
+
+<file path="Application/Services/AcademicServices/CollegeService.cs">
+using Contracts.Enums;
+using Contracts.Requests.AcademicRequests.CollegeRequests;
+using Contracts.Responses;
+using Contracts.Responses.CollegeResponses;
+using Contracts.Results;
+using Domain.Entities.Academic_Structure;
+using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
+using Domain.Interfaces.UnitOfWork;
+using FluentValidation;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Application.Services.AcademicServices
+{
+    public class CollegeService : ICollegeService
+    {
+        private readonly IUnitOfWorkRepository _unitOfWorkRepository;
+        private readonly IValidator<AddCollegeDTO> _addValidator;
+        private readonly IValidator<UpdateCollegeDTO> _updateCollegeValidator;
+        public CollegeService(IUnitOfWorkRepository unitOfWorkRepository
+            , IValidator<AddCollegeDTO>addValidator,IValidator<UpdateCollegeDTO>updateValidator)
+        {
+           _unitOfWorkRepository = unitOfWorkRepository;
+            _addValidator = addValidator;
+            _updateCollegeValidator = updateValidator;
+        }
+        public async Task<AddUpdateServiceResponse<CollegeDTO>> AddCollege(AddCollegeDTO newCollege, int currentUserId)
+        {
+            var validationResult = await _addValidator.ValidateAsync(newCollege);
+            if(!validationResult.IsValid)
+            {
+                return AddUpdateServiceResponse<CollegeDTO>.Failure(validationResult.Errors.
+                    Select(x => $"{x.PropertyName} : {x.ErrorMessage}").ToList(), EnErrorTypes.InvalidData);
+            }
+
+            if(!await _unitOfWorkRepository.UniversityRepository.IsUniversityExists(newCollege.UniversityId))
+            {
+                return AddUpdateServiceResponse<CollegeDTO>.InvalidRelatedData();
+            }
+
+            if(await IsCollegeExists(newCollege.UniversityId,newCollege.CollegeName))
+            {
+                return AddUpdateServiceResponse<CollegeDTO>.AlreadyExists<College>();
+            }
+
+            var collegeEntity = new College
+            {
+                Name = newCollege.CollegeName,
+                Description = newCollege.Description,
+                UniversityId = newCollege.UniversityId, // Just for now user can enter universityId until authentication get Completed
+                CreatedAt = DateTime.UtcNow,
+                CreatedByUserId = currentUserId,
+
+            };
+            _unitOfWorkRepository.CollegeRepository.Add(collegeEntity);
+            await _unitOfWorkRepository.CompleteAsync();
+            var collegeDTO = await GetCollegeDTOById(collegeEntity.CollegeId);
+            return AddUpdateServiceResponse<CollegeDTO>.Success(collegeDTO!);
+        }
+
+        public async Task<bool> Delete(int collegeId)
+        {
+            var result = await _unitOfWorkRepository.CollegeRepository.Delete(collegeId);
+            if (result)
+                await _unitOfWorkRepository.CompleteAsync();
+            return result;
+        }
+
+        public async Task<CollegeDTO?> GetCollegeDTOById(int collegeId)
+        {
+            return await _unitOfWorkRepository.CollegeRepository.GetCollegeDTOById(collegeId);
+        }
+
+        public async Task<CollegeDTO?> GetCollegeDTOByName(int universityId, string collegeName)
+        {
+            return await _unitOfWorkRepository.CollegeRepository.GetCollegeDTOByName(universityId,collegeName);
+        }
+
+        public async Task<College?> GetCollegeEntityById(int collegeId)
+        {
+            return await _unitOfWorkRepository.CollegeRepository.GetCollegeEntityById(collegeId);
+        }
+
+        public async Task<College?> GetCollegeEntityByName(int universityId, string collegeName)
+        {
+            return await _unitOfWorkRepository.CollegeRepository.GetCollegeEntityByName(universityId,collegeName);
+        }
+
+        public async Task<PagedResult<CollegeDTO>> GetColleges(int pageNumber, int pageSize)
+        {
+            return await _unitOfWorkRepository.CollegeRepository.GetAllColleges(pageNumber, pageSize);
+        }
+
+        public async Task<PagedResult<CollegeDTO>> GetCollegesPerUniversity(int universityId, int pageNumber, int pageSize)
+        {
+            return await _unitOfWorkRepository.CollegeRepository.GetAllCollegesPerUniversity(universityId, pageNumber, pageSize);
+        }
+
+        public async Task<bool> IsCollegeExists( int collegeId)
+        {
+            return await _unitOfWorkRepository.CollegeRepository.IsCollegeExists( collegeId);
+        }
+
+        public async Task<bool> IsCollegeExists(int universityId, string collegeName)
+        {
+            return await _unitOfWorkRepository.CollegeRepository.IsCollegeExists(universityId, collegeName);
+        }
+
+        public async Task<AddUpdateServiceResponse<CollegeDTO>> UpdateCollege(int collegeId, UpdateCollegeDTO updatedCollege, int currentUserId)
+        {
+            var validationResult = await _updateCollegeValidator.ValidateAsync(updatedCollege);
+            if(!validationResult.IsValid)
+            {
+                return AddUpdateServiceResponse<CollegeDTO>.Failure(validationResult.Errors.
+                                   Select(x => $"{x.PropertyName} : {x.ErrorMessage}").ToList(), EnErrorTypes.InvalidData);
+            }
+
+            var college = await GetCollegeEntityById(collegeId);
+            if(college == null)
+            {
+                return AddUpdateServiceResponse<CollegeDTO>.ResourceDoesntExist<College>();
+            }
+
+            if(await IsCollegeExists(college.UniversityId,updatedCollege.CollegeName) && college.Name != updatedCollege.CollegeName)
+            {
+                return AddUpdateServiceResponse<CollegeDTO>.AlreadyExists<College>();
+            }
+
+            college.Name = updatedCollege.CollegeName;
+            college.Description = updatedCollege.Description;
+            college.UpdatedAt = DateTime.UtcNow;
+            college.UpdatedByUserId = currentUserId;
+            await _unitOfWorkRepository.CompleteAsync();
+            var collegeDTO = await GetCollegeDTOById(college.CollegeId);
+            return AddUpdateServiceResponse<CollegeDTO>.Success(collegeDTO!);
+        }
+    }
+}
+</file>
+
+<file path="Application/Services/IdentityServices/UserRoleService.cs">
+using Contracts.Requests.IdentityRequests.UserRoleRequsets;
+using Contracts.Responses;
+using Contracts.Responses.IdentityResponses.UserRoleResponse;
+using Contracts.Results;
+using Domain.Entities.Identity;
+using Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces;
+using Domain.Interfaces.UnitOfWork;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Application.Services.IdentityServices
+{
+    public class UserRoleService : IUserRoleService
+    {
+        private readonly IUnitOfWorkRepository _unitOfWorkRepository;
+        public UserRoleService(IUnitOfWorkRepository unitOfWorkRepository)
+        {
+            _unitOfWorkRepository = unitOfWorkRepository;
+        }
+
+        public async Task<AddUpdateServiceResponse<UserRoleDTO>> AddUserRole(AddUserRoleDTO addUserRoleDTO)
+        {
+            if(! await _unitOfWorkRepository.UserRepository.IsUserExists(addUserRoleDTO.UserId)
+                ||! await _unitOfWorkRepository.RoleRepository.IsRoleExists(addUserRoleDTO.RoleId))
+            {
+                return AddUpdateServiceResponse<UserRoleDTO>.InvalidRelatedData();
+            }
+
+            if(await IsUserRoleExists(addUserRoleDTO.UserId,addUserRoleDTO.RoleId))
+            {
+                return AddUpdateServiceResponse<UserRoleDTO>.AlreadyExists<UserRole>();
+            }
+
+            var userRoleEntity = new UserRole
+            {
+                UserId = addUserRoleDTO.UserId,
+                RoleId = addUserRoleDTO.RoleId,
+            };
+            await _unitOfWorkRepository.UserRoleRepository.Add(userRoleEntity);
+            await _unitOfWorkRepository.CompleteAsync();
+
+            // this is for projection because userRoleDTO have UserName & RoleName it takes it from navigation proprties from UserRole Entity
+            var userRoleDTO = await FindUserRoleDTOById(userRoleEntity.UserId, userRoleEntity.RoleId);
+            return AddUpdateServiceResponse<UserRoleDTO>.Success(userRoleDTO!);
+        }
+
+        public async Task<bool> Delete(int userId, int roleId)
+        {
+            var result = await _unitOfWorkRepository.UserRoleRepository.Delete(userId, roleId);
+            if(result)
+            {
+               await _unitOfWorkRepository.CompleteAsync();
+                return result;
+            }
+            return result;
+        }
+
+        public async Task<UserRoleDTO?> FindUserRoleDTOById(int userId, int roleId)
+        {
+            return await _unitOfWorkRepository.UserRoleRepository.GetUserRoleDTOById(userId, roleId);
+        }
+
+        public async Task<UserRole?> FindUserRoleEntityById(int userId, int roleId)
+        {
+            return await _unitOfWorkRepository.UserRoleRepository.GetUserRoleEntityById(userId, roleId);
+        }
+
+        public async Task<PagedResult<UserRoleDTO>> GetAllUserRole(int pageNumber, int pageSize)
+        {
+            return await _unitOfWorkRepository.UserRoleRepository.GetUserRoles(pageNumber, pageSize);
+        }
+
+        public async Task<PagedResult<UserRoleDTO>> GetUserRolesPerRoleId(int roleId, int pageNumber, int pageSize)
+        {
+            return await _unitOfWorkRepository.UserRoleRepository.GetUsersPerRoleId(roleId, pageNumber, pageSize);
+        }
+
+        public async Task<bool> IsUserRoleExists(int userId, int roleId)
+        {
+            return await _unitOfWorkRepository.UserRoleRepository.IsUserRoleExists(userId, roleId);
+        }
+
+      
+    }
+}
+</file>
+
+<file path="Contracts/Requests/RequestParameters/PagedResultParameters.cs">
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Contracts.Requests.RequestParameters
+{
+    public class PagedResultParameters
+    {
+        [Range(1, int.MaxValue, ErrorMessage = "PageSize  Format!/PageSize Must Be > 0")]
+        public int PageSize { get; set; }
+
+
+        [Range(1, int.MaxValue, ErrorMessage = "PageNumber  Format!/PageNumber Must Be > 0")]
+        public int PageNumber { get; set; }
+    }
+
+    public class DepartmentIdParameter
+    {
+        [Range(1, int.MaxValue, ErrorMessage = "DepartmentId  Format!/DepartmentId Must Be > 0")]
+        public int DepartmentId { get; set; }
+    }
+
+    public class CollegeIdParameter
+    {
+        [Range(1, int.MaxValue, ErrorMessage = "CollegeId  Format!/CollegeId Must Be > 0")]
+        public int CollegeId { get; set; }
+    }
+
+    public class BatchIdParameter
+    {
+        [Range(1, int.MaxValue, ErrorMessage = "BatchId  Format!/BatchId Must Be > 0")]
+        public int BatchId { get; set; }
+    }
+
+    public class UniversityIdParameter
+    {
+        [Range(1, int.MaxValue, ErrorMessage = "UniversityId  Format!/UniversityId Must Be > 0")]
+        public int UniversityId { get; set; }
+    }
+
 }
 </file>
 
@@ -10299,6 +11248,136 @@ namespace Contracts.Responses
             ErrorType = EnErrorTypes.ExistedResource,
             Errors = new List<string>() { $" {typeof(TEntity).Name} With UserName : {proprty} Already Exists!" }
         };
+    }
+}
+</file>
+
+<file path="DataAccessLayer/Repos/AcademicRepositories/CollegeRepository.cs">
+using Contracts.Responses.CollegeResponses;
+using Contracts.Results;
+using DataAccessLayer.Dbcontext;
+using DataAccessLayer.Extensions;
+using Domain.Entities.Academic_Structure;
+using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataAccessLayer.Repos.AcademicRepositories
+{
+    public class CollegeRepository : ICollegeRepository
+    {
+        private Expression<Func<College, CollegeDTO>> ToDTO = c => new CollegeDTO
+        {
+            CollegeId = c.CollegeId,
+            CollegeName = c.Name,
+            Description = c.Description,
+            UniversityId = c.UniversityId,
+            UniversityName = c.University.Name,
+            CreatedAt = c.CreatedAt,
+            CreatedByUserId = c.CreatedByUserId,
+            CreatedByUserName = c.CreatedByUser.UserName,
+            UpdatedAt = c.UpdatedAt,
+            UpdatedByUserId = c.UpdatedByUserId,
+            UpdatedByUserName = c.UpdatedByUser == null ? null : c.UpdatedByUser.UserName,
+        };
+        private readonly AppDbcontext _context;
+        public CollegeRepository(AppDbcontext context)
+        {
+            _context = context;
+        }
+        public void Add(College college)
+        {
+            _context.Colleges.Add(college);
+        }
+
+        public async Task<bool> Delete(int collegeId)
+        {
+         
+            var college = await _context.Colleges.FindAsync(collegeId);
+            if (college == null)
+                return false;
+            _context.Colleges.Remove(college);
+            return true;
+        }
+
+        public async Task<PagedResult<CollegeDTO>> GetAllColleges(int pageNumber, int pageSize)
+        {
+            return await _context.Colleges.AsNoTracking().Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
+        }
+
+        public async Task<PagedResult<CollegeDTO>> GetAllCollegesPerUniversity(int universityId, int pageNumber, int pageSize)
+        {
+            return await _context.Colleges.AsNoTracking().Where(c=>c.UniversityId == universityId)
+                .OrderBy(c=>c.CollegeId).Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
+        }
+
+        public async Task<CollegeDTO?> GetCollegeDTOById(int collegeId)
+        {
+            return await _context.Colleges.AsNoTracking().Select(ToDTO).SingleOrDefaultAsync(c => c.CollegeId == collegeId);
+        }
+
+        public async Task<College?> GetCollegeEntityById(int collegeId)
+        {
+            return await _context.Colleges.FindAsync(collegeId);
+        }
+
+        public async Task<bool> IsCollegeExists(int collegeId)
+        {
+            return await _context.Colleges.AnyAsync(c => c.CollegeId == collegeId);
+        }
+
+        public async Task<bool> IsCollegeExists(int universityId,string collegeName)
+        {
+            return await _context.Colleges.AnyAsync(c => c.Name == collegeName && c.UniversityId == universityId);
+        }
+
+        public async Task<CollegeDTO?> GetCollegeDTOByName(int universityId,string collegeName)
+        {
+            return await _context.Colleges.AsNoTracking().Where(c=>c.UniversityId == universityId)
+                .Select(ToDTO).SingleOrDefaultAsync(c => c.CollegeName == collegeName);
+        }
+
+        public async Task<College?> GetCollegeEntityByName(int universityId, string collegeName)
+        {
+            return await _context.Colleges.Where(c=>c.UniversityId == universityId).SingleOrDefaultAsync(c => c.Name == collegeName);
+        }
+
+       
+    }
+}
+</file>
+
+<file path="Domain/Interfaces/AcademicStructureInterfaces/CollegeInterfaces/ICollegeRepository.cs">
+using Contracts.Responses.CollegeResponses;
+using Contracts.Results;
+using Domain.Entities.Academic_Structure;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces
+{
+    public interface ICollegeRepository
+    {
+        public Task<PagedResult<CollegeDTO>> GetAllColleges(int pageNumber, int pageSize);
+        public Task<PagedResult<CollegeDTO>> GetAllCollegesPerUniversity(int universityId,int pageNumber, int pageSize);
+
+        public void Add(College college);
+        public Task<bool> Delete(int collegeId);
+        public Task<bool> IsCollegeExists(int collegeId);
+        public Task<bool> IsCollegeExists(int universityId,string collegeName);
+        public Task<CollegeDTO?> GetCollegeDTOById(int collegeId);
+        public Task<College?> GetCollegeEntityById(int collegeId);
+        public Task<CollegeDTO?> GetCollegeDTOByName(int universityId,string collegeName);
+        public Task<College?>GetCollegeEntityByName(int universityId,string collegeName);
+
     }
 }
 </file>
@@ -10812,148 +11891,86 @@ namespace Domain.Entities.Identity
 }
 </file>
 
-<file path="DataAccessLayer/Extensions/RepositoriesToDIContainer.cs">
-using DataAccessLayer.Repos;
-using DataAccessLayer.Repos.AcademicRepositories;
-using DataAccessLayer.Repos.IdentityRepositories;
-using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
-using Domain.Interfaces.AcademicStructureInterfaces.UniversityInterfaces;
-using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
-using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
-using Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces;
-using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
-using Domain.Interfaces.UnitOfWork;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace DataAccessLayer.Extensions
-{
-    public static class RepositoriesToDIContainer
-    {
-        public static IServiceCollection  AddRepoSitoriesToDIContainer(this IServiceCollection services)
-        {
-            services.AddScoped<IUnitOfWorkRepository, UnitOfWorkRepository>();
-            services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
-            services.AddScoped<IRoleRepository, RoleRepository>();
-            services.AddScoped<IUserRoleRepository, UserRoleRepository>();
-            services.AddScoped<IUniversityRepository,UniversityRepository>();
-            services.AddScoped<ICollegeRepository, CollegeRepository>();
-            return services;
-        }
-    }
-}
-</file>
-
-<file path="DataAccessLayer/Repos/UnitOfWorkRepository.cs">
-using Contracts.Exceptions;
+<file path="UniNet/Extensions/ControllersExtensions.cs">
+using Contracts.Common.Messages;
+using Contracts.Enums;
+using Contracts.Responses;
 using Contracts.Results;
-using DataAccessLayer.Dbcontext;
-using DataAccessLayer.Repos.AcademicRepositories;
-using DataAccessLayer.Repos.IdentityRepositories;
-using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
-using Domain.Interfaces.AcademicStructureInterfaces.UniversityInterfaces;
-using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
-using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
-using Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces;
-using Domain.Interfaces.LoginInterfaces;
-using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
-using Domain.Interfaces.UnitOfWork;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace DataAccessLayer.Repos
+namespace UniNet.Extensions
 {
-    public class UnitOfWorkRepository : IUnitOfWorkRepository
+    public static  class ControllersExtensions
     {
-        private readonly AppDbcontext _context;
-        public IUserRepository UserRepository { get; private set; }
-
-        public ILoginRepository LoginRepository { get; private set; }
-
-        public IRefreshTokenRepository RefreshTokenRepository { get; private set; }
-
-        public IRoleRepository RoleRepository { get; private set; }
-        public IUserRoleRepository UserRoleRepository { get; private set; }
-
-        public IUniversityRepository UniversityRepository {  get; private set; }
-
-        public ICollegeRepository CollegeRepository {  get; private set; }
-
-        public UnitOfWorkRepository(AppDbcontext context)
+        public static ActionResult<AddUpdateServiceResponse<T>> ToActionResult<T>(this AddUpdateServiceResponse<T> response)
         {
-            _context = context;
-            UserRepository = new UserRepository(context);
-            LoginRepository = new LoginRepository(context);
-            RefreshTokenRepository = new RefreshTokenRepository(context);
-            RoleRepository = new RoleRepository(context);
-            UserRoleRepository = new UserRoleRepository(context);
-            UniversityRepository = new UniversityRepository(context);
-            CollegeRepository = new CollegeRepository(context);
-        }
-        public async Task<int> CompleteAsync()
-        {
-            try
+            if (response.IsSuccess)
             {
-                return await _context.SaveChangesAsync();
+                return response.Data != null ? new OkObjectResult(response.Data) : new NoContentResult();
             }
-            catch(DbUpdateException ex)
+
+            return response.ErrorType switch
             {
-                if(ex.InnerException is SqlException sqlException)
+                EnErrorTypes.NotFound => new NotFoundObjectResult(new
                 {
-                    if (sqlException.Number == 547)
-                        throw new DeleteRestrictedException("Cannot delete this resource because it has related resources.");
-                }
-            }
-            throw new Exception();
+                    Status = 404,
+                    Title = "Not Found",
+                    Detail = response.Errors!.FirstOrDefault() ?? "The requested resource was not found."
+                }),
+
+                EnErrorTypes.InvalidData => new BadRequestObjectResult(new
+                {
+                    Status = 400,
+                    Title = "Validation Error",
+                    Errors = response.Errors
+                }),
+
+                EnErrorTypes.InvalidRefrenceData => new BadRequestObjectResult(new
+                {
+                    Status = 400,
+                    Title = "Invalid Related Entity",
+                    Errors = response.Errors
+                }),
+
+                EnErrorTypes.InvalidAuthenticatedUserId => new UnauthorizedObjectResult(new
+                {
+                    StatusCode = 401,
+                    Message = response.ErrorMessage
+                }),
+
+                EnErrorTypes.ExistedResource => new BadRequestObjectResult(new
+                {
+                    StatusCode = 409,
+                    Errors = response.Errors
+                }),
+
+                _ => new ObjectResult(new { Status = 500, Title = "Server Error" }) { StatusCode = 500 }
+            };
         }
 
-        public void Dispose()
+
+        public static ActionResult<PagedResult<T>> ToPagedActioneResult<T>(this PagedResult<T> pagedResult)
         {
-            _context.Dispose();
+            return pagedResult.Data != null ? new OkObjectResult(pagedResult) : new NotFoundObjectResult(new { Status = 404, Title = "No Result Found ?" });
         }
 
-
+        public static ActionResult<T>GetResourceEndpoints<T>(this T? resource,int Id,string EntityName)
+        {
+            return resource != null ? new OkObjectResult(resource) : new NotFoundObjectResult(ErrorMessages.NotFound(EntityName, Id));
         }
-    }
-</file>
+        public static ActionResult<T> GetResourceEndpoints<T>(this T? resource, string name, string EntityName)
+        {
+            return resource != null ? new OkObjectResult(resource) : new NotFoundObjectResult(ErrorMessages.NotFound(EntityName, name));
+        }
 
-<file path="Domain/Interfaces/UnitOfWorkInterfaces/IUnitOfWorkRepository.cs">
-using Contracts.Results;
-using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
-using Domain.Interfaces.AcademicStructureInterfaces.UniversityInterfaces;
-using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
-using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
-using Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces;
-using Domain.Interfaces.LoginInterfaces;
-using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+        public static ActionResult ToDeleteActionResult<TEntity>( this bool result,int Id)
+        {
+            if (!result)
+                return new NotFoundObjectResult($"Deletaion faield/{typeof(TEntity).Name} with Id = {Id} NotFound!");
 
-namespace Domain.Interfaces.UnitOfWork
-{
-    public interface IUnitOfWorkRepository : IDisposable
-    {
-        public IUserRepository UserRepository { get; }
-        public ILoginRepository LoginRepository { get; }
-        public IRefreshTokenRepository RefreshTokenRepository { get; }
-        public IRoleRepository RoleRepository { get; }
-        public IUserRoleRepository UserRoleRepository { get; }
-        public IUniversityRepository UniversityRepository { get; }
-        public ICollegeRepository CollegeRepository { get; }
-        public Task<int> CompleteAsync();
+            return new NoContentResult();
+        }
     }
 }
 </file>
@@ -11270,6 +12287,168 @@ builder.Configuration.GetConnectionString("DefaultConnection")));
 }
 </file>
 
+<file path="DataAccessLayer/Extensions/RepositoriesToDIContainer.cs">
+using DataAccessLayer.Repos;
+using DataAccessLayer.Repos.AcademicRepositories;
+using DataAccessLayer.Repos.IdentityRepositories;
+using Domain.Interfaces.AcademicStructureInterfaces.BatchInterfaces;
+using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
+using Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces;
+using Domain.Interfaces.AcademicStructureInterfaces.UniversityInterfaces;
+using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
+using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
+using Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces;
+using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
+using Domain.Interfaces.UnitOfWork;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataAccessLayer.Extensions
+{
+    public static class RepositoriesToDIContainer
+    {
+        public static IServiceCollection  AddRepoSitoriesToDIContainer(this IServiceCollection services)
+        {
+            services.AddScoped<IUnitOfWorkRepository, UnitOfWorkRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+            services.AddScoped<IRoleRepository, RoleRepository>();
+            services.AddScoped<IUserRoleRepository, UserRoleRepository>();
+            services.AddScoped<IUniversityRepository,UniversityRepository>();
+            services.AddScoped<ICollegeRepository, CollegeRepository>();
+            services.AddScoped<IDepartmentRepository, DepartmentRepository>();
+            services.AddScoped<IBatchRepository, BatchRepository>();
+            return services;
+        }
+    }
+}
+</file>
+
+<file path="DataAccessLayer/Repos/UnitOfWorkRepository.cs">
+using Contracts.Exceptions;
+using Contracts.Results;
+using DataAccessLayer.Dbcontext;
+using DataAccessLayer.Repos.AcademicRepositories;
+using DataAccessLayer.Repos.IdentityRepositories;
+using Domain.Interfaces.AcademicStructureInterfaces.BatchInterfaces;
+using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
+using Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces;
+using Domain.Interfaces.AcademicStructureInterfaces.UniversityInterfaces;
+using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
+using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
+using Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces;
+using Domain.Interfaces.LoginInterfaces;
+using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
+using Domain.Interfaces.UnitOfWork;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace DataAccessLayer.Repos
+{
+    public class UnitOfWorkRepository : IUnitOfWorkRepository
+    {
+        private readonly AppDbcontext _context;
+        public IUserRepository UserRepository { get; private set; }
+
+        public ILoginRepository LoginRepository { get; private set; }
+
+        public IRefreshTokenRepository RefreshTokenRepository { get; private set; }
+
+        public IRoleRepository RoleRepository { get; private set; }
+        public IUserRoleRepository UserRoleRepository { get; private set; }
+
+        public IUniversityRepository UniversityRepository {  get; private set; }
+
+        public ICollegeRepository CollegeRepository {  get; private set; }
+
+        public IDepartmentRepository DepartmentRepository {  get; private set; }
+
+        public IBatchRepository BatchRepository {  get; private set; }
+
+        public UnitOfWorkRepository(AppDbcontext context)
+        {
+            _context = context;
+            UserRepository = new UserRepository(context);
+            LoginRepository = new LoginRepository(context);
+            RefreshTokenRepository = new RefreshTokenRepository(context);
+            RoleRepository = new RoleRepository(context);
+            UserRoleRepository = new UserRoleRepository(context);
+            UniversityRepository = new UniversityRepository(context);
+            CollegeRepository = new CollegeRepository(context);
+            DepartmentRepository = new DepartmentRepository(context);
+            BatchRepository = new BatchRepository(context);
+        }
+        public async Task<int> CompleteAsync()
+        {
+            try
+            {
+                return await _context.SaveChangesAsync();
+            }
+            catch(DbUpdateException ex)
+            {
+                if(ex.InnerException is SqlException sqlException)
+                {
+                    if (sqlException.Number == 547)
+                        throw new DeleteRestrictedException("Cannot delete this resource because it has related resources.");
+                }
+            }
+            throw new Exception();
+        }
+
+        public void Dispose()
+        {
+            _context.Dispose();
+        }
+
+
+        }
+    }
+</file>
+
+<file path="Domain/Interfaces/UnitOfWorkInterfaces/IUnitOfWorkRepository.cs">
+using Contracts.Results;
+using Domain.Interfaces.AcademicStructureInterfaces.BatchInterfaces;
+using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
+using Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces;
+using Domain.Interfaces.AcademicStructureInterfaces.UniversityInterfaces;
+using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
+using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
+using Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces;
+using Domain.Interfaces.LoginInterfaces;
+using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Domain.Interfaces.UnitOfWork
+{
+    public interface IUnitOfWorkRepository : IDisposable
+    {
+        public IUserRepository UserRepository { get; }
+        public ILoginRepository LoginRepository { get; }
+        public IRefreshTokenRepository RefreshTokenRepository { get; }
+        public IRoleRepository RoleRepository { get; }
+        public IUserRoleRepository UserRoleRepository { get; }
+        public IUniversityRepository UniversityRepository { get; }
+        public ICollegeRepository CollegeRepository { get; }
+        public IDepartmentRepository DepartmentRepository { get; }
+        public IBatchRepository BatchRepository { get; }
+        public Task<int> CompleteAsync();
+    }
+}
+</file>
+
 <file path="Application/Services/IdentityServices/UserService.cs">
 using Domain.Interfaces.UnitOfWork;
 using System;
@@ -11388,68 +12567,6 @@ namespace Application.Services.IdentityServices
 }
 </file>
 
-<file path="Application/Extensions/AddServicesToDIContainer.cs">
-using Application.Services.IdentityServices;
-using Domain.Interfaces.LoginInterfaces;
-using Domain.Interfaces.UnitOfWork;
-using FluentValidation;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Application.Validators.LoginRequestValidator;
-using Contracts.Requests.LoginRequests;
-using Contracts.Requests.UserRequests;
-using Application.Validators;
-using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
-using Application.Services.Login_Service;
-using Application.Validators.User_Validators;
-using Contracts.Requests.IdentityRequests.RoleRequests;
-using Application.Validators.IdentityValidators.RoleValidators;
-using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
-using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
-using Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces;
-using Domain.Interfaces.AcademicStructureInterfaces.UniversityInterfaces;
-using Application.Services.AcademicServices;
-using Contracts.Requests.AcademicRequests.UniversityRequests;
-using Application.Validators.AcademicValidators.UniversityValidators;
-using Contracts.Requests.AcademicRequests.CollegeRequests;
-using Application.Validators.AcademicValidators.CollegeValidators;
-using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
-
-namespace Application.Extensions
-{
-    public static class AddServicesToDIContainer
-    {
-        public static IServiceCollection ServicesToDI(this IServiceCollection services)
-        {
-            services.AddScoped<IUserService, UserService>();
-            services.AddScoped<IRefreshTokenService, RefreshTokenService>();
-            services.AddScoped<ICurrentUserService, CurrentUserService>();
-            services.AddScoped<IRoleService, RoleService>();
-            services.AddScoped<IUserRoleService, UserRoleService>();
-            services.AddScoped<IUniversityService, UniversityService>();
-            services.AddScoped<ICollegeService, CollegeService>();
-            return services;
-        }
-        public static IServiceCollection Validators(this IServiceCollection services)
-        {
-            services.AddScoped<IValidator<LoginRequest>, LoginRequestValidator>();
-            services.AddScoped<IValidator<AddUserDTO>, AddUserValidator>();
-            services.AddScoped<IValidator<UpdateUserDTO>, UpdateUserValidator>();
-            services.AddScoped<IValidator<AddRoleDTO>, AddRoleValidator>();
-            services.AddScoped<IValidator<AddUniversityDTO>, AddUniversityValidator>();
-            services.AddScoped<IValidator<UpdateUniversityDTO>, UpdateUniversityValidator>();
-            services.AddScoped<IValidator<AddCollegeDTO>, AddCollegeValidator>();
-            services.AddScoped<IValidator<UpdateCollegeDTO>, UpdateCollegeValidator>();
-            return services;
-        }
-    }
-}
-</file>
-
 <file path="UniNet/Controllers/Identity Controllers/UserController.cs">
 using Contracts.Common.Messages;
 using Contracts.Requests.RequestParameters;
@@ -11513,6 +12630,81 @@ namespace UniNet.Controllers.Identity_Controllers
             var userId = _currentUserService.UserId;
             var response = await _userService.UpdateUser(requestParameter.Id, updatedUser, userId);
             return response.ToActionResult();
+        }
+    }
+}
+</file>
+
+<file path="Application/Extensions/AddServicesToDIContainer.cs">
+using Application.Services.IdentityServices;
+using Domain.Interfaces.LoginInterfaces;
+using Domain.Interfaces.UnitOfWork;
+using FluentValidation;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Application.Validators.LoginRequestValidator;
+using Contracts.Requests.LoginRequests;
+using Contracts.Requests.UserRequests;
+using Application.Validators;
+using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
+using Application.Services.Login_Service;
+using Application.Validators.User_Validators;
+using Contracts.Requests.IdentityRequests.RoleRequests;
+using Application.Validators.IdentityValidators.RoleValidators;
+using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
+using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
+using Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces;
+using Domain.Interfaces.AcademicStructureInterfaces.UniversityInterfaces;
+using Application.Services.AcademicServices;
+using Contracts.Requests.AcademicRequests.UniversityRequests;
+using Application.Validators.AcademicValidators.UniversityValidators;
+using Contracts.Requests.AcademicRequests.CollegeRequests;
+using Application.Validators.AcademicValidators.CollegeValidators;
+using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
+using Contracts.Requests.AcademicRequests.DepartmentRequests;
+using Application.Validators.AcademicValidators.DepartmentValidators;
+using Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces;
+using Domain.Interfaces.AcademicStructureInterfaces.BatchInterfaces;
+using Contracts.Requests.AcademicRequests.BatchRequests;
+using Application.Validators.AcademicValidators.BatchValidators;
+
+namespace Application.Extensions
+{
+    public static class AddServicesToDIContainer
+    {
+        public static IServiceCollection ServicesToDI(this IServiceCollection services)
+        {
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+            services.AddScoped<ICurrentUserService, CurrentUserService>();
+            services.AddScoped<IRoleService, RoleService>();
+            services.AddScoped<IUserRoleService, UserRoleService>();
+            services.AddScoped<IUniversityService, UniversityService>();
+            services.AddScoped<ICollegeService, CollegeService>();
+            services.AddScoped<IDepartmentService, DepartmentService>();
+            services.AddScoped<IBatchService, BatchService>();
+            return services;
+        }
+        public static IServiceCollection Validators(this IServiceCollection services)
+        {
+            services.AddScoped<IValidator<LoginRequest>, LoginRequestValidator>();
+            services.AddScoped<IValidator<AddUserDTO>, AddUserValidator>();
+            services.AddScoped<IValidator<UpdateUserDTO>, UpdateUserValidator>();
+            services.AddScoped<IValidator<AddRoleDTO>, AddRoleValidator>();
+            services.AddScoped<IValidator<AddUniversityDTO>, AddUniversityValidator>();
+            services.AddScoped<IValidator<UpdateUniversityDTO>, UpdateUniversityValidator>();
+            services.AddScoped<IValidator<AddCollegeDTO>, AddCollegeValidator>();
+            services.AddScoped<IValidator<UpdateCollegeDTO>, UpdateCollegeValidator>();
+            services.AddScoped<IValidator<AddDepartmentDTO>, AddDepartmentValidator>();
+            services.AddScoped<IValidator<UpdateDepartmentDTO>, UpdateDepartmentValidator>();
+            services.AddScoped<IValidator<AddBatchDTO>, AddBatchValidator>();
+            services.AddScoped<IValidator<UpdateBatchDTO>, UpdateBatchValidator>();
+
+            return services;
         }
     }
 }
