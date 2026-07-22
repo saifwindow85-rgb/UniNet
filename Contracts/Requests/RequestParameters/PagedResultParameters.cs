@@ -35,4 +35,10 @@ namespace Contracts.Requests.RequestParameters
         public int BatchId { get; set; }
     }
 
+    public class UniversityIdParameter
+    {
+        [Range(1, int.MaxValue, ErrorMessage = "UniversityId  Format!/UniversityId Must Be > 0")]
+        public int UniversityId { get; set; }
+    }
+
 }

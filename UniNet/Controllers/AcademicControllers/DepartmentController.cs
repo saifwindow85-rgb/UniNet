@@ -103,10 +103,7 @@ namespace UniNet.Controllers.AcademicControllers
         public async Task<ActionResult> Delete([FromQuery]DepartmentIdParameter @departmentIdParameter)
         {
             var result = await _departmentService.Delete(departmentIdParameter.DepartmentId);
-            if (!result)
-                return NotFound(DeleteMessage.DeletionFailed<Department>(departmentIdParameter.DepartmentId));
-
-            return Ok(DeleteMessage.DeletedSuccessfuly<Department>(departmentIdParameter.DepartmentId));
+            return result.ToDeleteActionResult<Department>(departmentIdParameter.DepartmentId);
         }
     }
 }

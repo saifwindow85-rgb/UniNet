@@ -29,7 +29,10 @@ namespace UniNet.Controllers.AcademicControllers
 
         [Authorize]
         [HttpGet(Name ="GetAllUniversities")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<PagedResult<UniversityDTO>>> GetAllUniversities([FromQuery]PagedResultParameters @parameters)
         {
             var universities = await _uinversityService.GetAllUniversities(parameters.PageNumber, parameters.PageSize);
@@ -38,36 +41,39 @@ namespace UniNet.Controllers.AcademicControllers
 
         [Authorize]
         [HttpGet("by-id",Name ="GetUniversityById")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<UniversityDTO>> GetUniversityById([FromQuery]IdParameter @parameter)
+        public async Task<ActionResult<UniversityDTO>> GetUniversityById([FromQuery]UniversityIdParameter @universityIdParameter)
         {
-            var university = await _uinversityService.FindUniversityDTOById(@parameter.Id);
-            if(university == null)
-                return NotFound(ErrorMessages.NotFound<University>(parameter.Id));
-
-            return Ok(university);
+            var university = await _uinversityService.FindUniversityDTOById(@universityIdParameter.UniversityId);
+            return university.GetResourceEndpoints(universityIdParameter.UniversityId, typeof(University).Name);
         }
 
 
         [Authorize]
         [HttpDelete(Name ="DeleteUniversity")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult> Delete([FromQuery] IdParameter @parameter)
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult> Delete([FromQuery] UniversityIdParameter @universityIdParameter)
         {
-            var result = await _uinversityService.Delete(parameter.Id);
-            if (!result)
-                return NotFound(DeleteMessage.DeletionFailed<University>(parameter.Id));
-            return Ok(DeleteMessage.DeletedSuccessfuly<University>(parameter.Id));
+            var result = await _uinversityService.Delete(universityIdParameter.UniversityId);
+            return result.ToDeleteActionResult<University>(universityIdParameter.UniversityId);
         }
 
         [Authorize]
         [HttpPost(Name ="AddUniversity")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<AddUpdateServiceResponse<UniversityDTO>>> AddUniversity([FromBody]AddUniversityDTO newUniversity)
         {
             var response = await _uinversityService.AddUniversity(newUniversity, _currentUserService.UserId);
@@ -76,13 +82,16 @@ namespace UniNet.Controllers.AcademicControllers
 
         [Authorize]
         [HttpPut(Name ="UpdateUniversity")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<AddUpdateServiceResponse<UniversityDTO>>> UpdateUniversity([FromQuery]IdParameter @parameter,
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<AddUpdateServiceResponse<UniversityDTO>>> UpdateUniversity([FromQuery]UniversityIdParameter @universityIdParameter,
             [FromBody]UpdateUniversityDTO updatedUniversity)
         {
-            var response = await _uinversityService.UpdateUniversity(parameter.Id, updatedUniversity, _currentUserService.UserId);
+            var response = await _uinversityService.UpdateUniversity(universityIdParameter.UniversityId, updatedUniversity, _currentUserService.UserId);
             return response.ToActionResult();
         }
     }

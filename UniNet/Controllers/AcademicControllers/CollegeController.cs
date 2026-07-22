@@ -40,9 +40,9 @@ namespace UniNet.Controllers.AcademicControllers
         [HttpGet("by-universityId",Name = "GetCollegesPerUniversity")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<PagedResult<CollegeDTO>>> GetCollegesPerUniversity([FromQuery]IdParameter @idParameter, [FromQuery]PagedResultParameters @parameters)
+        public async Task<ActionResult<PagedResult<CollegeDTO>>> GetCollegesPerUniversity([FromQuery]CollegeIdParameter @collegeIdParameter, [FromQuery]PagedResultParameters @parameters)
         {
-            var colleges = await _collegeService.GetCollegesPerUniversity(idParameter.Id,parameters.PageNumber,parameters.PageSize);
+            var colleges = await _collegeService.GetCollegesPerUniversity(@collegeIdParameter.CollegeId,parameters.PageNumber,parameters.PageSize);
             return colleges.ToPagedActioneResult();
         }
 
@@ -52,10 +52,10 @@ namespace UniNet.Controllers.AcademicControllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<CollegeDTO>> GetCollegeById([FromQuery]IdParameter @idParameter)
+        public async Task<ActionResult<CollegeDTO>> GetCollegeById([FromQuery]CollegeIdParameter @collegeIdParameter)
         {
-            var college = await _collegeService.GetCollegeDTOById(idParameter.Id);
-            return college.GetResourceEndpoints(idParameter.Id, typeof(College).Name);
+            var college = await _collegeService.GetCollegeDTOById(@collegeIdParameter.CollegeId);
+            return college.GetResourceEndpoints(@collegeIdParameter.CollegeId, typeof(College).Name);
         }
 
         [Authorize]
@@ -63,9 +63,9 @@ namespace UniNet.Controllers.AcademicControllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<CollegeDTO>> GetCollegeByName([FromQuery]IdParameter @universityId,[FromQuery] BaseStringParametre @Parameter)
+        public async Task<ActionResult<CollegeDTO>> GetCollegeByName([FromQuery]UniversityIdParameter @universityIdParameter,[FromQuery] BaseStringParametre @Parameter)
         {
-            var college = await _collegeService.GetCollegeDTOByName(universityId.Id,Parameter.Name);
+            var college = await _collegeService.GetCollegeDTOByName(@universityIdParameter.UniversityId, Parameter.Name);
             return college.GetResourceEndpoints(Parameter.Name, typeof(College).Name);
         }
 
@@ -75,13 +75,10 @@ namespace UniNet.Controllers.AcademicControllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult> Delete([FromQuery]IdParameter @idParameter)
+        public async Task<ActionResult> Delete([FromQuery]CollegeIdParameter @collegeIdParameter)
         {
-            var result = await _collegeService.Delete(idParameter.Id);
-            if(!result)
-                return NotFound(DeleteMessage.DeletionFailed<College>(idParameter.Id));
-
-            return Ok(DeleteMessage.DeletedSuccessfuly<College>(idParameter.Id));
+            var result = await _collegeService.Delete(collegeIdParameter.CollegeId);
+            return result.ToDeleteActionResult<College>(collegeIdParameter.CollegeId);
         }
 
         [Authorize]
@@ -101,9 +98,9 @@ namespace UniNet.Controllers.AcademicControllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
-        public async Task<ActionResult<AddUpdateServiceResponse<CollegeDTO>>> UpdateCollege([FromQuery]IdParameter @parameter,[FromBody] UpdateCollegeDTO updatedCollege)
+        public async Task<ActionResult<AddUpdateServiceResponse<CollegeDTO>>> UpdateCollege([FromQuery]CollegeIdParameter @collegeIdParameter,[FromBody] UpdateCollegeDTO updatedCollege)
         {
-            var response = await _collegeService.UpdateCollege(parameter.Id,updatedCollege, _currentUserService.UserId);
+            var response = await _collegeService.UpdateCollege(collegeIdParameter.CollegeId, updatedCollege, _currentUserService.UserId);
             return response.ToActionResult();
         }
 
