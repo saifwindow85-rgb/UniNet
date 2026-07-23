@@ -10,5 +10,6 @@ namespace Domain.Interfaces.IdentityInterfaces.UserInterfaces
     {
         public int UserId { get; }
         public string UserName { get; }
+        public int? UniversityId { get; }
     }
 }
