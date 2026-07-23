@@ -33,6 +33,8 @@ using Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces;
 using Domain.Interfaces.AcademicStructureInterfaces.BatchInterfaces;
 using Contracts.Requests.AcademicRequests.BatchRequests;
 using Application.Validators.AcademicValidators.BatchValidators;
+using Contracts.Requests.AcademicRequests.SectionRequests;
+using Application.Validators.AcademicValidators.SectionValidators;
 
 namespace Application.Extensions
 {
@@ -65,6 +67,9 @@ namespace Application.Extensions
             services.AddScoped<IValidator<UpdateDepartmentDTO>, UpdateDepartmentValidator>();
             services.AddScoped<IValidator<AddBatchDTO>, AddBatchValidator>();
             services.AddScoped<IValidator<UpdateBatchDTO>, UpdateBatchValidator>();
+            services.AddScoped<IValidator<AddSectionDTO>, AddSectionValidator>();
+            services.AddScoped<IValidator<UpdateSectionDTO>, UpdateSectionValidator>();
+
 
             return services;
         }
