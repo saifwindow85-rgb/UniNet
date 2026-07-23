@@ -16,5 +16,6 @@ namespace Domain.Interfaces.IdentityInterfaces.UserInterfaces
         public Task<User?> GetUserEntityById(int Id);
         public Task<User?> GetUserByUserName(string userName);
         public Task Add(User user);
+        public Task<List<string>>GetRolesNamesByUserId(int userId);
     }
 }

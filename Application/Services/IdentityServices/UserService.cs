@@ -70,6 +70,11 @@ namespace Application.Services.IdentityServices
             return await _unitOfWork.UserRepository.GetUserByUserName(userName);
         }
 
+        public async Task<List<string>> GetRolesNamesByUserId(int userId)
+        {
+             return await _unitOfWork.UserRepository.GetRolesNamesByUserId(userId);
+        }
+
         public async Task<bool> IsUserExists(string userName)
         {
             return await _unitOfWork.UserRepository.IsUserExsist(userName);

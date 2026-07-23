@@ -11,21 +11,25 @@ namespace Application.Mappers
 {
     public static class TokenUserInfoMapper
     {
-        public static TokenUserInfoDTO ToInfoDTO(this User user)
+        public static TokenUserInfoDTO ToInfoDTO(this User user,List<string>userRoles)
         {
             return new TokenUserInfoDTO
             {
                 UserId = user.UserId,
                 UserName = user.UserName,
+                UniversityId = user.UniversityId,
+                UserRoles = userRoles
             };
         }
 
-        public static TokenUserInfoDTO ToInfoDTO(this UserToken token)
+        public static TokenUserInfoDTO ToInfoDTO(this UserToken token,List<string>userRoles)
         {
             return new TokenUserInfoDTO
             {
                 UserId = token.UserId,
                 UserName = token.UserName,
+                UniversityId= token.UniversityId,
+                UserRoles = userRoles
             };
         }
     }

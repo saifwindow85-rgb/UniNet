@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using UniNet.CustomClaims;
 
 namespace UniNet.Helpers
 {
@@ -13,11 +14,22 @@ namespace UniNet.Helpers
     {
         public static JwtSecurityToken TokenIssuer(TokenUserInfoDTO info,JWTOption jwtOptions)
         {
-            var claims = new[]
-          {
-                new Claim(ClaimTypes.NameIdentifier,info.UserId.ToString()),
-                new Claim(ClaimTypes.Name,info.UserName),
+            var claims = new List<Claim>()
+            {
+                new Claim(ClaimTypes.NameIdentifier, info.UserId.ToString()),
+                new Claim(ClaimTypes.Name, info.UserName), 
+
             };
+            
+            if(info.UniversityId != null)
+            {
+                claims.Add(new Claim(CustomClaimTypes.UnivresityId, info.UniversityId.ToString()!));
+            }
+
+            foreach(var role in info.UserRoles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key));
 

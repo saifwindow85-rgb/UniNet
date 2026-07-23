@@ -18,5 +18,6 @@ namespace Domain.Interfaces.IdentityInterfaces.UserInterfaces
         public Task<AddUpdateServiceResponse<UserDTO>> AddUser(AddUserDTO newUser,int userId);
         public Task<AddUpdateServiceResponse<UserDTO>> UpdateUser(int updatedUserId,UpdateUserDTO updatedUser, int userId);
         public bool VerifyPassword(string password, string passwordHash);
+        public Task<List<string>> GetRolesNamesByUserId(int userId);
     }
 }

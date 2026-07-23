@@ -67,5 +67,13 @@ namespace DataAccessLayer.Repos
         {
             return await _context.Users.AnyAsync(u=>u.UserId == userId);
         }
+
+        public async Task<List<string>> GetRolesNamesByUserId(int userId)
+        {
+            return await _context.UserRoles
+                .Where(ur => ur.UserId == userId)
+                .Join(_context.Roles, ur => ur.RoleId, r => r.RoleId, (ur, r) => r.Name)
+                .ToListAsync();
+        }
     }
 }
