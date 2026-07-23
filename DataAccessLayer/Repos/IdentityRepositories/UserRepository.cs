@@ -17,6 +17,8 @@ namespace DataAccessLayer.Repos
         private readonly Expression<Func<User, UserDTO>> ToDTO = u => new UserDTO
         {
             UserId = u.UserId,
+            UniversityId = u.UniversityId,
+            UniversityName = u.University == null ? null : u.University.Name,
             FullName = u.FullName,
             UserName = u.UserName,
             Email = u.Email,
@@ -26,8 +28,8 @@ namespace DataAccessLayer.Repos
             CreatedByUserId = u.CreatedByUserId,
             UpdatedAt = u.UpdatedAt,
             UpdatedByUserId = u.UpdatedByUserId,
-            CreatorUserName = u.CreatedByUser.UserName,
-            UpdaterUserName = u.UpdatedByUser.UserName,
+            CreatorUserName = u.CreatedByUser == null? null : u.CreatedByUser.UserName,
+            UpdaterUserName = u.UpdatedByUser == null? null : u.UpdatedByUser.UserName
         };
 
         public readonly AppDbcontext _context;

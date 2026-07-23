@@ -8,6 +8,7 @@ namespace Contracts.Requests.UserRequests
 {
     public class UpdateUserDTO
     {
+        public int? UniversityId { get; set; } // only required if the user is a UniversityAdmin
         public string FullName { get; set; } = null!;
 
         public string UserName { get; set; } = null!;

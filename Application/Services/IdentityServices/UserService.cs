@@ -52,6 +52,7 @@ namespace Application.Services.IdentityServices
                 IsActive = newUser.IsActive,
                 CreatedAt = DateTime.UtcNow,
                 CreatedByUserId = userId,
+                UniversityId = newUser.UniversityId
             };
             await _unitOfWork.UserRepository.Add(userEntity);
             await _unitOfWork.CompleteAsync();
@@ -101,6 +102,7 @@ namespace Application.Services.IdentityServices
             user.UpdatedAt = DateTime.UtcNow;
             user.UpdatedByUserId = userId;
             user.IsActive = updatedUser.IsActive;
+            user.UniversityId = updatedUser.UniversityId;
             var userDTO = await FindById(user.UserId);
             await _unitOfWork.CompleteAsync();
             return AddUpdateServiceResponse<UserDTO>.Success(userDTO!);

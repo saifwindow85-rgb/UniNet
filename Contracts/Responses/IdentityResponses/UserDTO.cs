@@ -23,5 +23,7 @@ namespace Contracts.Responses.IdentityResponses
         public DateTime UpdatedAt { get; set; }
         public int? UpdatedByUserId { get; set; }
         public string? UpdaterUserName { get; set; }
+        public int? UniversityId { get; set; } // only required if the user is a UniversityAdmin
+        public string? UniversityName { get; set; } // only required if the user is a UniversityAdmin
     }
 }
