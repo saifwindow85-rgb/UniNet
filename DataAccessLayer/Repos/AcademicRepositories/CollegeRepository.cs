@@ -83,13 +83,13 @@ namespace DataAccessLayer.Repos.AcademicRepositories
 
         public async Task<CollegeDTO?> GetCollegeDTOByName(int universityId,string collegeName)
         {
-            return await _context.Colleges.AsNoTracking().Where(c=>c.UniversityId == universityId)
-                .Select(ToDTO).SingleOrDefaultAsync(c => c.CollegeName == collegeName);
+            return await _context.Colleges.AsNoTracking().Where(c=>c.UniversityId == universityId && c.Name == collegeName)
+                .Select(ToDTO).SingleOrDefaultAsync();
         }
 
         public async Task<College?> GetCollegeEntityByName(int universityId, string collegeName)
         {
-            return await _context.Colleges.Where(c=>c.UniversityId == universityId).SingleOrDefaultAsync(c => c.Name == collegeName);
+            return await _context.Colleges.Where(c=>c.UniversityId == universityId && c.Name == collegeName).SingleOrDefaultAsync();
         }
 
        

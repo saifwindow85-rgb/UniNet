@@ -77,7 +77,7 @@ namespace DataAccessLayer.Repos.AcademicRepositories
 
         public async Task<DepartmentDTO?> GetDTOByName(int collegeId, string name)
         {
-            return await _context.Departments.Where(d => d.CollegeId == collegeId).Select(ToDTO).SingleOrDefaultAsync(d => d.DepartmentName == name);
+            return await _context.Departments.Where(d => d.CollegeId == collegeId && d.Name == name).Select(ToDTO).SingleOrDefaultAsync();
         }
 
         public async Task<Department?> GetEntityById(int departmentId)
@@ -87,7 +87,7 @@ namespace DataAccessLayer.Repos.AcademicRepositories
 
         public async Task<Department?> GetEntityByName(int collegeId, string name)
         {
-            return await _context.Departments.SingleOrDefaultAsync(d=>d.CollegeId == collegeId && d.Name == name);
+            return await _context.Departments.Where(d => d.CollegeId == collegeId && d.Name == name).SingleOrDefaultAsync();
         }
     }
 }
