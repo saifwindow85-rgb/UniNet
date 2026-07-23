@@ -26,7 +26,7 @@ namespace UniNet.Controllers.AcademicControllers
             _currentUserService = currentUserService;
         }
 
-        [Authorize]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
         [HttpGet(Name ="GetAllDepartments")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -38,7 +38,7 @@ namespace UniNet.Controllers.AcademicControllers
             return departments.ToPagedActioneResult();
         }
 
-        [Authorize]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
         [HttpGet("collegeId",Name = "GetDepartmentsPerCollege")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -52,7 +52,7 @@ namespace UniNet.Controllers.AcademicControllers
         }
 
 
-        [Authorize]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
         [HttpGet("by-id",Name ="GetDepartmentById")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -66,7 +66,7 @@ namespace UniNet.Controllers.AcademicControllers
         }
 
 
-        [Authorize]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
         [HttpPost( Name = "AddDepartment")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -78,7 +78,7 @@ namespace UniNet.Controllers.AcademicControllers
             var response = await _departmentService.AddDepartment(newDepartment, _currentUserService.UserId);
             return response.ToActionResult();
         }
-        [Authorize]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
         [HttpPut(Name = "UpdateDepartment")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -93,7 +93,7 @@ namespace UniNet.Controllers.AcademicControllers
             return response.ToActionResult();
         }
 
-        [Authorize]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
         [HttpDelete(Name = "Delete")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]

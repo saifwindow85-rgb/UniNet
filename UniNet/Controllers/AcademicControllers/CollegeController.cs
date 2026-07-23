@@ -26,7 +26,7 @@ namespace UniNet.Controllers.AcademicControllers
             _currentUserService = currentUserService;
         }
 
-        [Authorize]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
         [HttpGet(Name ="GetAllColleges")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -36,7 +36,7 @@ namespace UniNet.Controllers.AcademicControllers
             return  colleges.ToPagedActioneResult();
         }
 
-        [Authorize]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
         [HttpGet("by-universityId",Name = "GetCollegesPerUniversity")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -47,7 +47,7 @@ namespace UniNet.Controllers.AcademicControllers
         }
 
 
-        [Authorize]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
         [HttpGet("by-id",Name ="GetCollegeById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -58,7 +58,7 @@ namespace UniNet.Controllers.AcademicControllers
             return college.GetResourceEndpoints(@collegeIdParameter.CollegeId, typeof(College).Name);
         }
 
-        [Authorize]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
         [HttpGet("by-name", Name = "GetCollegeByName")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -69,7 +69,7 @@ namespace UniNet.Controllers.AcademicControllers
             return college.GetResourceEndpoints(Parameter.Name, typeof(College).Name);
         }
 
-        [Authorize]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
         [HttpDelete(Name ="DeleteCollege")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -81,7 +81,7 @@ namespace UniNet.Controllers.AcademicControllers
             return result.ToDeleteActionResult<College>(collegeIdParameter.CollegeId);
         }
 
-        [Authorize]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
         [HttpPost(Name ="AddCollege")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -92,7 +92,7 @@ namespace UniNet.Controllers.AcademicControllers
             return response.ToActionResult();
         }
 
-        [Authorize]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
         [HttpPut(Name = "UpdateCollege")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

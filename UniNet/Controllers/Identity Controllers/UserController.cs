@@ -27,7 +27,7 @@ namespace UniNet.Controllers.Identity_Controllers
         }
 
         [HttpGet("Id", Name = "GetUserById")]
-        [Authorize]
+        [Authorize(Roles ="Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -39,7 +39,7 @@ namespace UniNet.Controllers.Identity_Controllers
         }
 
         [HttpPost("")]
-        [Authorize]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -53,7 +53,7 @@ namespace UniNet.Controllers.Identity_Controllers
         }
 
         [HttpPut("")]
-        [Authorize]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]

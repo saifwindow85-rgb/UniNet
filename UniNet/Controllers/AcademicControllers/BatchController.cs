@@ -27,7 +27,7 @@ namespace UniNet.Controllers.AcademicControllers
         }
 
 
-        [Authorize]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
         [HttpGet(Name ="GetAllBatches")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -39,7 +39,7 @@ namespace UniNet.Controllers.AcademicControllers
             return batches.ToPagedActioneResult();
         }
 
-        [Authorize]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
         [HttpGet("by-departmentId",Name = "GetBatchesPerDepartment")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -52,7 +52,7 @@ namespace UniNet.Controllers.AcademicControllers
             return batches.ToPagedActioneResult();
         }
 
-        [Authorize]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
         [HttpGet("by-id", Name = "GetBatchById")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -65,7 +65,7 @@ namespace UniNet.Controllers.AcademicControllers
             return batch.GetResourceEndpoints(batchIdParameter.BatchId, typeof(Batch).Name);
         }
 
-        [Authorize]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
         [HttpGet("by-name", Name = "GetBatchByName")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -79,7 +79,7 @@ namespace UniNet.Controllers.AcademicControllers
             return batch.GetResourceEndpoints(stringparameter.Name, typeof(Batch).Name);
         }
 
-        [Authorize]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
         [HttpDelete(Name = "DeleteBatch")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -92,7 +92,7 @@ namespace UniNet.Controllers.AcademicControllers
           return result.ToDeleteActionResult<Batch>(batchIdParameter.BatchId);
         }
 
-        [Authorize]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
         [HttpPost(Name = "AddBatch")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -105,7 +105,7 @@ namespace UniNet.Controllers.AcademicControllers
             return response.ToActionResult();
         }
 
-        [Authorize]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
         [HttpPut(Name = "UpdateBatch")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
