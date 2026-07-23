@@ -63,6 +63,13 @@ namespace UniNet.Controllers.AcademicControllers
             return section.GetResourceEndpoints(sectionIdParameter.SectionId, typeof(Section).Name);
         }
 
+        [Authorize]
+        [HttpGet("by-name", Name = "GetSectionByName")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<SectionDTO>> GetSectionByName([FromQuery] BatchIdParameter batchIdParameter, [FromQuery] BaseStringParametre sectionNameParameter)
         {
             var section = await _sectionService.GetDTOByName(batchIdParameter.BatchId, sectionNameParameter.Name);

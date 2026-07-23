@@ -73,7 +73,7 @@ namespace DataAccessLayer.Repos.AcademicRepositories
 
         public async Task<SectionDTO?> GetDTOByName(int batchId,string name)
         {
-            return await  _context.Sections.AsNoTracking().Where(s=>s.BatchId == batchId).Select(ToDTO).SingleOrDefaultAsync(s=>s.BatchName == name);
+            return await  _context.Sections.AsNoTracking().Where(s=>s.BatchId == batchId && s.Name == name).Select(ToDTO).SingleOrDefaultAsync();
         }
 
         public async Task<Section?> GetEntityById(int sectionId)
@@ -83,7 +83,7 @@ namespace DataAccessLayer.Repos.AcademicRepositories
 
         public async Task<Section?> GetEntityByName(int batchId,string name)
         {
-            return await _context.Sections.Where(s => s.BatchId == batchId).SingleOrDefaultAsync(s => s.Name == name);
+            return await _context.Sections.Where(s => s.BatchId == batchId && s.Name == name).SingleOrDefaultAsync();
         }
 
         public async Task<PagedResult<SectionDTO>> GetSectionsPerBatch(int batchId, int pageNumber, int pageSize)
