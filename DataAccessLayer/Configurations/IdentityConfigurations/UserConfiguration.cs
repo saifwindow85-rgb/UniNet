@@ -37,6 +37,10 @@ namespace DataAccessLayer.Configurations.Identity_Configurations
             builder.HasOne(u => u.UpdatedByUser).WithMany(u => u.UpdatedUsers)
                 .HasForeignKey(u => u.UpdatedByUserId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
 
+            //Relation : One University Has Many Users & One User Belongs to One University
+            builder.HasOne(u=>u.University).WithMany(u=>u.Users).HasForeignKey
+                (u=>u.UniversityId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
+
             builder.ToTable("Users");
 
             builder.HasData(SeedData.GetUsers());

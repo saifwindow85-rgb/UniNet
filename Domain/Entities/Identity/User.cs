@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Content;
+﻿using Domain.Entities.Academic_Structure;
+using Domain.Entities.Content;
 using Domain.Entities.Employees;
 using Domain.Entities.Images;
 using Domain.Entities.Students;
@@ -36,6 +37,9 @@ namespace Domain.Entities.Identity
         public Student? Student { get; set; }
 
         public Employee? Employee { get; set; }
+
+        public int? UniversityId { get; set; }
+        public University? University { get; set; }
 
         public ICollection<User> CreatedUsers { get; set; } = new List<User>();
         public ICollection<User> UpdatedUsers { get; set; } = new List<User>();
