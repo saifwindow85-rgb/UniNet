@@ -54,4 +54,9 @@ namespace Contracts.Requests.RequestParameters
         public int UserId { get; set; }
     }
 
+    public class   SectionIdParameter 
+    {
+        [Range(1, int.MaxValue, ErrorMessage = "SectionId  Format!/SectionId Must Be > 0")]
+        public int SectionId { get; set; }
+    }
 }

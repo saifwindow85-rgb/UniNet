@@ -4,6 +4,7 @@ using DataAccessLayer.Repos.IdentityRepositories;
 using Domain.Interfaces.AcademicStructureInterfaces.BatchInterfaces;
 using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
 using Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces;
+using Domain.Interfaces.AcademicStructureInterfaces.SectionInterfaces;
 using Domain.Interfaces.AcademicStructureInterfaces.UniversityInterfaces;
 using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
@@ -32,6 +33,7 @@ namespace DataAccessLayer.Extensions
             services.AddScoped<ICollegeRepository, CollegeRepository>();
             services.AddScoped<IDepartmentRepository, DepartmentRepository>();
             services.AddScoped<IBatchRepository, BatchRepository>();
+            services.AddScoped<ISectionRepository, SectionRepository>();
             return services;
         }
     }

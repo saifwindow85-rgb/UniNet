@@ -35,6 +35,7 @@ using Contracts.Requests.AcademicRequests.BatchRequests;
 using Application.Validators.AcademicValidators.BatchValidators;
 using Contracts.Requests.AcademicRequests.SectionRequests;
 using Application.Validators.AcademicValidators.SectionValidators;
+using Domain.Interfaces.AcademicStructureInterfaces.SectionInterfaces;
 
 namespace Application.Extensions
 {
@@ -51,6 +52,7 @@ namespace Application.Extensions
             services.AddScoped<ICollegeService, CollegeService>();
             services.AddScoped<IDepartmentService, DepartmentService>();
             services.AddScoped<IBatchService, BatchService>();
+            services.AddScoped<ISectionService, SectionService>();
             return services;
         }
         public static IServiceCollection Validators(this IServiceCollection services)
