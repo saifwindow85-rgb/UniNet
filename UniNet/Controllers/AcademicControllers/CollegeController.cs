@@ -67,7 +67,7 @@ namespace UniNet.Controllers.AcademicControllers
 
             var authorizationResult = await _authorizationService.AuthorizeAsync(User, collegeAthorizationInfo, "CollegeOwnerPolicy");
             if (!authorizationResult.Succeeded)
-                return Forbid();
+                return Forbid("No Result Found!");
 
             var college = await _collegeService.GetCollegeDTOById(@collegeIdParameter.CollegeId);
             return college.GetResourceEndpoints(@collegeIdParameter.CollegeId, typeof(College).Name);
@@ -82,6 +82,14 @@ namespace UniNet.Controllers.AcademicControllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<CollegeDTO>> GetCollegeByName([FromQuery]UniversityIdParameter @universityIdParameter,[FromQuery] BaseStringParametre @Parameter)
         {
+            var collegeAuthorizationInfo = await _collegeService.GetCollegeAuthorizationInfo(universityIdParameter.UniversityId, Parameter.Name);
+            if (collegeAuthorizationInfo == null)
+                return ControllersExtensions.AuthorizationInfoNotFound();
+
+            var authorizationResult = await _authorizationService.AuthorizeAsync(User, collegeAuthorizationInfo, "CollegeOwnerPolicy");
+            if (!authorizationResult.Succeeded)
+                return Forbid("No Result Found!");
+
             var college = await _collegeService.GetCollegeDTOByName(@universityIdParameter.UniversityId, Parameter.Name);
             return college.GetResourceEndpoints(Parameter.Name, typeof(College).Name);
         }

@@ -103,5 +103,10 @@ namespace DataAccessLayer.Repos.AcademicRepositories
         {
             return await _context.Colleges.AsNoTracking().Select(ToInfo).SingleOrDefaultAsync(c => c.CollegeId == collegeId);
         }
+
+        public async Task<CollegeAuthorizationInfo?> GetCollegeAuthorizationInfo(int universityId, string collegeName)
+        {
+            return await _context.Colleges.AsNoTracking().Where(c => c.UniversityId == universityId && c.Name == collegeName).Select(ToInfo).SingleOrDefaultAsync();
+        }
     }
 }
