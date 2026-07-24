@@ -3,6 +3,9 @@ using Contracts.Responses;
 using Contracts.Responses.CollegeResponses;
 using Contracts.Results;
 using Domain.Entities.Academic_Structure;
+using Contracts.Common.AuthorizationInfos.AcademicInfos;
+
+
 using System;
 using System.Collections.Generic;
 using System.Linq;

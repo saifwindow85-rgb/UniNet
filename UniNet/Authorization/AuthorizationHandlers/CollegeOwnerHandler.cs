@@ -1,16 +1,17 @@
-﻿using Domain.Entities.Academic_Structure;
+﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
+using Domain.Entities.Academic_Structure;
 using Microsoft.AspNetCore.Authorization;
 using UniNet.Authorization.AuthorizationRequirements;
 
 namespace UniNet.Authorization.AuthorizationHandlers
 {
-    public class CollegeOwnerHandler : AuthorizationHandler<OwnershipRequirement,College>
+    public class CollegeOwnerHandler : AuthorizationHandler<OwnershipRequirement,CollegeAuthorizationInfo>
     {
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, OwnershipRequirement requirement, College college)
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, OwnershipRequirement requirement, CollegeAuthorizationInfo college)
         {
             var universityId = context.User.FindFirst("UniversityId")?.Value;
-            var role = context.User.FindFirst("Super Admin")?.Value;
-            if(college.UniversityId.ToString() == universityId|| role != null)
+            var IsSuperAdmin = context.User.IsInRole("Super Admin");
+            if(college.UniversityId.ToString() == universityId|| IsSuperAdmin)
             {
                 context.Succeed(requirement);
             }

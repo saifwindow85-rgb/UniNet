@@ -1,4 +1,5 @@
 ﻿using Contracts.Responses.CollegeResponses;
+using Contracts.Common.AuthorizationInfos.AcademicInfos;
 using Contracts.Results;
 using Domain.Entities.Academic_Structure;
 using System;

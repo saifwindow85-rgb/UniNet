@@ -5,6 +5,7 @@ using DataAccessLayer.Extensions;
 using Domain.Entities.Academic_Structure;
 using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
 using Microsoft.EntityFrameworkCore;
+using Contracts.Common.AuthorizationInfos.AcademicInfos;
 using System;
 using System.Collections.Generic;
 using System.Linq;

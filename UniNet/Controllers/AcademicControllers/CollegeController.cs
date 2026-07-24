@@ -3,6 +3,7 @@ using Contracts.Requests.AcademicRequests.CollegeRequests;
 using Contracts.Requests.RequestParameters;
 using Contracts.Responses;
 using Contracts.Responses.CollegeResponses;
+using Contracts.Common.AuthorizationInfos.AcademicInfos;
 using Contracts.Results;
 using Domain.Entities.Academic_Structure;
 using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
@@ -60,10 +61,15 @@ namespace UniNet.Controllers.AcademicControllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<CollegeDTO>> GetCollegeById([FromQuery]CollegeIdParameter @collegeIdParameter)
         {
-            var college = await _collegeService.GetCollegeDTOById(@collegeIdParameter.CollegeId);
-            var authorizationResult = await _authorizationService.AuthorizeAsync(User, college, "CollegeOwnerPolicy");
+            var collegeAthorizationInfo = await _collegeService.GetCollegeAuthorizationInfo(collegeIdParameter.CollegeId);
+            if (collegeAthorizationInfo == null)
+                return NotFound(ErrorMessages.NotFound<College>(collegeIdParameter.CollegeId));
+
+            var authorizationResult = await _authorizationService.AuthorizeAsync(User, collegeAthorizationInfo, "CollegeOwnerPolicy");
             if (!authorizationResult.Succeeded)
                 return Forbid();
+
+            var college = await _collegeService.GetCollegeDTOById(@collegeIdParameter.CollegeId);
             return college.GetResourceEndpoints(@collegeIdParameter.CollegeId, typeof(College).Name);
         }
 
@@ -77,9 +83,6 @@ namespace UniNet.Controllers.AcademicControllers
         public async Task<ActionResult<CollegeDTO>> GetCollegeByName([FromQuery]UniversityIdParameter @universityIdParameter,[FromQuery] BaseStringParametre @Parameter)
         {
             var college = await _collegeService.GetCollegeDTOByName(@universityIdParameter.UniversityId, Parameter.Name);
-            var authorizationResult = await _authorizationService.AuthorizeAsync(User, college, "CollegeOwnerPolicy");
-            if (!authorizationResult.Succeeded)
-                return Forbid();
             return college.GetResourceEndpoints(Parameter.Name, typeof(College).Name);
         }
 

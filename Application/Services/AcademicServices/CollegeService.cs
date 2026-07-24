@@ -6,6 +6,7 @@ using Contracts.Results;
 using Domain.Entities.Academic_Structure;
 using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
 using Domain.Interfaces.UnitOfWork;
+using Contracts.Common.AuthorizationInfos.AcademicInfos;
 using FluentValidation;
 using System;
 using System.Collections.Generic;
