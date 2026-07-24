@@ -20,13 +20,15 @@ namespace UniNet.Controllers.AcademicControllers
     {
         private readonly ICollegeService _collegeService;
         private readonly ICurrentUserService _currentUserService;
-        public CollegeController(ICollegeService collegeService, ICurrentUserService currentUserService)
+        private readonly IAuthorizationService _authorizationService;
+        public CollegeController(ICollegeService collegeService, ICurrentUserService currentUserService, IAuthorizationService authorizationService)
         {
             _collegeService = collegeService;
             _currentUserService = currentUserService;
+            _authorizationService = authorizationService;
         }
 
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+        [Authorize(Roles = "Super Admin")]
         [HttpGet(Name ="GetAllColleges")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -36,8 +38,10 @@ namespace UniNet.Controllers.AcademicControllers
             return  colleges.ToPagedActioneResult();
         }
 
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+        [Authorize(Roles = "Super Admin,UniversityAdmin")]
         [HttpGet("by-universityId",Name = "GetCollegesPerUniversity")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<PagedResult<CollegeDTO>>> GetCollegesPerUniversity([FromQuery]UniversityIdParameter universityIdParameter, [FromQuery]PagedResultParameters @parameters)
@@ -47,31 +51,43 @@ namespace UniNet.Controllers.AcademicControllers
         }
 
 
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+        [Authorize(Roles = "Super Admin,UniversityAdmin")]
         [HttpGet("by-id",Name ="GetCollegeById")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<CollegeDTO>> GetCollegeById([FromQuery]CollegeIdParameter @collegeIdParameter)
         {
             var college = await _collegeService.GetCollegeDTOById(@collegeIdParameter.CollegeId);
+            var authorizationResult = await _authorizationService.AuthorizeAsync(User, college, "CollegeOwnerPolicy");
+            if (!authorizationResult.Succeeded)
+                return Forbid();
             return college.GetResourceEndpoints(@collegeIdParameter.CollegeId, typeof(College).Name);
         }
 
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+        [Authorize(Roles = "Super Admin,UniversityAdmin")]
         [HttpGet("by-name", Name = "GetCollegeByName")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<CollegeDTO>> GetCollegeByName([FromQuery]UniversityIdParameter @universityIdParameter,[FromQuery] BaseStringParametre @Parameter)
         {
             var college = await _collegeService.GetCollegeDTOByName(@universityIdParameter.UniversityId, Parameter.Name);
+            var authorizationResult = await _authorizationService.AuthorizeAsync(User, college, "CollegeOwnerPolicy");
+            if (!authorizationResult.Succeeded)
+                return Forbid();
             return college.GetResourceEndpoints(Parameter.Name, typeof(College).Name);
         }
 
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+        [Authorize(Roles = "Super Admin,UniversityAdmin")]
         [HttpDelete(Name ="DeleteCollege")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
@@ -81,9 +97,11 @@ namespace UniNet.Controllers.AcademicControllers
             return result.ToDeleteActionResult<College>(collegeIdParameter.CollegeId);
         }
 
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+        [Authorize(Roles = "Super Admin,UniversityAdmin")]
         [HttpPost(Name ="AddCollege")]
         [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<AddUpdateServiceResponse<CollegeDTO>>> AddCollege([FromBody]AddCollegeDTO newCollege)
@@ -92,9 +110,11 @@ namespace UniNet.Controllers.AcademicControllers
             return response.ToActionResult();
         }
 
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+        [Authorize(Roles = "Super Admin,UniversityAdmin")]
         [HttpPut(Name = "UpdateCollege")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]

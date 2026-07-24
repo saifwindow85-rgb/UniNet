@@ -22,6 +22,7 @@ namespace Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces
         public Task<College?> GetCollegeEntityById(int collegeId);
         public Task<CollegeDTO?> GetCollegeDTOByName(int universityId,string collegeName);
         public Task<College?>GetCollegeEntityByName(int universityId,string collegeName);
+        public Task<CollegeAuthorizationInfo?> GetCollegeAuthorizationInfo(int collegeId);
 
     }
 }

@@ -69,6 +69,11 @@ namespace Application.Services.AcademicServices
             return result;
         }
 
+        public async Task<CollegeAuthorizationInfo?> GetCollegeAuthorizationInfo(int collegeId)
+        {
+            return await  _unitOfWorkRepository.CollegeRepository.GetCollegeAuthorizationInfo(collegeId);
+        }
+
         public async Task<CollegeDTO?> GetCollegeDTOById(int collegeId)
         {
             return await _unitOfWorkRepository.CollegeRepository.GetCollegeDTOById(collegeId);

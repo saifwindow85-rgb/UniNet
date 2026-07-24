@@ -9,6 +9,9 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Text.Json;
 using UniNet.MiddleWares;
+using Microsoft.AspNetCore.Authorization;
+using UniNet.Authorization.AuthorizationHandlers;
+using UniNet.Authorization.AuthorizationRequirements;
 
 namespace UniNet
 {
@@ -142,6 +145,17 @@ builder.Configuration.GetConnectionString("DefaultConnection")));
         }
     });
             });
+
+
+            //Add Policyes 
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("CollegeOwnerPolicy", policy =>
+                    policy.Requirements.Add(new OwnershipRequirement()));
+            });
+
+            // Add authorizationHandlers to the DI container
+            builder.Services.AddScoped<IAuthorizationHandler, CollegeOwnerHandler>();
 
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddCors(options =>

@@ -30,6 +30,12 @@ namespace DataAccessLayer.Repos.AcademicRepositories
             UpdatedByUserId = c.UpdatedByUserId,
             UpdatedByUserName = c.UpdatedByUser == null ? null : c.UpdatedByUser.UserName,
         };
+
+        private readonly Expression<Func<College, CollegeAuthorizationInfo>> ToInfo = c => new CollegeAuthorizationInfo
+        {
+            CollegeId = c.CollegeId,
+            UniversityId = c.UniversityId,
+        };
         private readonly AppDbcontext _context;
         public CollegeRepository(AppDbcontext context)
         {
@@ -92,6 +98,9 @@ namespace DataAccessLayer.Repos.AcademicRepositories
             return await _context.Colleges.Where(c=>c.UniversityId == universityId && c.Name == collegeName).SingleOrDefaultAsync();
         }
 
-       
+        public async Task<CollegeAuthorizationInfo?> GetCollegeAuthorizationInfo(int collegeId)
+        {
+            return await _context.Colleges.AsNoTracking().Select(ToInfo).SingleOrDefaultAsync(c => c.CollegeId == collegeId);
+        }
     }
 }

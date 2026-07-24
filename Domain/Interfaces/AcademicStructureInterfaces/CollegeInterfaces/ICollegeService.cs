@@ -24,5 +24,6 @@ namespace Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces
         public Task<bool> IsCollegeExists(int universityId,string collegeName);
         public Task<AddUpdateServiceResponse<CollegeDTO>> AddCollege(AddCollegeDTO newCollege, int currentUserId);
         public Task<AddUpdateServiceResponse<CollegeDTO>> UpdateCollege(int collegeId, UpdateCollegeDTO updatedCollege, int currentUserId);
+        public Task<CollegeAuthorizationInfo?> GetCollegeAuthorizationInfo(int collegeId);
     }
 }
