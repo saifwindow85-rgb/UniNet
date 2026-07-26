@@ -1,7 +1,6 @@
 ﻿using Contracts.Enums;
 using Contracts.Requests.AcademicRequests.CollegeRequests;
 using Contracts.Responses;
-using Contracts.Responses.CollegeResponses;
 using Contracts.Results;
 using Domain.Entities.Academic_Structure;
 using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
@@ -13,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Contracts.Responses.AcademicResponses.CollegeResponses;
 
 namespace Application.Services.AcademicServices
 {

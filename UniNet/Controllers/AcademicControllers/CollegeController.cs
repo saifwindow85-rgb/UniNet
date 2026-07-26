@@ -2,7 +2,6 @@
 using Contracts.Requests.AcademicRequests.CollegeRequests;
 using Contracts.Requests.RequestParameters;
 using Contracts.Responses;
-using Contracts.Responses.CollegeResponses;
 using Contracts.Common.AuthorizationInfos.AcademicInfos;
 using Contracts.Results;
 using Domain.Entities.Academic_Structure;
@@ -12,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using UniNet.Extensions;
+using Contracts.Responses.AcademicResponses.CollegeResponses;
 
 namespace UniNet.Controllers.AcademicControllers
 {

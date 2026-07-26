@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Contracts.Responses.CollegeResponses
+namespace Contracts.Responses.AcademicResponses.CollegeResponses
 {
     public class CollegeDTO : DTOsBaseEntity
     {

@@ -1,5 +1,4 @@
-﻿using Contracts.Responses.CollegeResponses;
-using Contracts.Common.AuthorizationInfos.AcademicInfos;
+﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
 using Contracts.Results;
 using Domain.Entities.Academic_Structure;
 using System;
@@ -7,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Contracts.Responses.AcademicResponses.CollegeResponses;
 
 namespace Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces
 {

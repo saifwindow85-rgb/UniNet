@@ -1,5 +1,4 @@
-﻿using Contracts.Responses.CollegeResponses;
-using Contracts.Results;
+﻿using Contracts.Results;
 using DataAccessLayer.Dbcontext;
 using DataAccessLayer.Extensions;
 using Domain.Entities.Academic_Structure;
@@ -12,6 +11,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using Contracts.Responses.AcademicResponses.CollegeResponses;
 
 namespace DataAccessLayer.Repos.AcademicRepositories
 {
