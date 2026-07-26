@@ -67,7 +67,7 @@ namespace UniNet.Controllers.AcademicControllers
 
             var authorizationResult = await _authorizationService.AuthorizeAsync(User, collegeAthorizationInfo, "CollegeOwnerPolicy");
             if (!authorizationResult.Succeeded)
-                return Forbid("No Result Found!");
+                return authorizationResult.Succeeded.AuthorizationFaield();
 
             var college = await _collegeService.GetCollegeDTOById(@collegeIdParameter.CollegeId);
             return college.GetResourceEndpoints(@collegeIdParameter.CollegeId, typeof(College).Name);
@@ -88,7 +88,7 @@ namespace UniNet.Controllers.AcademicControllers
 
             var authorizationResult = await _authorizationService.AuthorizeAsync(User, collegeAuthorizationInfo, "CollegeOwnerPolicy");
             if (!authorizationResult.Succeeded)
-                return Forbid("No Result Found!");
+                return authorizationResult.Succeeded.AuthorizationFaield();
 
             var college = await _collegeService.GetCollegeDTOByName(@universityIdParameter.UniversityId, Parameter.Name);
             return college.GetResourceEndpoints(Parameter.Name, typeof(College).Name);

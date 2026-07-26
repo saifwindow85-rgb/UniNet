@@ -81,5 +81,10 @@ namespace UniNet.Extensions
 
             return new NoContentResult();
         }
+
+        public static ActionResult AuthorizationFaield(this bool result)
+        {
+            return new NotFoundObjectResult("No Result Found!");
+        }
     }
 }
