@@ -27,6 +27,8 @@ namespace DataAccessLayer.Configurations.Identity_Configurations
 
             builder.Property(u => u.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
 
+            builder.Property(u => u.Type).HasColumnType("tinyint");
+
             builder.HasIndex(u => u.UserName).IsUnique();
             builder.HasIndex(r => r.Email).IsUnique().HasFilter("[Email] IS NOT NULL");
 

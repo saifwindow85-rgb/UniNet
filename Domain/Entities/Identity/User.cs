@@ -15,6 +15,12 @@ namespace Domain.Entities.Identity
 {
     public class User
     {
+        public enum UserType :byte
+        {
+            SystemAdmin = 1,
+            Employee = 2,
+            Student = 3,
+        }
         public int UserId { get; set; }
 
         public string FullName { get; set; } = null!;
@@ -28,6 +34,7 @@ namespace Domain.Entities.Identity
         public string? PhoneNumber { get; set; }
 
         public bool IsActive { get; set; }
+        public UserType ?Type { get; set; }
         public DateTime CreatedAt { get; set; }
         public int ?CreatedByUserId {  get; set; }
         public User?CreatedByUser { get; set; }
