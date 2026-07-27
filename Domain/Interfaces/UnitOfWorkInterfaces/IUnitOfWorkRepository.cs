@@ -4,6 +4,7 @@ using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
 using Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces;
 using Domain.Interfaces.AcademicStructureInterfaces.SectionInterfaces;
 using Domain.Interfaces.AcademicStructureInterfaces.UniversityInterfaces;
+using Domain.Interfaces.EmployeeInterfaces;
 using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces;
@@ -29,6 +30,7 @@ namespace Domain.Interfaces.UnitOfWork
         public IDepartmentRepository DepartmentRepository { get; }
         public IBatchRepository BatchRepository { get; }
         public ISectionRepository SectionRepository { get; }
+        public IEmployeeRepository EmployeeRepository { get; }
         public Task<int> CompleteAsync();
     }
 }

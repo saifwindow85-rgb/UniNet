@@ -2,12 +2,14 @@
 using Contracts.Results;
 using DataAccessLayer.Dbcontext;
 using DataAccessLayer.Repos.AcademicRepositories;
+using DataAccessLayer.Repos.EmployeeRepository;
 using DataAccessLayer.Repos.IdentityRepositories;
 using Domain.Interfaces.AcademicStructureInterfaces.BatchInterfaces;
 using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
 using Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces;
 using Domain.Interfaces.AcademicStructureInterfaces.SectionInterfaces;
 using Domain.Interfaces.AcademicStructureInterfaces.UniversityInterfaces;
+using Domain.Interfaces.EmployeeInterfaces;
 using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces;
@@ -46,6 +48,8 @@ namespace DataAccessLayer.Repos
 
         public ISectionRepository SectionRepository { get; private set; }
 
+        public IEmployeeRepository EmployeeRepository {  get; private set; }
+
         public UnitOfWorkRepository(AppDbcontext context)
         {
             _context = context;
@@ -59,6 +63,7 @@ namespace DataAccessLayer.Repos
             DepartmentRepository = new DepartmentRepository(context);
             BatchRepository = new BatchRepository(context);
             SectionRepository = new SectionRepository(context);
+            EmployeeRepository = new EmployeeRepository.EmployeeRepository(context);
         }
         public async Task<int> CompleteAsync()
         {
