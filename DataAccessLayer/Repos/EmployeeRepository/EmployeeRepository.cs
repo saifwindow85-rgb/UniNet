@@ -40,6 +40,22 @@ namespace DataAccessLayer.Repos.EmployeeRepository
         {
             _context = context;
         }
+
+        public void Add(Employee employee)
+        {
+            _context.Employees.Add(employee);
+        }
+
+        public async Task<Employee?> GetById(int employeeId)
+        {
+            return await _context.Employees.FindAsync(employeeId);
+        }
+
+        public Task<EmployeeDTO?> GetDTOById(int employeeId)
+        {
+            return _context.Employees.AsNoTracking().Select(ToDTO).SingleOrDefaultAsync(e=>e.EmployeeId == employeeId);
+        }
+
         public async Task<PagedResult<EmployeeDTO>> GetEmployees(EmployeeFilter? employeeFilter, EmployeeScope? employeeScope, int pageNumber, int pageSize)
         {
             var query = _context.Employees.AsNoTracking().AsQueryable();

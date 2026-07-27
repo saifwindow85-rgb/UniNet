@@ -36,6 +36,14 @@ using Application.Validators.AcademicValidators.BatchValidators;
 using Contracts.Requests.AcademicRequests.SectionRequests;
 using Application.Validators.AcademicValidators.SectionValidators;
 using Domain.Interfaces.AcademicStructureInterfaces.SectionInterfaces;
+using Domain.Interfaces.EmployeeInterfaces;
+using Application.Services.EmployeeService;
+using Contracts.Responses.EmployeeResponse;
+using Application.Validators.EmployeeValidator;
+using Contracts.Common;
+using Contracts.Requests.EmployeeRequests.UniversityAdminRequests;
+using Contracts.Requests.EmployeeRequests.CollegeAdminRequests;
+using Contracts.Requests.EmployeeRequests.DepartmentAdminRequests;
 
 namespace Application.Extensions
 {
@@ -53,6 +61,7 @@ namespace Application.Extensions
             services.AddScoped<IDepartmentService, DepartmentService>();
             services.AddScoped<IBatchService, BatchService>();
             services.AddScoped<ISectionService, SectionService>();
+            services.AddScoped<IEmployeeService, EmployeeService>();
             return services;
         }
         public static IServiceCollection Validators(this IServiceCollection services)
@@ -71,7 +80,9 @@ namespace Application.Extensions
             services.AddScoped<IValidator<UpdateBatchDTO>, UpdateBatchValidator>();
             services.AddScoped<IValidator<AddSectionDTO>, AddSectionValidator>();
             services.AddScoped<IValidator<UpdateSectionDTO>, UpdateSectionValidator>();
-
+            //Employee Validators
+            services.AddScoped(typeof(IValidator<>), typeof(EmployeeValidator<>));
+            services.AddScoped(typeof(IValidator<>), typeof(UpdateEmployeeValidator<>));
 
             return services;
         }

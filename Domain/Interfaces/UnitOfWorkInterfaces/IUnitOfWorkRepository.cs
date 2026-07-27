@@ -32,5 +32,8 @@ namespace Domain.Interfaces.UnitOfWork
         public ISectionRepository SectionRepository { get; }
         public IEmployeeRepository EmployeeRepository { get; }
         public Task<int> CompleteAsync();
+        public Task BeginTransactionAsync();
+        public Task CommitTransactionAsync();
+        public Task RollbackTransactionAsync();
     }
 }
