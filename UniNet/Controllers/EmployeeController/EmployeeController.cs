@@ -50,5 +50,19 @@ namespace UniNet.Controllers.EmployeeController
             var response = await _employeeService.AddUniversityAdmin(newUniversityAdmin, _currentUserService.UserId);
             return response.ToActionResult();
         }
+
+        [Authorize(Roles = "Super Admin")]
+        [HttpPut("university_admin", Name = "UpdateuniversityAdmin")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<AddUpdateServiceResponse<EmployeeDTO>>>
+            UpdateEmployee([FromQuery]EmployeeIdParameter employeeIdParameter,[FromBody]UpdateUniversityAdminDTO updatedUnivrsityAdmin)
+        {
+            var response = await _employeeService.UpdateUniversityAdmin(employeeIdParameter.EmployeeId, updatedUnivrsityAdmin, _currentUserService.UserId);
+            return response.ToActionResult();
+        }
     }
 }

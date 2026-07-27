@@ -56,6 +56,10 @@ namespace Application.Services.EmployeeService
                     .Errors.Select(x => $"{x.PropertyName} : {x.ErrorMessage}").ToList(), EnErrorTypes.InvalidData);
             }
 
+            if(! await _unitOfWorkRepository.UniversityRepository.IsUniversityExists(newUniversityAdmin.UniversityId))
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.InvalidRelatedData();
+            }
             if(await _unitOfWorkRepository.UserRepository.IsUserExsist(newUniversityAdmin.UserName))
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.AlreadyExists<Employee>();
