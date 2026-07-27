@@ -81,8 +81,12 @@ namespace Application.Extensions
             services.AddScoped<IValidator<AddSectionDTO>, AddSectionValidator>();
             services.AddScoped<IValidator<UpdateSectionDTO>, UpdateSectionValidator>();
             //Employee Validators
-            services.AddScoped(typeof(IValidator<>), typeof(EmployeeValidator<>));
-            services.AddScoped(typeof(IValidator<>), typeof(UpdateEmployeeValidator<>));
+            services.AddScoped<IValidator<AddUniversityAdminDTO>, EmployeeValidator<AddUniversityAdminDTO>>();
+            services.AddScoped<IValidator<UpdateUniversityAdminDTO>, UpdateEmployeeValidator<UpdateUniversityAdminDTO>>();
+            services.AddScoped<IValidator<AddCollegeAdminDTO>, EmployeeValidator<AddCollegeAdminDTO>>();
+            services.AddScoped<IValidator<UpdateCollegeAdminDTO>, UpdateEmployeeValidator<UpdateCollegeAdminDTO>>();
+            services.AddScoped<IValidator<AddDepartmentAdminDTO>, EmployeeValidator<AddDepartmentAdminDTO>>();
+            services.AddScoped<IValidator<UpdateDepartmentAdminDTO>, UpdateEmployeeValidator<UpdateDepartmentAdminDTO>>();
 
             return services;
         }

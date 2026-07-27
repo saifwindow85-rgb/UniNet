@@ -2,6 +2,7 @@
 using Contracts.Responses.EmployeeResponse;
 using Contracts.Results;
 using Domain.Entities.Employees;
+using Domain.Entities.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;

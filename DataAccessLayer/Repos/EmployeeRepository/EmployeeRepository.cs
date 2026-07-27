@@ -4,6 +4,7 @@ using Contracts.Results;
 using DataAccessLayer.Dbcontext;
 using DataAccessLayer.Extensions;
 using Domain.Entities.Employees;
+using Domain.Entities.Identity;
 using Domain.Interfaces.EmployeeInterfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -36,6 +37,7 @@ namespace DataAccessLayer.Repos.EmployeeRepository
             DepartmentName = e.Department == null ? null : e.Department.Name,
 
         };
+
         public EmployeeRepository(AppDbcontext context)
         {
             _context = context;
@@ -78,5 +80,7 @@ namespace DataAccessLayer.Repos.EmployeeRepository
 
             return await query.Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
         }
+
+       
     }
 }

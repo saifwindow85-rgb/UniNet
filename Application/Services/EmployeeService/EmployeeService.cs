@@ -1,4 +1,5 @@
-﻿using Contracts.Enums;
+﻿using Application.Extensions;
+using Contracts.Enums;
 using Contracts.Requests.EmployeeRequests;
 using Contracts.Requests.EmployeeRequests.CollegeAdminRequests;
 using Contracts.Requests.EmployeeRequests.DepartmentAdminRequests;
@@ -74,6 +75,7 @@ namespace Application.Services.EmployeeService
                     CreatedAt = DateTime.UtcNow,
                     CreatedByUserId = currentUserId,
                     UniversityId = newUniversityAdmin.UniversityId,
+                    Type = User.UserType.Employee,
                 };
 
                 await _unitOfWorkRepository.UserRepository.Add(userEntity);
@@ -133,9 +135,44 @@ namespace Application.Services.EmployeeService
             throw new NotImplementedException();
         }
 
-        public Task<AddUpdateServiceResponse<EmployeeDTO>> UpdateUniversityAdmin(int employeeId, UpdateUniversityAdminDTO updatedUniversityAdmin, int currentUserId)
+        public async Task<AddUpdateServiceResponse<EmployeeDTO>> UpdateUniversityAdmin(int employeeId, UpdateUniversityAdminDTO updatedUniversityAdmin, int currentUserId)
         {
-            throw new NotImplementedException();
+            var validator = _serviceProvider.GetRequiredService<IValidator<UpdateUniversityAdminDTO>>();
+            var validationResult = await validator.ValidateAsync(updatedUniversityAdmin);
+
+            if(!validationResult.IsValid)
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.Failure(validationResult
+                    .Errors.Select(x => $"{x.PropertyName} : {x.ErrorMessage}").ToList(), EnErrorTypes.InvalidData);
+            }
+
+            var employee = await GetEntityById(employeeId);
+            if(employee == null)
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.ResourceDoesntExist<Employee>();
+            }
+
+            var user = await _unitOfWorkRepository.UserRepository.GetUserEntityById(employee.UserId);
+            if(user == null)
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.ResourceDoesntExist<User>();
+            }
+
+            if(await _unitOfWorkRepository.UserRepository.IsUserExsist(updatedUniversityAdmin.UserName)&& user.UserName != updatedUniversityAdmin.UserName)
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.AlreadyExists<User>();
+            }
+
+            user.FullName = updatedUniversityAdmin.FullName;
+            user.UserName = updatedUniversityAdmin.UserName;
+            user.PhoneNumber = updatedUniversityAdmin.PhoneNumber;
+            user.Email = updatedUniversityAdmin.Email;
+            user.IsActive = updatedUniversityAdmin.IsActive;
+            user.UpdatedAt = DateTime.UtcNow;
+            user.UpdatedByUserId = currentUserId;
+            await _unitOfWorkRepository.CompleteAsync();
+            var employeeDTO = await GetDTOById(employee.EmployeeId);
+            return AddUpdateServiceResponse<EmployeeDTO>.Success(employeeDTO!);
         }
     }
 }
