@@ -15,6 +15,6 @@ namespace Contracts.Results
         {
             EmployeeAuthorizationInfo = employeeInfo,
         };
-
+        // Student not implemnted yet
     }
 }

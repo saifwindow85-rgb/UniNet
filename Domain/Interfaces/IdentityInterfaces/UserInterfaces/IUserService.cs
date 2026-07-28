@@ -1,4 +1,5 @@
-﻿using Contracts.Requests.UserRequests;
+﻿using Contracts.Enums;
+using Contracts.Requests.UserRequests;
 using Contracts.Responses;
 using Contracts.Responses.IdentityResponses;
 using Contracts.Results;
@@ -20,6 +21,6 @@ namespace Domain.Interfaces.IdentityInterfaces.UserInterfaces
         public Task<AddUpdateServiceResponse<UserDTO>> UpdateUser(int updatedUserId,UpdateUserDTO updatedUser, int userId);
         public bool VerifyPassword(string password, string passwordHash);
         public Task<List<string>> GetRolesNamesByUserId(int userId);
-        public Task<UserTypeResult> GetUserType(int userId, string ?typeName);
+        public Task<UserTypeResult> GetAuthorizationInfoResult(int userId, UserType? type);
     }
 }

@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Academic_Structure;
+﻿using Contracts.Enums;
+using Domain.Entities.Academic_Structure;
 using Domain.Entities.Content;
 using Domain.Entities.Employees;
 using Domain.Entities.Images;
@@ -15,12 +16,7 @@ namespace Domain.Entities.Identity
 {
     public class User
     {
-        public enum UserType :byte
-        {
-            SystemAdmin = 1,
-            Employee = 2,
-            Student = 3,
-        }
+     
         public int UserId { get; set; }
 
         public string FullName { get; set; } = null!;

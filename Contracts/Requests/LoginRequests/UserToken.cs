@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Contracts.Enums;
+using Contracts.Responses.IdentityResponses.UserRoleResponse;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,7 +13,7 @@ namespace Contracts.Requests.LoginRequests
         public int UserId { get; set; }
         public string UserName { get; set; } = null!;
         public int? UniversityId { get; set; }
-        public string ?Type { get; set; }
+        public  UserType ?Type { get; set; }
         public List<string>UserRoles { get; set; } = new List<string>();
         public string TokenHash { get; set; } = null!;
         public int RefreshTokenId { get; set; }

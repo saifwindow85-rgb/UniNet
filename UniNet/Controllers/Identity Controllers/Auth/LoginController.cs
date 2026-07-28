@@ -54,7 +54,7 @@ namespace UniNet.Controllers.Identity_Controllers.Auth
             }
 
             var userRoles = await _userService.GetRolesNamesByUserId(user.UserId);
-            var typeResult = await _userService.GetUserType(user.UserId, user.Type.ToString());  
+            var typeResult = await _userService.GetAuthorizationInfoResult(user.UserId, user.Type);  
             
             var tokenInfo = user.ToInfoDTO(userRoles,typeResult);
             var token = JwtTokenFactory.TokenIssuer(tokenInfo, _jwtOptions);
@@ -91,7 +91,7 @@ namespace UniNet.Controllers.Identity_Controllers.Auth
             }
 
             var userRoles = await _userService.GetRolesNamesByUserId(userToken.UserId);
-            var typeResult = await _userService.GetUserType(userToken.UserId, userToken.Type);
+            var typeResult = await _userService.GetAuthorizationInfoResult(userToken.UserId, userToken.Type);
             var tokenInfo = userToken.ToInfoDTO(userRoles,typeResult);
 
             var token = JwtTokenFactory.TokenIssuer(tokenInfo, _jwtOptions);

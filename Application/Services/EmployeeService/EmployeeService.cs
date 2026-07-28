@@ -179,7 +179,7 @@ namespace Application.Services.EmployeeService
                     CreatedAt = DateTime.UtcNow,
                     CreatedByUserId = currentUserId,
                     UniversityId = universityId,
-                    Type = User.UserType.Employee,
+                    Type = UserType.Employee,
                 };
                 await _unitOfWorkRepository.UserRepository.Add(userEntity);
                 await _unitOfWorkRepository.CompleteAsync();

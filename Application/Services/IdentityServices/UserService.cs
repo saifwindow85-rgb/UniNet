@@ -76,11 +76,12 @@ namespace Application.Services.IdentityServices
              return await _unitOfWork.UserRepository.GetRolesNamesByUserId(userId);
         }
 
-        public async Task<UserTypeResult> GetUserType(int userId, string?typeName)
+        public async Task<UserTypeResult> GetAuthorizationInfoResult(int userId, UserType?type)
         {
-            switch (typeName)
+            // Not completed yet
+            switch (type)
             {
-                case "Employee":
+                case UserType.Employee:
                     {
                         var employeeInfo = await _unitOfWork.EmployeeRepository.GetEmployeeAuthorizationInfoByUserIdAsync(userId);
                         return UserTypeResult.Employee(employeeInfo!);
