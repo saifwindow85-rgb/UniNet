@@ -10,11 +10,13 @@ namespace Contracts.Results
     public class UserTypeResult
     {
         public EmployeeAuthorizationInfo ?EmployeeAuthorizationInfo { get; private set; }
+        public int? AdminId { get; private set; }
 
         public static UserTypeResult Employee(EmployeeAuthorizationInfo ?employeeInfo) => new UserTypeResult
         {
             EmployeeAuthorizationInfo = employeeInfo,
         };
-        // Student not implemnted yet
+
+        public static UserTypeResult SystemAdmin(int? AdminId) => null;
     }
 }

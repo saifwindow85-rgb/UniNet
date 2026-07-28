@@ -14,6 +14,18 @@ namespace Application.Mappers
     {
         public static TokenUserInfoDTO ToInfoDTO(this User user,List<string>userRoles,UserTypeResult?typeResult)
         {
+
+            if(typeResult == null)
+            {
+                return new TokenUserInfoDTO
+                {
+                    UserId = user.UserId,
+                    UserName = user.UserName,
+                    UniversityId = user.UniversityId,
+                    UserRoles = userRoles,
+                };
+            }
+
             return new TokenUserInfoDTO
             {
                 UserId = user.UserId,
@@ -28,6 +40,16 @@ namespace Application.Mappers
 
         public static TokenUserInfoDTO ToInfoDTO(this UserToken token,List<string>userRoles,UserTypeResult? typeResult)
         {
+            if (typeResult == null)
+            {
+                return new TokenUserInfoDTO
+                {
+                    UserId = token.UserId,
+                    UserName = token.UserName,
+                    UniversityId = token.UniversityId,
+                    UserRoles = userRoles,
+                };
+            }
             return new TokenUserInfoDTO
             {
                 UserId = token.UserId,

@@ -81,12 +81,16 @@ namespace Application.Services.IdentityServices
             // Not completed yet
             switch (type)
             {
+                case UserType.SystemAdmin:
+                {
+                        return UserTypeResult.SystemAdmin(userId);
+                }
+
                 case UserType.Employee:
                     {
                         var employeeInfo = await _unitOfWork.EmployeeRepository.GetEmployeeAuthorizationInfoByUserIdAsync(userId);
                         return UserTypeResult.Employee(employeeInfo!);
                     }
-
 
                 default:
                     {
