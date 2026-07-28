@@ -1,4 +1,5 @@
 ﻿using Application.Extensions;
+using Contracts.Common;
 using Contracts.Enums;
 using Contracts.Requests.EmployeeRequests;
 using Contracts.Requests.EmployeeRequests.CollegeAdminRequests;
@@ -36,9 +37,31 @@ namespace Application.Services.EmployeeService
             _serviceProvider = serviceProvider;
         }
 
-        public Task<AddUpdateServiceResponse<EmployeeDTO>> AddCollegeAdmin(AddCollegeAdminDTO newCollegeAdmin, int currentUserId)
+        public async Task<AddUpdateServiceResponse<EmployeeDTO>> AddCollegeAdmin(AddCollegeAdminDTO newCollegeAdmin, int currentUserId)
         {
-            throw new NotImplementedException();
+            var validator = _serviceProvider.GetRequiredService<IValidator<AddCollegeAdminDTO>>();
+            var validationResult = await validator.ValidateAsync(newCollegeAdmin);
+
+            if(!validationResult.IsValid)
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.Failure(validationResult
+                    .Errors.Select(x => $"{x.PropertyName} : {x.ErrorMessage}").ToList(), EnErrorTypes.InvalidData);
+            }
+
+            var collegeInfo = await _unitOfWorkRepository.CollegeRepository.GetCollegeAuthorizationInfo(newCollegeAdmin.CollegeId);
+            if(collegeInfo == null)
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.InvalidRelatedData();
+            }
+
+            if(await _unitOfWorkRepository.UserRepository.IsUserExsist(newCollegeAdmin.UserName))
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.AlreadyExists<User>();
+            }
+
+            var employeeEntity = await CreateEmployee(newCollegeAdmin, currentUserId, collegeInfo.UniversityId, "CollegeAdmin", collegeInfo.CollegeId);
+            var employeeDTO = await GetDTOById(employeeEntity.EmployeeId);
+            return AddUpdateServiceResponse<EmployeeDTO>.Success(employeeDTO!);
         }
 
         public Task<AddUpdateServiceResponse<EmployeeDTO>> AddDepartmentAdmin(AddDepartmentAdminDTO newDepartmentAdmin, int currentUserId)
@@ -65,53 +88,9 @@ namespace Application.Services.EmployeeService
                 return AddUpdateServiceResponse<EmployeeDTO>.AlreadyExists<Employee>();
             }
 
-            await _unitOfWorkRepository.BeginTransactionAsync();
-            try
-            {
-                var userEntity = new User
-                {
-                    FullName = newUniversityAdmin.FullName,
-                    UserName = newUniversityAdmin.UserName,
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(newUniversityAdmin.Password),
-                    PhoneNumber = newUniversityAdmin.PhoneNumber,
-                    Email = newUniversityAdmin.Email,
-                    IsActive = newUniversityAdmin.IsActive,
-                    CreatedAt = DateTime.UtcNow,
-                    CreatedByUserId = currentUserId,
-                    UniversityId = newUniversityAdmin.UniversityId,
-                    Type = User.UserType.Employee,
-                };
-
-                await _unitOfWorkRepository.UserRepository.Add(userEntity);
-
-                await _unitOfWorkRepository.CompleteAsync();
-                var employeeEntity = new Employee
-                {
-                    UserId = userEntity.UserId,
-                    UniversityId = newUniversityAdmin.UniversityId,
-                };
-                _unitOfWorkRepository.EmployeeRepository.Add(employeeEntity);
-                await _unitOfWorkRepository.CompleteAsync();
-
-                var role = await _unitOfWorkRepository.RoleRepository.GetRoleDTOByRoleName("UniversityAdmin");
-                var userRole = new UserRole
-                {
-                    UserId = userEntity.UserId,
-                    RoleId = role!.RoleId
-                };
-                await _unitOfWorkRepository.UserRoleRepository.Add(userRole);
-                await _unitOfWorkRepository.CompleteAsync();
-
-                await _unitOfWorkRepository.CommitTransactionAsync();
-
-                var employeeDTO = await GetDTOById(employeeEntity.EmployeeId);
-                return AddUpdateServiceResponse<EmployeeDTO>.Success(employeeDTO!);
-            }
-            catch(Exception ex) 
-            {
-                await _unitOfWorkRepository.RollbackTransactionAsync();
-                throw new Exception($"An error occurred while adding the university admin: {ex.Message}", ex);
-            }
+            var employeeEntity = await CreateEmployee(newUniversityAdmin, currentUserId, newUniversityAdmin.UniversityId, "UniversityAdmin");
+            var employeeDTO = await GetDTOById(employeeEntity.EmployeeId);
+            return AddUpdateServiceResponse<EmployeeDTO>.Success(employeeDTO!);
         }
 
         public async Task<EmployeeDTO?> GetDTOById(int employeeId)
@@ -167,16 +146,76 @@ namespace Application.Services.EmployeeService
                 return AddUpdateServiceResponse<EmployeeDTO>.AlreadyExists<User>();
             }
 
-            user.FullName = updatedUniversityAdmin.FullName;
-            user.UserName = updatedUniversityAdmin.UserName;
-            user.PhoneNumber = updatedUniversityAdmin.PhoneNumber;
-            user.Email = updatedUniversityAdmin.Email;
-            user.IsActive = updatedUniversityAdmin.IsActive;
+            await UpdateEmployee(employeeId, employee, updatedUniversityAdmin, currentUserId);
+            var employeeDTO = await GetDTOById(employee.EmployeeId);
+            return AddUpdateServiceResponse<EmployeeDTO>.Success(employeeDTO!);
+        }
+
+
+        private async Task<Employee> CreateEmployee(BaseAddEmployeeDTO dto,int currentUserId,int universityId, string roleName,int? collegeId = null, int? departmentId = null)
+        {
+            await _unitOfWorkRepository.BeginTransactionAsync();
+            try
+            {
+                var userEntity = new User
+                {
+                    FullName = dto.FullName,
+                    UserName = dto.UserName,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+                    PhoneNumber = dto.PhoneNumber,
+                    Email = dto.Email,
+                    IsActive = dto.IsActive,
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedByUserId = currentUserId,
+                    UniversityId = universityId,
+                    Type = User.UserType.Employee,
+                };
+                await _unitOfWorkRepository.UserRepository.Add(userEntity);
+                await _unitOfWorkRepository.CompleteAsync();
+
+                var employeeEntity = new Employee
+                {
+                    UserId = userEntity.UserId,
+                    UniversityId = universityId,
+                    CollegeId = collegeId,
+                    DepartmentId = departmentId
+                };
+
+                 _unitOfWorkRepository.EmployeeRepository.Add(employeeEntity);
+
+                var role  = await _unitOfWorkRepository.RoleRepository.GetRoleDTOByRoleName(roleName);
+                var userRole = new UserRole
+                {
+                    UserId = userEntity.UserId,
+                    RoleId = role!.RoleId
+                };
+
+                await _unitOfWorkRepository.UserRoleRepository.Add(userRole);
+                await _unitOfWorkRepository.CompleteAsync();
+                await _unitOfWorkRepository.CommitTransactionAsync();
+                return employeeEntity;
+            }
+            catch(Exception ex)
+            {
+                await _unitOfWorkRepository.RollbackTransactionAsync();
+                throw;
+            }
+          
+        }
+        private async Task UpdateEmployee(int employeeId,Employee employee,BaseUpdateEmployeeDTO dto, int currentUserId)
+        {
+            var user = await _unitOfWorkRepository.UserRepository.GetUserEntityById(employee.UserId);
+          
+
+            user.FullName = dto.FullName;
+            user.UserName = dto.UserName;
+            user.PhoneNumber = dto.PhoneNumber;
+            user.Email = dto.Email;
+            user.IsActive = dto.IsActive;
             user.UpdatedAt = DateTime.UtcNow;
             user.UpdatedByUserId = currentUserId;
             await _unitOfWorkRepository.CompleteAsync();
-            var employeeDTO = await GetDTOById(employee.EmployeeId);
-            return AddUpdateServiceResponse<EmployeeDTO>.Success(employeeDTO!);
+
         }
     }
 }
