@@ -13,6 +13,7 @@ using Contracts.Enums;
 using Domain.Entities.Identity;
 using Contracts.Responses.IdentityResponses;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
+using Contracts.Results;
 
 namespace Application.Services.IdentityServices
 {
@@ -73,6 +74,25 @@ namespace Application.Services.IdentityServices
         public async Task<List<string>> GetRolesNamesByUserId(int userId)
         {
              return await _unitOfWork.UserRepository.GetRolesNamesByUserId(userId);
+        }
+
+        public async Task<UserTypeResult> GetUserType(int userId, string?typeName)
+        {
+            switch (typeName)
+            {
+                case "Employee":
+                    {
+                        var employeeInfo = await _unitOfWork.EmployeeRepository.GetEmployeeAuthorizationInfoByUserIdAsync(userId);
+                        return UserTypeResult.Employee(employeeInfo!);
+                    }
+
+
+                default:
+                    {
+                        return null!;
+                    }
+            }
+
         }
 
         public async Task<bool> IsUserExists(string userName)

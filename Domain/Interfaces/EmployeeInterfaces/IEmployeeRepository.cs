@@ -18,5 +18,8 @@ namespace Domain.Interfaces.EmployeeInterfaces
 
         public Task<EmployeeDTO?>GetDTOById(int employeeId);
         public Task<Employee?> GetById(int employeeId);
+        public Task<EmployeeAuthorizationInfo?> GetEmployeeAuthorizationInfoAsync(int employeeId);
+        public Task<EmployeeAuthorizationInfo?> GetEmployeeAuthorizationInfoByUserIdAsync(int userId);
+
     }
 }

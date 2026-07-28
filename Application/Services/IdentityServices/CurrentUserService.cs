@@ -45,5 +45,40 @@ namespace Application.Services.IdentityServices
                 return int.Parse(universityIdClaim);
             }
         }
+
+        public int? CollegeId
+        {
+            get
+            {
+                var collegeIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst("CollegeId")?.Value;
+                if (collegeIdClaim == null)
+                    return null;
+
+                return int.Parse(collegeIdClaim);
+            }
+        }
+
+        public int? DepartmentId
+        {
+            get
+            {
+                var departmentIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst("DepartmentId")?.Value;
+                if (departmentIdClaim == null)
+                    return null;
+                return int.Parse(departmentIdClaim);
+            }
+        }
+
+        public int? BatchId
+        {
+            get
+            {
+                var batchIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst("BatchId")?.Value;
+                if (batchIdClaim == null)
+                    return null;
+
+                return int.Parse(batchIdClaim);
+            }
+        }
     }
 }

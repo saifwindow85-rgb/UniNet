@@ -26,7 +26,22 @@ namespace UniNet.Helpers
                 claims.Add(new Claim(CustomClaimTypes.UnivresityId, info.UniversityId.ToString()!));
             }
 
-            foreach(var role in info.UserRoles)
+            if(info.CollegeId.HasValue)
+            {
+                claims.Add(new Claim(CustomClaimTypes.CollegeId, info.CollegeId.ToString()!));
+            }
+
+            if(info.DepartmentId.HasValue)
+            {
+                claims.Add(new Claim(CustomClaimTypes.DepartmentId, info.DepartmentId.ToString()!));
+            }
+
+            if(info.BatchId.HasValue)
+            {
+                claims.Add(new Claim(CustomClaimTypes.BatchId, info.BatchId.ToString()!));
+            }
+
+            foreach (var role in info.UserRoles)
             {
                 claims.Add(new Claim(ClaimTypes.Role, role));
             }

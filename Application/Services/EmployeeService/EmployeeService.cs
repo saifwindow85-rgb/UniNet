@@ -98,6 +98,16 @@ namespace Application.Services.EmployeeService
            return await _unitOfWorkRepository.EmployeeRepository.GetDTOById(employeeId);
         }
 
+        public async Task<EmployeeAuthorizationInfo?> GetEmployeeAuthorizationInfoAsync(int employeeId)
+        {
+            return await _unitOfWorkRepository.EmployeeRepository.GetEmployeeAuthorizationInfoAsync(employeeId);
+        }
+
+        public async Task<EmployeeAuthorizationInfo?> GetEmployeeAuthorizationInfoByUserIdAsync(int userId)
+        {
+            return await _unitOfWorkRepository.EmployeeRepository.GetEmployeeAuthorizationInfoByUserIdAsync(userId);
+        }
+
         public async Task<PagedResult<EmployeeDTO>> GetEmployees(EmployeeFilter? filter, EmployeeScope? scope, int pageNumber, int pageSize)
         {
             return await _unitOfWorkRepository.EmployeeRepository.GetEmployees(filter, scope, pageNumber, pageSize);
@@ -107,6 +117,7 @@ namespace Application.Services.EmployeeService
         {
             return await _unitOfWorkRepository.EmployeeRepository.GetById(employeeId);
         }
+
 
         public Task<AddUpdateServiceResponse<EmployeeDTO>> UpdateCollegeAdmin(int employeeId, UpdateCollegeAdminDTO updatedCollegeAdmin, int currentUserId)
         {

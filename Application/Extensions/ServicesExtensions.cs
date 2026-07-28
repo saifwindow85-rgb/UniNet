@@ -1,4 +1,6 @@
 ﻿using Contracts.Responses;
+using Contracts.Results;
+using Domain.Entities.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,9 +11,6 @@ namespace Application.Extensions
 {
     public static  class ServicesExtensions
     {
-        //public static AddUpdateServiceResponse<T> ResourceToUpdateNotFound<T>(this T resource)
-        //{
-        //    return AddUpdateServiceResponse<T>.ResourceDoesntExist<T>();
-        //}
+     
     }
 }

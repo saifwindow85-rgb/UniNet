@@ -53,9 +53,10 @@ namespace UniNet.Controllers.Identity_Controllers.Auth
                 return StatusCode(403, new { Title = "Banned Account", Message = "Your Account Is Banned" });
             }
 
-            var userRoles = await _userService.GetRolesNamesByUserId(user.UserId); 
-
-            var tokenInfo = user.ToInfoDTO(userRoles);
+            var userRoles = await _userService.GetRolesNamesByUserId(user.UserId);
+            var typeResult = await _userService.GetUserType(user.UserId, user.Type.ToString());  
+            
+            var tokenInfo = user.ToInfoDTO(userRoles,typeResult);
             var token = JwtTokenFactory.TokenIssuer(tokenInfo, _jwtOptions);
 
             var accessToken = new JwtSecurityTokenHandler().WriteToken(token);
@@ -90,7 +91,8 @@ namespace UniNet.Controllers.Identity_Controllers.Auth
             }
 
             var userRoles = await _userService.GetRolesNamesByUserId(userToken.UserId);
-            var tokenInfo = userToken.ToInfoDTO(userRoles);
+            var typeResult = await _userService.GetUserType(userToken.UserId, userToken.Type);
+            var tokenInfo = userToken.ToInfoDTO(userRoles,typeResult);
 
             var token = JwtTokenFactory.TokenIssuer(tokenInfo, _jwtOptions);
 

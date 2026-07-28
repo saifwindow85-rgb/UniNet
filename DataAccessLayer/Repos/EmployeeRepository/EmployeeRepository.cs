@@ -38,6 +38,12 @@ namespace DataAccessLayer.Repos.EmployeeRepository
 
         };
 
+        private readonly Expression<Func<Employee, EmployeeAuthorizationInfo>> ToInfo = e => new EmployeeAuthorizationInfo
+        {
+            UniverseId = e.UniversityId,
+            CollegeId = e.CollegeId,
+            DepartmentId = e.DepartmentId,
+        };
         public EmployeeRepository(AppDbcontext context)
         {
             _context = context;
@@ -58,6 +64,16 @@ namespace DataAccessLayer.Repos.EmployeeRepository
             return _context.Employees.AsNoTracking().Select(ToDTO).SingleOrDefaultAsync(e=>e.EmployeeId == employeeId);
         }
 
+        public async Task<EmployeeAuthorizationInfo?> GetEmployeeAuthorizationInfoAsync(int employeeId)
+        {
+            return await _context.Employees.AsNoTracking().Where(e=>e.EmployeeId == employeeId).Select(ToInfo).SingleOrDefaultAsync();
+        }
+
+        public async Task<EmployeeAuthorizationInfo?> GetEmployeeAuthorizationInfoByUserIdAsync(int userId)
+        {
+            return await _context.Employees.AsNoTracking().Where(e => e.UserId == userId).Select(ToInfo).SingleOrDefaultAsync();
+        }
+
         public async Task<PagedResult<EmployeeDTO>> GetEmployees(EmployeeFilter? employeeFilter, EmployeeScope? employeeScope, int pageNumber, int pageSize)
         {
             var query = _context.Employees.AsNoTracking().AsQueryable();
@@ -75,7 +91,7 @@ namespace DataAccessLayer.Repos.EmployeeRepository
                 query = query.Where(e => e.User.IsActive == employeeFilter.IsActive.Value);
 
             if(!string.IsNullOrEmpty(employeeFilter.Search))
-                query = query.Where(e => EF.Functions.Like(e.User.FullName,$"{employeeFilter.Search}"));
+                query = query.Where(e => EF.Functions.Like(e.User.FullName,$"%{employeeFilter.Search}%"));
 
 
             return await query.Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);

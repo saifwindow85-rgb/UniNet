@@ -6,6 +6,7 @@ using Contracts.Responses;
 using Contracts.Responses.EmployeeResponse;
 using Contracts.Results;
 using Domain.Entities.Employees;
+using Domain.Entities.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +28,9 @@ namespace Domain.Interfaces.EmployeeInterfaces
         public Task<AddUpdateServiceResponse<EmployeeDTO>> UpdateCollegeAdmin(int employeeId,UpdateCollegeAdminDTO updatedCollegeAdmin, int currentUserId);
         public Task<AddUpdateServiceResponse<EmployeeDTO>> AddDepartmentAdmin(AddDepartmentAdminDTO newDepartmentAdmin, int currentUserId);
         public Task<AddUpdateServiceResponse<EmployeeDTO>> UpdateDepartmentAdmin(int employeeId, UpdateDepartmentAdminDTO updatedDepartmentAdmin, int currentUserId);
+        public  Task<EmployeeAuthorizationInfo?> GetEmployeeAuthorizationInfoAsync(int employeeId);
+        public Task<EmployeeAuthorizationInfo?> GetEmployeeAuthorizationInfoByUserIdAsync(int userId);
+
 
     }
 }
