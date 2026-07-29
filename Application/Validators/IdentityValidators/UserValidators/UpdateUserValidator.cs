@@ -14,19 +14,19 @@ namespace Application.Validators.User_Validators
         {
             // 1. Full Name
             RuleFor(x => x.FullName)
-                .NotEmpty().WithMessage("Full name is required.")
-                .MinimumLength(3).WithMessage("Full name must be at least 3 characters long.")
-                .MaximumLength(250).WithMessage("Full name cannot exceed 100 characters.")
-                .Matches(@"^[a-zA-ZÀ-ÿ\s'-]+$").WithMessage("Full name can only contain letters, spaces, hyphens, and apostrophes.");
+                 .NotEmpty().WithMessage("Full name is required.")
+                 .MinimumLength(3).WithMessage("Full name must be at least 3 characters long.")
+                 .MaximumLength(250).WithMessage("Full name cannot exceed 250 characters.")
+                 .Matches(@"^[a-zA-ZÀ-ÿ\s'-]+$").WithMessage("Full name can only contain letters, spaces, hyphens, and apostrophes.");
 
             // 2. User Name
             RuleFor(x => x.UserName)
                 .NotEmpty().WithMessage("Username is required.")
                 .MinimumLength(4).WithMessage("Username must be at least 4 characters long.")
-                .MaximumLength(250).WithMessage("Username cannot exceed 50 characters.")
+                .MaximumLength(250).WithMessage("Username cannot exceed 250 characters.")
                 .Matches(@"^[a-zA-Z0-9_]+$").WithMessage("Username can only contain alphanumeric characters and underscores (_), with no spaces.");
 
-      
+
 
             // 4. Email (Optional, but validated if provided)
             RuleFor(x => x.Email)
