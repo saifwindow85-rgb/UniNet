@@ -77,7 +77,8 @@ namespace UniNet.Controllers.EmployeeController
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<AddUpdateServiceResponse<EmployeeDTO>>> AddCollegeAdmin([FromBody] AddCollegeAdminDTO newCollegeAdmin)
         {
-            var response = await _employeeService.AddCollegeAdmin(newCollegeAdmin, _currentUserService.UserId);
+            var scope = _currentUserService.ToEmployeeScope();
+            var response = await _employeeService.AddCollegeAdmin(scope,newCollegeAdmin, _currentUserService.UserId);
             return response.ToActionResult();
         }
 
@@ -90,7 +91,37 @@ namespace UniNet.Controllers.EmployeeController
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<AddUpdateServiceResponse<EmployeeDTO>>> AddDepartmentDTO([FromBody]AddDepartmentAdminDTO newDepartmentDTO)
         {
-            var response = await _employeeService.AddDepartmentAdmin(newDepartmentDTO, _currentUserService.UserId);
+            var scope = _currentUserService.ToEmployeeScope();
+            var response = await _employeeService.AddDepartmentAdmin(scope,newDepartmentDTO, _currentUserService.UserId);
+            return response.ToActionResult();
+        }
+
+        [Authorize(Roles = "Super Admin,UniversityAdmin")]
+        [HttpPut("college_admin", Name = "UpdateCollegeAdmin")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<AddUpdateServiceResponse<EmployeeDTO>>> UpdateCollegeAdmin([FromQuery]EmployeeIdParameter employeeIdParameter, [FromBody]UpdateCollegeAdminDTO updatedCollegeAdmin)
+        {
+            var scope = _currentUserService.ToEmployeeScope();
+            var response = await _employeeService.UpdateCollegeAdmin(scope, employeeIdParameter.EmployeeId, updatedCollegeAdmin, _currentUserService.UserId);
+            return response.ToActionResult();
+        }
+
+
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin")]
+        [HttpPut("department_admin", Name = "UpdateDepartmentAdmin")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<AddUpdateServiceResponse<EmployeeDTO>>> UpdateDepartmentAdmin([FromQuery] EmployeeIdParameter employeeIdParameter, [FromBody] UpdateDepartmentAdminDTO updatedDepartmentAdmin)
+        {
+            var scope = _currentUserService.ToEmployeeScope();
+            var response = await _employeeService.UpdateDepartmentAdmin(scope, employeeIdParameter.EmployeeId, updatedDepartmentAdmin, _currentUserService.UserId);
             return response.ToActionResult();
         }
     }
