@@ -54,12 +54,17 @@ namespace Application.Services.EmployeeService
                 return AddUpdateServiceResponse<EmployeeDTO>.InvalidRelatedData();
             }
 
+            var role = await _unitOfWorkRepository.RoleRepository.GetRoleDTOByRoleName("CollegeAdmin");
+            if(role == null)
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.InvalidRelatedData();
+            }
             if(await _unitOfWorkRepository.UserRepository.IsUserExsist(newCollegeAdmin.UserName))
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.AlreadyExists<User>();
             }
 
-            var employeeEntity = await CreateEmployee(newCollegeAdmin, currentUserId, collegeInfo.UniversityId, "CollegeAdmin", collegeInfo.CollegeId);
+            var employeeEntity = await CreateEmployee(newCollegeAdmin, currentUserId, collegeInfo.UniversityId, role.RoleId, collegeInfo.CollegeId);
             var employeeDTO = await GetDTOById(employeeEntity.EmployeeId);
             return AddUpdateServiceResponse<EmployeeDTO>.Success(employeeDTO!);
         }
@@ -83,12 +88,17 @@ namespace Application.Services.EmployeeService
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.InvalidRelatedData();
             }
+            var role = await _unitOfWorkRepository.RoleRepository.GetRoleDTOByRoleName("UniversityAdmin");
+            if(role == null)
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.InvalidRelatedData();
+            }
             if(await _unitOfWorkRepository.UserRepository.IsUserExsist(newUniversityAdmin.UserName))
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.AlreadyExists<Employee>();
             }
 
-            var employeeEntity = await CreateEmployee(newUniversityAdmin, currentUserId, newUniversityAdmin.UniversityId, "UniversityAdmin");
+            var employeeEntity = await CreateEmployee(newUniversityAdmin, currentUserId, newUniversityAdmin.UniversityId,role.RoleId);
             var employeeDTO = await GetDTOById(employeeEntity.EmployeeId);
             return AddUpdateServiceResponse<EmployeeDTO>.Success(employeeDTO!);
         }
@@ -163,7 +173,7 @@ namespace Application.Services.EmployeeService
         }
 
 
-        private async Task<Employee> CreateEmployee(BaseAddEmployeeDTO dto,int currentUserId,int universityId, string roleName,int? collegeId = null, int? departmentId = null)
+        private async Task<Employee> CreateEmployee(BaseAddEmployeeDTO dto,int currentUserId,int universityId, int roleId,int? collegeId = null, int? departmentId = null)
         {
             await _unitOfWorkRepository.BeginTransactionAsync();
             try
@@ -194,11 +204,10 @@ namespace Application.Services.EmployeeService
 
                  _unitOfWorkRepository.EmployeeRepository.Add(employeeEntity);
 
-                var role  = await _unitOfWorkRepository.RoleRepository.GetRoleDTOByRoleName(roleName);
                 var userRole = new UserRole
                 {
                     UserId = userEntity.UserId,
-                    RoleId = role!.RoleId
+                    RoleId = roleId
                 };
 
                 await _unitOfWorkRepository.UserRoleRepository.Add(userRole);
