@@ -1,4 +1,5 @@
-﻿using Contracts.Responses.AcademicResponses.DepartmentResponses;
+﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
+using Contracts.Responses.AcademicResponses.DepartmentResponses;
 using Contracts.Results;
 using DataAccessLayer.Dbcontext;
 using DataAccessLayer.Extensions;
@@ -28,6 +29,12 @@ namespace DataAccessLayer.Repos.AcademicRepositories
             UpdatedAt = d.UpdatedAt,
             UpdatedByUserId = d.UpdatedByUserId,
             UpdatedByUserName = d.UpdatedByUser == null ? null : d.UpdatedByUser.UserName,
+        };
+        private readonly Expression<Func<Department, DepartmentAuthorizationInfo>> ToInfo = d => new DepartmentAuthorizationInfo
+        {
+            DepartmentId = d.DepartmentId,
+            CollegeId = d.CollegeId,
+            UniversityId = d.College.UniversityId
         };
         public DepartmentRepository(AppDbcontext context)
         {
@@ -62,6 +69,16 @@ namespace DataAccessLayer.Repos.AcademicRepositories
         public async Task<PagedResult<DepartmentDTO>> GetAllDepartments(int pageNumber, int pageSize)
         {
            return await _context.Departments.Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
+        }
+
+        public async Task<DepartmentAuthorizationInfo?> GetDepartmentAuthorizationInfoAsync(int departmentId)
+        {
+            return await _context.Departments.AsNoTracking().Where(d => d.DepartmentId == departmentId).Select(ToInfo).SingleOrDefaultAsync();
+        }
+
+        public async Task<DepartmentAuthorizationInfo?> GetDepartmentAuthorizationInfoByNameAsync(int collegeId, string departmentName)
+        {
+            return await _context.Departments.Where(d => d.CollegeId == collegeId && d.Name == departmentName).Select(ToInfo).SingleOrDefaultAsync();
         }
 
         public async Task<PagedResult<DepartmentDTO>> GetDepartmentsPerCollege(int collegeId, int pageNumber, int pageSize)

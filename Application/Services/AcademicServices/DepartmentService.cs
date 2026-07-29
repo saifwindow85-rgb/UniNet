@@ -1,4 +1,5 @@
-﻿using Contracts.Enums;
+﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
+using Contracts.Enums;
 using Contracts.Requests.AcademicRequests.DepartmentRequests;
 using Contracts.Responses;
 using Contracts.Responses.AcademicResponses.DepartmentResponses;
@@ -79,6 +80,16 @@ namespace Application.Services.AcademicServices
         public async Task<PagedResult<DepartmentDTO>> GetAllDepartments(int pageNumber, int pageSize)
         {
             return await _unitOfWork.DepartmentRepository.GetAllDepartments(pageNumber, pageSize); 
+        }
+
+        public async Task<DepartmentAuthorizationInfo?> GetDepartmentAuthorizationInfoAsync(int departmentId)
+        {
+            return await _unitOfWork.DepartmentRepository.GetDepartmentAuthorizationInfoAsync(departmentId);
+        }
+
+        public async Task<DepartmentAuthorizationInfo?> GetDepartmentAuthorizationInfoByNameAsync(int collegeId, string departmentName)
+        {
+            return await _unitOfWork.DepartmentRepository.GetDepartmentAuthorizationInfoByNameAsync(collegeId, departmentName);
         }
 
         public async Task<PagedResult<DepartmentDTO>> GetDepartmentsPerCollege(int collegeId, int pageNumber, int pageSize)
