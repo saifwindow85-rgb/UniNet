@@ -8,7 +8,7 @@ namespace Contracts.Responses.EmployeeResponse
 {
     public class EmployeeAuthorizationInfo
     {
-        public int UniverseId { get; set; }
+        public int UniversityId { get; set; }
         public int ? CollegeId { get; set; }
         public int? DepartmentId { get; set; }
     }
