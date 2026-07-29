@@ -1,4 +1,6 @@
 ﻿using Contracts.Requests.EmployeeRequests;
+using Contracts.Requests.EmployeeRequests.CollegeAdminRequests;
+using Contracts.Requests.EmployeeRequests.DepartmentAdminRequests;
 using Contracts.Requests.EmployeeRequests.UniversityAdminRequests;
 using Contracts.Requests.RequestParameters;
 using Contracts.Responses;
@@ -63,6 +65,32 @@ namespace UniNet.Controllers.EmployeeController
             UpdateEmployee([FromQuery]EmployeeIdParameter employeeIdParameter,[FromBody]UpdateUniversityAdminDTO updatedUnivrsityAdmin)
         {
             var response = await _employeeService.UpdateUniversityAdmin(employeeIdParameter.EmployeeId, updatedUnivrsityAdmin, _currentUserService.UserId);
+            return response.ToActionResult();
+        }
+
+        [Authorize(Roles = "Super Admin,UniversityAdmin")]
+        [HttpPost("college-admin", Name = "AddCollegeAdmin")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<AddUpdateServiceResponse<EmployeeDTO>>> AddCollegeAdmin([FromBody] AddCollegeAdminDTO newCollegeAdmin)
+        {
+            var response = await _employeeService.AddCollegeAdmin(newCollegeAdmin, _currentUserService.UserId);
+            return response.ToActionResult();
+        }
+
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin")]
+        [HttpPost("department-admin", Name = "AddDepartmentAdmin")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<AddUpdateServiceResponse<EmployeeDTO>>> AddDepartmentDTO([FromBody]AddDepartmentAdminDTO newDepartmentDTO)
+        {
+            var response = await _employeeService.AddDepartmentAdmin(newDepartmentDTO, _currentUserService.UserId);
             return response.ToActionResult();
         }
     }

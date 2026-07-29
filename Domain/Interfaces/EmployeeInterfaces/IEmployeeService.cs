@@ -24,10 +24,10 @@ namespace Domain.Interfaces.EmployeeInterfaces
         public Task<AddUpdateServiceResponse<EmployeeDTO>> AddUniversityAdmin(AddUniversityAdminDTO newUniversityAdmin, int currentUserId);
         public Task<AddUpdateServiceResponse<EmployeeDTO>> UpdateUniversityAdmin(int employeeId,UpdateUniversityAdminDTO updatedUniversityAdmin, int currentUserId);
 
-        public Task<AddUpdateServiceResponse<EmployeeDTO>>AddCollegeAdmin(AddCollegeAdminDTO newCollegeAdmin, int currentUserId);
-        public Task<AddUpdateServiceResponse<EmployeeDTO>> UpdateCollegeAdmin(int employeeId,UpdateCollegeAdminDTO updatedCollegeAdmin, int currentUserId);
-        public Task<AddUpdateServiceResponse<EmployeeDTO>> AddDepartmentAdmin(AddDepartmentAdminDTO newDepartmentAdmin, int currentUserId);
-        public Task<AddUpdateServiceResponse<EmployeeDTO>> UpdateDepartmentAdmin(int employeeId, UpdateDepartmentAdminDTO updatedDepartmentAdmin, int currentUserId);
+        public Task<AddUpdateServiceResponse<EmployeeDTO>>AddCollegeAdmin(EmployeeScope?scope,AddCollegeAdminDTO newCollegeAdmin, int currentUserId);
+        public Task<AddUpdateServiceResponse<EmployeeDTO>> UpdateCollegeAdmin(EmployeeScope?scope,int employeeId,UpdateCollegeAdminDTO updatedCollegeAdmin, int currentUserId);
+        public Task<AddUpdateServiceResponse<EmployeeDTO>> AddDepartmentAdmin(EmployeeScope?scope,AddDepartmentAdminDTO newDepartmentAdmin, int currentUserId);
+        public Task<AddUpdateServiceResponse<EmployeeDTO>> UpdateDepartmentAdmin(EmployeeScope? scope, int employeeId, UpdateDepartmentAdminDTO updatedDepartmentAdmin, int currentUserId);
         public  Task<EmployeeAuthorizationInfo?> GetEmployeeAuthorizationInfoAsync(int employeeId);
         public Task<EmployeeAuthorizationInfo?> GetEmployeeAuthorizationInfoByUserIdAsync(int userId);
 

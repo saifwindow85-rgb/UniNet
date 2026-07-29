@@ -1,5 +1,6 @@
 ﻿using Application.Extensions;
 using Contracts.Common;
+using Contracts.Common.AuthorizationInfos.AcademicInfos;
 using Contracts.Enums;
 using Contracts.Requests.EmployeeRequests;
 using Contracts.Requests.EmployeeRequests.CollegeAdminRequests;
@@ -8,6 +9,7 @@ using Contracts.Requests.EmployeeRequests.UniversityAdminRequests;
 using Contracts.Responses;
 using Contracts.Responses.EmployeeResponse;
 using Contracts.Results;
+using Domain.Entities.Academic_Structure;
 using Domain.Entities.Employees;
 using Domain.Entities.Identity;
 using Domain.Interfaces.EmployeeInterfaces;
@@ -37,7 +39,7 @@ namespace Application.Services.EmployeeService
             _serviceProvider = serviceProvider;
         }
 
-        public async Task<AddUpdateServiceResponse<EmployeeDTO>> AddCollegeAdmin(AddCollegeAdminDTO newCollegeAdmin, int currentUserId)
+        public async Task<AddUpdateServiceResponse<EmployeeDTO>> AddCollegeAdmin(EmployeeScope? scope, AddCollegeAdminDTO newCollegeAdmin, int currentUserId)
         {
             var validator = _serviceProvider.GetRequiredService<IValidator<AddCollegeAdminDTO>>();
             var validationResult = await validator.ValidateAsync(newCollegeAdmin);
@@ -53,7 +55,11 @@ namespace Application.Services.EmployeeService
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.InvalidRelatedData();
             }
-
+            if(!HasAccessToCollege(collegeInfo,scope))
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.ResourceDoesntExist<College>();
+                // not returning 403 because we dont want the end user to know that resource exists even
+            }
             var role = await _unitOfWorkRepository.RoleRepository.GetRoleDTOByRoleName("CollegeAdmin");
             if(role == null)
             {
@@ -69,9 +75,35 @@ namespace Application.Services.EmployeeService
             return AddUpdateServiceResponse<EmployeeDTO>.Success(employeeDTO!);
         }
 
-        public Task<AddUpdateServiceResponse<EmployeeDTO>> AddDepartmentAdmin(AddDepartmentAdminDTO newDepartmentAdmin, int currentUserId)
+        public async Task<AddUpdateServiceResponse<EmployeeDTO>> AddDepartmentAdmin(EmployeeScope?scope,AddDepartmentAdminDTO newDepartmentAdmin, int currentUserId)
         {
-            throw new NotImplementedException();
+            var validator = _serviceProvider.GetRequiredService<IValidator<AddDepartmentAdminDTO>>();
+            var validationResult = await validator.ValidateAsync(newDepartmentAdmin);
+
+            var departmentInfo = await _unitOfWorkRepository.DepartmentRepository.GetDepartmentAuthorizationInfoAsync(newDepartmentAdmin.DepartmentId);
+            if(departmentInfo == null)
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.InvalidRelatedData();
+            }
+            if(!HasAccessToDepartment(departmentInfo,scope))
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.ResourceDoesntExist<Department>();
+                // not returning 403 because we dont want the end user to know that resource exists even
+            }
+            if (await _unitOfWorkRepository.UserRepository.IsUserExsist(newDepartmentAdmin.UserName))
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.AlreadyExists<User>();
+            }
+
+            var role = await _unitOfWorkRepository.RoleRepository.GetRoleDTOByRoleName("DepartmentAdmin");
+            if(role == null)
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.InvalidRelatedData();
+            }
+            var employeeEntity = await CreateEmployee(newDepartmentAdmin, currentUserId, departmentInfo.UniversityId,
+                role.RoleId, departmentInfo.CollegeId, departmentInfo.DepartmentId);
+            var employeeDTO = await GetDTOById(employeeEntity.EmployeeId);
+            return AddUpdateServiceResponse<EmployeeDTO>.Success(employeeDTO!);
         }
 
         public async Task<AddUpdateServiceResponse<EmployeeDTO>> AddUniversityAdmin(AddUniversityAdminDTO newUniversityAdmin, int currentUserId)
@@ -129,14 +161,88 @@ namespace Application.Services.EmployeeService
         }
 
 
-        public Task<AddUpdateServiceResponse<EmployeeDTO>> UpdateCollegeAdmin(int employeeId, UpdateCollegeAdminDTO updatedCollegeAdmin, int currentUserId)
+        public async Task<AddUpdateServiceResponse<EmployeeDTO>> UpdateCollegeAdmin(EmployeeScope?scope,int employeeId, UpdateCollegeAdminDTO updatedCollegeAdmin, int currentUserId)
         {
-            throw new NotImplementedException();
+            var validator = _serviceProvider.GetRequiredService<IValidator<UpdateCollegeAdminDTO>>();
+            var validationResult = await validator.ValidateAsync(updatedCollegeAdmin);
+
+            if(!validationResult.IsValid)
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.Failure(validationResult
+                   .Errors.Select(x => $"{x.PropertyName} : {x.ErrorMessage}").ToList(), EnErrorTypes.InvalidData);
+            }
+            var collegeInfo = await _unitOfWorkRepository.CollegeRepository.GetCollegeAuthorizationInfo(updatedCollegeAdmin.CollegeId);
+            if(collegeInfo == null)
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.InvalidRelatedData();
+            }
+            if(!HasAccessToCollege(collegeInfo,scope))
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.ResourceDoesntExist<College>();
+                // not returning 403 because we dont want the end user to know that resource exists even
+            }
+            var employee = await GetEntityById(employeeId);
+            if(employee == null)
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.ResourceDoesntExist<Employee>();
+            }
+
+            var user = await _unitOfWorkRepository.UserRepository.GetUserEntityById(employee.UserId);
+            if(user == null)
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.ResourceDoesntExist<User>();
+            }
+            if(await _unitOfWorkRepository.UserRepository.IsUserExsist(updatedCollegeAdmin.UserName)&&user.UserName != updatedCollegeAdmin.UserName)
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.AlreadyExists<User>();
+            }
+            employee.CollegeId = updatedCollegeAdmin.CollegeId;
+            await UpdateEmployee(user, employeeId, employee, updatedCollegeAdmin, currentUserId);
+            var employeeDTO = await GetDTOById(employee.EmployeeId);
+            return AddUpdateServiceResponse<EmployeeDTO>.Success(employeeDTO!);
         }
 
-        public Task<AddUpdateServiceResponse<EmployeeDTO>> UpdateDepartmentAdmin(int employeeId, UpdateDepartmentAdminDTO updatedDepartmentAdmin, int currentUserId)
+        public async Task<AddUpdateServiceResponse<EmployeeDTO>> UpdateDepartmentAdmin(EmployeeScope?scope,int employeeId, UpdateDepartmentAdminDTO updatedDepartmentAdmin, int currentUserId)
         {
-            throw new NotImplementedException();
+            var validator = _serviceProvider.GetRequiredService<IValidator<UpdateDepartmentAdminDTO>>();
+            var validationResult = await validator.ValidateAsync(updatedDepartmentAdmin);
+            if(validationResult.IsValid)
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.Failure(validationResult
+                 .Errors.Select(x => $"{x.PropertyName} : {x.ErrorMessage}").ToList(), EnErrorTypes.InvalidData);
+            }
+
+            var departmentInfo = await _unitOfWorkRepository.DepartmentRepository.GetDepartmentAuthorizationInfoAsync(updatedDepartmentAdmin.DepartmentId);
+            if(departmentInfo == null)
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.InvalidRelatedData();
+            }
+            if(!HasAccessToDepartment(departmentInfo,scope))
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.ResourceDoesntExist<Department>();
+                // not returning 403 because we dont want the end user to know that resource exists even
+            }
+
+            var employee = await GetEntityById(employeeId);
+            if(employee == null)
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.ResourceDoesntExist<Employee>();
+            }
+
+            var user = await _unitOfWorkRepository.UserRepository.GetUserEntityById(employee.UserId);
+            if(user == null)
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.ResourceDoesntExist<User>();
+            }
+
+            if(await _unitOfWorkRepository.UserRepository.IsUserExsist(updatedDepartmentAdmin.UserName)&&user.UserName!=updatedDepartmentAdmin.UserName)
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.AlreadyExists<User>();
+            }
+            employee.DepartmentId = updatedDepartmentAdmin.DepartmentId;
+            await UpdateEmployee(user, employeeId, employee, updatedDepartmentAdmin, currentUserId);
+            var employeeDTO = await GetDTOById(employee.EmployeeId);
+            return AddUpdateServiceResponse<EmployeeDTO>.Success(employeeDTO!);
         }
 
         public async Task<AddUpdateServiceResponse<EmployeeDTO>> UpdateUniversityAdmin(int employeeId, UpdateUniversityAdminDTO updatedUniversityAdmin, int currentUserId)
@@ -167,7 +273,7 @@ namespace Application.Services.EmployeeService
                 return AddUpdateServiceResponse<EmployeeDTO>.AlreadyExists<User>();
             }
 
-            await UpdateEmployee(employeeId, employee, updatedUniversityAdmin, currentUserId);
+            await UpdateEmployee(user,employeeId, employee, updatedUniversityAdmin, currentUserId);
             var employeeDTO = await GetDTOById(employee.EmployeeId);
             return AddUpdateServiceResponse<EmployeeDTO>.Success(employeeDTO!);
         }
@@ -222,10 +328,8 @@ namespace Application.Services.EmployeeService
             }
           
         }
-        private async Task UpdateEmployee(int employeeId,Employee employee,BaseUpdateEmployeeDTO dto, int currentUserId)
-        {
-            var user = await _unitOfWorkRepository.UserRepository.GetUserEntityById(employee.UserId);
-          
+        private async Task UpdateEmployee(User user,int employeeId,Employee employee,BaseUpdateEmployeeDTO dto, int currentUserId)
+        {          
 
             user.FullName = dto.FullName;
             user.UserName = dto.UserName;
@@ -236,6 +340,28 @@ namespace Application.Services.EmployeeService
             user.UpdatedByUserId = currentUserId;
             await _unitOfWorkRepository.CompleteAsync();
 
+        }
+
+        private bool HasAccessToCollege(CollegeAuthorizationInfo collegeInfo,EmployeeScope?scope)
+        {
+            if (scope == null)
+                scope = new EmployeeScope();
+
+            if (collegeInfo.CollegeId == scope.CollegeId || collegeInfo.UniversityId == scope.UniversityId)
+                return true;
+
+            return false;
+        }
+
+        private bool HasAccessToDepartment(DepartmentAuthorizationInfo departmentInfo,EmployeeScope?scope)
+        {
+            if(scope == null)
+                scope= new EmployeeScope();
+
+            if (departmentInfo.DepartmentId == scope.DepartmentId || departmentInfo.CollegeId == scope.CollegeId || departmentInfo.UniversityId == scope.UniversityId)
+                return true;
+
+            return false;
         }
     }
 }
