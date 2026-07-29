@@ -200,7 +200,8 @@ namespace Application.Services.EmployeeService
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.AlreadyExists<User>();
             }
-            employee.CollegeId = updatedCollegeAdmin.CollegeId;
+            employee.CollegeId = collegeInfo.CollegeId;
+            employee.UniversityId = collegeInfo.UniversityId;
             await UpdateEmployee(user, employeeId, employee, updatedCollegeAdmin, currentUserId);
             var employeeDTO = await GetDTOById(employee.EmployeeId);
             return AddUpdateServiceResponse<EmployeeDTO>.Success(employeeDTO!);
@@ -243,7 +244,9 @@ namespace Application.Services.EmployeeService
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.AlreadyExists<User>();
             }
-            employee.DepartmentId = updatedDepartmentAdmin.DepartmentId;
+            employee.DepartmentId = departmentInfo.DepartmentId;
+            employee.CollegeId = departmentInfo.CollegeId;
+            employee.UniversityId = departmentInfo.UniversityId;
             await UpdateEmployee(user, employeeId, employee, updatedDepartmentAdmin, currentUserId);
             var employeeDTO = await GetDTOById(employee.EmployeeId);
             return AddUpdateServiceResponse<EmployeeDTO>.Success(employeeDTO!);
@@ -348,8 +351,8 @@ namespace Application.Services.EmployeeService
 
         private bool HasAccessToCollege(CollegeAuthorizationInfo collegeInfo,EmployeeScope?scope)
         {
-            if (scope == null)
-                return true; // scope only null with universityadmin account
+            if (scope.UniversityId == null)
+                return true; // scope only null with superadmin account
 
             if (collegeInfo.CollegeId == scope.CollegeId || collegeInfo.UniversityId == scope.UniversityId)
                 return true;
@@ -359,7 +362,7 @@ namespace Application.Services.EmployeeService
 
         private bool HasAccessToDepartment(DepartmentAuthorizationInfo departmentInfo,EmployeeScope?scope)
         {
-            if (scope == null)
+            if (scope.UniversityId == null)
                 return false;
 
             if (departmentInfo.DepartmentId == scope.DepartmentId || departmentInfo.CollegeId == scope.CollegeId || departmentInfo.UniversityId == scope.UniversityId)
