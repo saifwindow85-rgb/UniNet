@@ -77,8 +77,10 @@ namespace DataAccessLayer.Repos.EmployeeRepository
         public async Task<PagedResult<EmployeeDTO>> GetEmployees(EmployeeFilter? employeeFilter, EmployeeScope? employeeScope, int pageNumber, int pageSize)
         {
             var query = _context.Employees.AsNoTracking().AsQueryable();
+            if(employeeFilter == null)
+                employeeFilter = new EmployeeFilter();
 
-            if(employeeScope.UniversityId.HasValue)
+            if(employeeScope!.UniversityId.HasValue)
             {
                 query = query.Where(e => e.UniversityId == employeeScope.UniversityId);
             }
