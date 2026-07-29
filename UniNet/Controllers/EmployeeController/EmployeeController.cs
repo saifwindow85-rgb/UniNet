@@ -69,7 +69,7 @@ namespace UniNet.Controllers.EmployeeController
         }
 
         [Authorize(Roles = "Super Admin,UniversityAdmin")]
-        [HttpPost("college-admin", Name = "AddCollegeAdmin")]
+        [HttpPost("college_admin", Name = "AddCollegeAdmin")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -83,13 +83,13 @@ namespace UniNet.Controllers.EmployeeController
         }
 
         [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin")]
-        [HttpPost("department-admin", Name = "AddDepartmentAdmin")]
+        [HttpPost("department_admin", Name = "AddDepartmentAdmin")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<AddUpdateServiceResponse<EmployeeDTO>>> AddDepartmentDTO([FromBody]AddDepartmentAdminDTO newDepartmentDTO)
+        public async Task<ActionResult<AddUpdateServiceResponse<EmployeeDTO>>> AddDepartmentAdmin([FromBody]AddDepartmentAdminDTO newDepartmentDTO)
         {
             var scope = _currentUserService.ToEmployeeScope();
             var response = await _employeeService.AddDepartmentAdmin(scope,newDepartmentDTO, _currentUserService.UserId);

@@ -79,7 +79,11 @@ namespace Application.Services.EmployeeService
         {
             var validator = _serviceProvider.GetRequiredService<IValidator<AddDepartmentAdminDTO>>();
             var validationResult = await validator.ValidateAsync(newDepartmentAdmin);
-
+            if(!validationResult.IsValid)
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.Failure(validationResult
+                    .Errors.Select(x => $"{x.PropertyName} : {x.ErrorMessage}").ToList(), EnErrorTypes.InvalidData);
+            }
             var departmentInfo = await _unitOfWorkRepository.DepartmentRepository.GetDepartmentAuthorizationInfoAsync(newDepartmentAdmin.DepartmentId);
             if(departmentInfo == null)
             {
@@ -206,7 +210,7 @@ namespace Application.Services.EmployeeService
         {
             var validator = _serviceProvider.GetRequiredService<IValidator<UpdateDepartmentAdminDTO>>();
             var validationResult = await validator.ValidateAsync(updatedDepartmentAdmin);
-            if(validationResult.IsValid)
+            if(!validationResult.IsValid)
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.Failure(validationResult
                  .Errors.Select(x => $"{x.PropertyName} : {x.ErrorMessage}").ToList(), EnErrorTypes.InvalidData);
@@ -345,7 +349,7 @@ namespace Application.Services.EmployeeService
         private bool HasAccessToCollege(CollegeAuthorizationInfo collegeInfo,EmployeeScope?scope)
         {
             if (scope == null)
-                scope = new EmployeeScope();
+                return true; // scope only null with universityadmin account
 
             if (collegeInfo.CollegeId == scope.CollegeId || collegeInfo.UniversityId == scope.UniversityId)
                 return true;
@@ -355,8 +359,8 @@ namespace Application.Services.EmployeeService
 
         private bool HasAccessToDepartment(DepartmentAuthorizationInfo departmentInfo,EmployeeScope?scope)
         {
-            if(scope == null)
-                scope= new EmployeeScope();
+            if (scope == null)
+                return false;
 
             if (departmentInfo.DepartmentId == scope.DepartmentId || departmentInfo.CollegeId == scope.CollegeId || departmentInfo.UniversityId == scope.UniversityId)
                 return true;
