@@ -32,8 +32,9 @@ namespace UniNet.Controllers.EmployeeController
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<PagedResult<EmployeeDTO>>>GetEmployees
-            ([FromQuery]EmployeeFilter? filter, [FromQuery] EmployeeScope? scope, [FromQuery]PagedResultParameters pagedResultParameters)
+            ([FromQuery]EmployeeFilter? filter, [FromQuery]PagedResultParameters pagedResultParameters)
         {
+            var scope = _currentUserService.ToEmployeeScope();
             var employees = await _employeeService.GetEmployees(filter,scope,pagedResultParameters.PageNumber, pagedResultParameters.PageSize);
             return employees.ToPagedActioneResult();
         }

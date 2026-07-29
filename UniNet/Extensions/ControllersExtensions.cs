@@ -1,9 +1,13 @@
-﻿using Contracts.Common.Messages;
+﻿using Application.Services.IdentityServices;
+using Contracts.Common.Messages;
 using Contracts.Enums;
+using Contracts.Requests.EmployeeRequests;
 using Contracts.Responses;
 using Contracts.Results;
+using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Runtime.CompilerServices;
 
 namespace UniNet.Extensions
 {
@@ -85,6 +89,16 @@ namespace UniNet.Extensions
         public static ActionResult AuthorizationFaield(this bool result)
         {
             return new NotFoundObjectResult("No Result Found!");
+        }
+
+        public static EmployeeScope ToEmployeeScope(this ICurrentUserService currentUserService)
+        {
+            return new EmployeeScope
+            {
+                UniversityId = currentUserService.UniversityId,
+                CollegeId = currentUserService.CollegeId,
+                DepartmentId = currentUserService.DepartmentId,
+            };
         }
     }
 }

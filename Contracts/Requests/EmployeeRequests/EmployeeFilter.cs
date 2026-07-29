@@ -11,5 +11,7 @@ namespace Contracts.Requests.EmployeeRequests
 
         public string? Search { get; set; }
         public bool? IsActive { get; set; }
+        public int?CollegeId { get; set; }
+        public int?DepartmentId { get; set; }
     }
 }

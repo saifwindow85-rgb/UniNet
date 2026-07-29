@@ -78,16 +78,30 @@ namespace DataAccessLayer.Repos.EmployeeRepository
         {
             var query = _context.Employees.AsNoTracking().AsQueryable();
 
-            if (employeeScope.UniversityId.HasValue)
-                query = query.Where(e => e.UniversityId == employeeScope.UniversityId.Value);
+            if(employeeScope.UniversityId.HasValue)
+            {
+                query = query.Where(e => e.UniversityId == employeeScope.UniversityId);
+            }
 
-            if(employeeScope.CollegeId.HasValue)
-                query = query.Where(e => e.CollegeId == employeeScope.CollegeId.Value);
+            if(employeeScope.CollegeId.HasValue) // This is means he is an collegeAdmin so the system should not allow him to select collegeId 
+            {
+                query = query.Where(e=>e.CollegeId == employeeScope.CollegeId);
+            }
+            else if(employeeFilter.CollegeId.HasValue)
+            {
+                query = query.Where(e => e.CollegeId == employeeFilter.CollegeId);
+            }
 
-            if(employeeScope.DepartmentId.HasValue)
-                query = query.Where(e => e.DepartmentId == employeeScope.DepartmentId.Value);
+            if(employeeScope.DepartmentId.HasValue) // This is means he is an departmentAdmin so the system should not allow him to select departmentId 
+            {
+                query = query.Where(e=>e.DepartmentId == employeeScope.DepartmentId);
+            }
+            else if(employeeFilter.DepartmentId.HasValue)
+            {
+                query = query.Where(e => e.DepartmentId == employeeFilter.DepartmentId);
+            }
 
-            if(employeeFilter.IsActive.HasValue)
+            if (employeeFilter.IsActive.HasValue)
                 query = query.Where(e => e.User.IsActive == employeeFilter.IsActive.Value);
 
             if(!string.IsNullOrEmpty(employeeFilter.Search))
