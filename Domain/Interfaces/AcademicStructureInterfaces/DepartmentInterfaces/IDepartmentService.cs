@@ -1,4 +1,5 @@
-﻿using Contracts.Requests.AcademicRequests.DepartmentRequests;
+﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
+using Contracts.Requests.AcademicRequests.DepartmentRequests;
 using Contracts.Responses;
 using Contracts.Responses.AcademicResponses.DepartmentResponses;
 using Contracts.Results;
@@ -24,6 +25,8 @@ namespace Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces
         public Task<bool> ExistsById(int departmentId);
         public Task<bool>ExistsByName(int collegeId,string name);
         public Task<bool> Delete(int departmentId);
+        public Task<DepartmentAuthorizationInfo?> GetDepartmentAuthorizationInfoAsync(int departmentId);
+        public Task<DepartmentAuthorizationInfo?> GetDepartmentAuthorizationInfoByNameAsync(int collegeId, string departmentName);
 
     }
 }
