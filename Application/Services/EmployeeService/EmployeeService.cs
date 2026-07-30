@@ -351,6 +351,8 @@ namespace Application.Services.EmployeeService
 
         private bool HasAccessToCollege(CollegeAuthorizationInfo collegeInfo,EmployeeScope?scope)
         {
+            if (scope == null)
+                return true;
             if (scope.UniversityId == null)
                 return true; // scope only null with superadmin account
 
@@ -362,8 +364,10 @@ namespace Application.Services.EmployeeService
 
         private bool HasAccessToDepartment(DepartmentAuthorizationInfo departmentInfo,EmployeeScope?scope)
         {
+            if (scope == null)
+                return true;
             if (scope.UniversityId == null)
-                return false;
+                return true;
 
             if (departmentInfo.DepartmentId == scope.DepartmentId || departmentInfo.CollegeId == scope.CollegeId || departmentInfo.UniversityId == scope.UniversityId)
                 return true;
