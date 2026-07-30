@@ -23,9 +23,11 @@ namespace DataAccessLayer.Seeds
         public static List<Role> GetRoles() => new()
         {
             new Role { RoleId = 1, Name = "Super Admin" },
-            new Role { RoleId = 2, Name = "Admin" },
-            new Role { RoleId = 3, Name = "Lecturer" },
-            new Role { RoleId = 4, Name = "Student" }
+            new Role { RoleId = 2, Name = "UniversityAdmin" },
+            new Role { RoleId = 3, Name = "CollegeAdmin" },
+            new Role { RoleId = 4, Name = "DepartmentAdmin" },
+            new Role { RoleId = 5, Name = "Lecturer" },
+            new Role { RoleId = 6, Name = "Student" }
         };
 
         public static List<User> GetUsers() => new()

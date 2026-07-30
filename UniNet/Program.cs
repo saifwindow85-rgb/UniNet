@@ -12,12 +12,13 @@ using UniNet.MiddleWares;
 using Microsoft.AspNetCore.Authorization;
 using UniNet.Authorization.AuthorizationHandlers;
 using UniNet.Authorization.AuthorizationRequirements;
+using DataAccessLayer.Seeds;
 
 namespace UniNet
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -178,6 +179,10 @@ builder.Configuration.GetConnectionString("DefaultConnection")));
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
+                using var scop = app.Services.CreateScope();
+                var db = scop.ServiceProvider.GetRequiredService<AppDbcontext>();
+                await db.Database.MigrateAsync();
+                await TestDataSeeder.SeedAsync(db);
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
