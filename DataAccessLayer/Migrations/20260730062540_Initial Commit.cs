@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DataAccessLayer.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class InitialCommit : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -41,157 +41,6 @@ namespace DataAccessLayer.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Users",
-                columns: table => new
-                {
-                    UserId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    FullName = table.Column<string>(type: "NVARCHAR(250)", nullable: false),
-                    UserName = table.Column<string>(type: "NVARCHAR(250)", nullable: false),
-                    PasswordHash = table.Column<string>(type: "NVARCHAR(MAX)", nullable: false),
-                    Email = table.Column<string>(type: "NVARCHAR(256)", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "NVARCHAR(25)", nullable: true),
-                    IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    CreatedByUserId = table.Column<int>(type: "int", nullable: true),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedByUserId = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Users", x => x.UserId);
-                    table.ForeignKey(
-                        name: "FK_Users_Users_CreatedByUserId",
-                        column: x => x.CreatedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Users_Users_UpdatedByUserId",
-                        column: x => x.UpdatedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Images",
-                columns: table => new
-                {
-                    ImageId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    FileName = table.Column<string>(type: "NVARCHAR(250)", nullable: false),
-                    FileSize = table.Column<long>(type: "bigint", nullable: false),
-                    FilePath = table.Column<string>(type: "NVARCHAR(500)", nullable: false),
-                    UploadedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UploadedByUserId = table.Column<int>(type: "int", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedByUserId = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Images", x => x.ImageId);
-                    table.ForeignKey(
-                        name: "FK_Images_Users_UpdatedByUserId",
-                        column: x => x.UpdatedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Images_Users_UploadedByUserId",
-                        column: x => x.UploadedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Semesters",
-                columns: table => new
-                {
-                    SemesterId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "NVARCHAR(200)", nullable: false),
-                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    IsCurrent = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    CreatedByUserId = table.Column<int>(type: "int", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    UpdatedByUserId = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Semesters", x => x.SemesterId);
-                    table.ForeignKey(
-                        name: "FK_Semesters_Users_CreatedByUserId",
-                        column: x => x.CreatedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Semesters_Users_UpdatedByUserId",
-                        column: x => x.UpdatedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Universities",
-                columns: table => new
-                {
-                    UniversityId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "NVARCHAR(250)", nullable: false),
-                    Description = table.Column<string>(type: "NVARCHAR(MAX)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    CreatedByUserId = table.Column<int>(type: "int", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    UpdatedByUserId = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Universities", x => x.UniversityId);
-                    table.ForeignKey(
-                        name: "FK_Universities_Users_CreatedByUserId",
-                        column: x => x.CreatedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Universities_Users_UpdatedByUserId",
-                        column: x => x.UpdatedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "UserRoles",
-                columns: table => new
-                {
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    RoleId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserRoles", x => new { x.UserId, x.RoleId });
-                    table.ForeignKey(
-                        name: "FK_UserRoles_Roles_RoleId",
-                        column: x => x.RoleId,
-                        principalTable: "Roles",
-                        principalColumn: "RoleId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_UserRoles_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Announcements",
                 columns: table => new
                 {
@@ -210,42 +59,18 @@ namespace DataAccessLayer.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Announcements", x => x.AnnouncementId);
-                    table.ForeignKey(
-                        name: "FK_Announcements_Images_ImageId",
-                        column: x => x.ImageId,
-                        principalTable: "Images",
-                        principalColumn: "ImageId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Announcements_Users_CreatedByUserId",
-                        column: x => x.CreatedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Announcements_Users_UpdatedByUserId",
-                        column: x => x.UpdatedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Announcements_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId");
                 });
 
             migrationBuilder.CreateTable(
-                name: "Posts",
+                name: "Batches",
                 columns: table => new
                 {
-                    PostId = table.Column<int>(type: "int", nullable: false)
+                    BatchId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Title = table.Column<string>(type: "NVARCHAR(500)", nullable: false),
-                    Content = table.Column<string>(type: "NVARCHAR(MAX)", nullable: false),
-                    Type = table.Column<byte>(type: "TINYINT", nullable: false),
-                    ImageId = table.Column<int>(type: "int", nullable: true),
-                    UserId = table.Column<int>(type: "int", nullable: true),
+                    DepartmentId = table.Column<int>(type: "int", nullable: false),
+                    Name = table.Column<string>(type: "NVARCHAR(250)", nullable: false),
+                    BatchYear = table.Column<int>(type: "int", nullable: false),
+                    Description = table.Column<string>(type: "NVARCHAR(MAX)", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
                     CreatedByUserId = table.Column<int>(type: "int", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -253,30 +78,7 @@ namespace DataAccessLayer.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Posts", x => x.PostId);
-                    table.ForeignKey(
-                        name: "FK_Posts_Images_ImageId",
-                        column: x => x.ImageId,
-                        principalTable: "Images",
-                        principalColumn: "ImageId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Posts_Users_CreatedByUserId",
-                        column: x => x.CreatedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Posts_Users_UpdatedByUserId",
-                        column: x => x.UpdatedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Posts_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId");
+                    table.PrimaryKey("PK_Batches", x => x.BatchId);
                 });
 
             migrationBuilder.CreateTable(
@@ -296,24 +98,6 @@ namespace DataAccessLayer.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Colleges", x => x.CollegeId);
-                    table.ForeignKey(
-                        name: "FK_Colleges_Universities_UniversityId",
-                        column: x => x.UniversityId,
-                        principalTable: "Universities",
-                        principalColumn: "UniversityId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Colleges_Users_CreatedByUserId",
-                        column: x => x.CreatedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Colleges_Users_UpdatedByUserId",
-                        column: x => x.UpdatedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -338,56 +122,6 @@ namespace DataAccessLayer.Migrations
                         column: x => x.CollegeId,
                         principalTable: "Colleges",
                         principalColumn: "CollegeId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Departments_Users_CreatedByUserId",
-                        column: x => x.CreatedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Departments_Users_UpdatedByUserId",
-                        column: x => x.UpdatedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Batches",
-                columns: table => new
-                {
-                    BatchId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    DepartmentId = table.Column<int>(type: "int", nullable: false),
-                    Name = table.Column<string>(type: "NVARCHAR(250)", nullable: false),
-                    BatchYear = table.Column<int>(type: "int", nullable: false),
-                    Description = table.Column<string>(type: "NVARCHAR(MAX)", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    CreatedByUserId = table.Column<int>(type: "int", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    UpdatedByUserId = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Batches", x => x.BatchId);
-                    table.ForeignKey(
-                        name: "FK_Batches_Departments_DepartmentId",
-                        column: x => x.DepartmentId,
-                        principalTable: "Departments",
-                        principalColumn: "DepartmentId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Batches_Users_CreatedByUserId",
-                        column: x => x.CreatedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Batches_Users_UpdatedByUserId",
-                        column: x => x.UpdatedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -417,31 +151,38 @@ namespace DataAccessLayer.Migrations
                         principalTable: "Departments",
                         principalColumn: "DepartmentId",
                         onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Employees_Universities_UniversityId",
-                        column: x => x.UniversityId,
-                        principalTable: "Universities",
-                        principalColumn: "UniversityId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Employees_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Subjects",
+                name: "Images",
                 columns: table => new
                 {
-                    SubjectId = table.Column<int>(type: "int", nullable: false)
+                    ImageId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Code = table.Column<string>(type: "NVARCHAR(25)", nullable: false),
-                    Name = table.Column<string>(type: "NVARCHAR(200)", nullable: false),
-                    Description = table.Column<string>(type: "NVARCHAR(MAX)", nullable: true),
-                    CreditHours = table.Column<int>(type: "int", nullable: true),
-                    DepartmentId = table.Column<int>(type: "int", nullable: false),
+                    FileName = table.Column<string>(type: "NVARCHAR(250)", nullable: false),
+                    FileSize = table.Column<long>(type: "bigint", nullable: false),
+                    FilePath = table.Column<string>(type: "NVARCHAR(500)", nullable: false),
+                    UploadedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    UploadedByUserId = table.Column<int>(type: "int", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedByUserId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Images", x => x.ImageId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Posts",
+                columns: table => new
+                {
+                    PostId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Title = table.Column<string>(type: "NVARCHAR(500)", nullable: false),
+                    Content = table.Column<string>(type: "NVARCHAR(MAX)", nullable: false),
+                    Type = table.Column<byte>(type: "TINYINT", nullable: false),
+                    ImageId = table.Column<int>(type: "int", nullable: true),
+                    UserId = table.Column<int>(type: "int", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
                     CreatedByUserId = table.Column<int>(type: "int", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
@@ -449,25 +190,30 @@ namespace DataAccessLayer.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Subjects", x => x.SubjectId);
+                    table.PrimaryKey("PK_Posts", x => x.PostId);
                     table.ForeignKey(
-                        name: "FK_Subjects_Departments_DepartmentId",
-                        column: x => x.DepartmentId,
-                        principalTable: "Departments",
-                        principalColumn: "DepartmentId",
+                        name: "FK_Posts_Images_ImageId",
+                        column: x => x.ImageId,
+                        principalTable: "Images",
+                        principalColumn: "ImageId",
                         onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Subjects_Users_CreatedByUserId",
-                        column: x => x.CreatedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Subjects_Users_UpdatedByUserId",
-                        column: x => x.UpdatedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RefreshTokens",
+                columns: table => new
+                {
+                    RefreshTokenId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    TokenHash = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: false),
+                    ExpiresAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    RevokedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ReplacedByTokenId = table.Column<int>(type: "int", nullable: true),
+                    UserId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefreshTokens", x => x.RefreshTokenId);
                 });
 
             migrationBuilder.CreateTable(
@@ -491,18 +237,6 @@ namespace DataAccessLayer.Migrations
                         column: x => x.BatchId,
                         principalTable: "Batches",
                         principalColumn: "BatchId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Sections_Users_CreatedByUserId",
-                        column: x => x.CreatedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Sections_Users_UpdatedByUserId",
-                        column: x => x.UpdatedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -530,29 +264,53 @@ namespace DataAccessLayer.Migrations
                         principalTable: "Sections",
                         principalColumn: "SectionId",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Semesters",
+                columns: table => new
+                {
+                    SemesterId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "NVARCHAR(200)", nullable: false),
+                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsCurrent = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    CreatedByUserId = table.Column<int>(type: "int", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UpdatedByUserId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Semesters", x => x.SemesterId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "StudentResults",
+                columns: table => new
+                {
+                    StudentResultId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    StudentId = table.Column<int>(type: "int", nullable: false),
+                    SectionSubjectId = table.Column<int>(type: "int", nullable: false),
+                    Midterm = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
+                    Practical = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
+                    Final = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
+                    Total = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false, computedColumnSql: "[Midterm] + [Practical] + [Final]", stored: true),
+                    EnteredByUserId = table.Column<int>(type: "int", nullable: false),
+                    UpdatedByUserId = table.Column<int>(type: "int", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_StudentResults", x => x.StudentResultId);
                     table.ForeignKey(
-                        name: "FK_SectionSubjects_Semesters_SemesterId",
-                        column: x => x.SemesterId,
-                        principalTable: "Semesters",
-                        principalColumn: "SemesterId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_SectionSubjects_Subjects_SubjectId",
-                        column: x => x.SubjectId,
-                        principalTable: "Subjects",
-                        principalColumn: "SubjectId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_SectionSubjects_Users_CreatedByUserId",
-                        column: x => x.CreatedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_SectionSubjects_Users_UpdatedByUserId",
-                        column: x => x.UpdatedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
+                        name: "FK_StudentResults_SectionSubjects_SectionSubjectId",
+                        column: x => x.SectionSubjectId,
+                        principalTable: "SectionSubjects",
+                        principalColumn: "SectionSubjectId",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -590,55 +348,114 @@ namespace DataAccessLayer.Migrations
                         principalTable: "StudentStatuses",
                         principalColumn: "StatusId",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Subjects",
+                columns: table => new
+                {
+                    SubjectId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Code = table.Column<string>(type: "NVARCHAR(25)", nullable: false),
+                    Name = table.Column<string>(type: "NVARCHAR(200)", nullable: false),
+                    Description = table.Column<string>(type: "NVARCHAR(MAX)", nullable: true),
+                    CreditHours = table.Column<int>(type: "int", nullable: true),
+                    DepartmentId = table.Column<int>(type: "int", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    CreatedByUserId = table.Column<int>(type: "int", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UpdatedByUserId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Subjects", x => x.SubjectId);
                     table.ForeignKey(
-                        name: "FK_Students_Users_UserId",
-                        column: x => x.UserId,
+                        name: "FK_Subjects_Departments_DepartmentId",
+                        column: x => x.DepartmentId,
+                        principalTable: "Departments",
+                        principalColumn: "DepartmentId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Universities",
+                columns: table => new
+                {
+                    UniversityId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "NVARCHAR(250)", nullable: false),
+                    Description = table.Column<string>(type: "NVARCHAR(MAX)", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    CreatedByUserId = table.Column<int>(type: "int", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UpdatedByUserId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Universities", x => x.UniversityId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    UserId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    FullName = table.Column<string>(type: "NVARCHAR(250)", nullable: false),
+                    UserName = table.Column<string>(type: "NVARCHAR(250)", nullable: false),
+                    PasswordHash = table.Column<string>(type: "NVARCHAR(MAX)", nullable: false),
+                    Email = table.Column<string>(type: "NVARCHAR(256)", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "NVARCHAR(25)", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    Type = table.Column<byte>(type: "tinyint", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    CreatedByUserId = table.Column<int>(type: "int", nullable: true),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedByUserId = table.Column<int>(type: "int", nullable: true),
+                    UniversityId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.UserId);
+                    table.ForeignKey(
+                        name: "FK_Users_Universities_UniversityId",
+                        column: x => x.UniversityId,
+                        principalTable: "Universities",
+                        principalColumn: "UniversityId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Users_Users_CreatedByUserId",
+                        column: x => x.CreatedByUserId,
+                        principalTable: "Users",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Users_Users_UpdatedByUserId",
+                        column: x => x.UpdatedByUserId,
                         principalTable: "Users",
                         principalColumn: "UserId",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
-                name: "StudentResults",
+                name: "UserRoles",
                 columns: table => new
                 {
-                    StudentResultId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    StudentId = table.Column<int>(type: "int", nullable: false),
-                    SectionSubjectId = table.Column<int>(type: "int", nullable: false),
-                    Midterm = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
-                    Practical = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
-                    Final = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
-                    Total = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false, computedColumnSql: "[Midterm] + [Practical] + [Final]", stored: true),
-                    EnteredByUserId = table.Column<int>(type: "int", nullable: false),
-                    UpdatedByUserId = table.Column<int>(type: "int", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    RoleId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_StudentResults", x => x.StudentResultId);
+                    table.PrimaryKey("PK_UserRoles", x => new { x.UserId, x.RoleId });
                     table.ForeignKey(
-                        name: "FK_StudentResults_SectionSubjects_SectionSubjectId",
-                        column: x => x.SectionSubjectId,
-                        principalTable: "SectionSubjects",
-                        principalColumn: "SectionSubjectId",
+                        name: "FK_UserRoles_Roles_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "Roles",
+                        principalColumn: "RoleId",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_StudentResults_Students_StudentId",
-                        column: x => x.StudentId,
-                        principalTable: "Students",
-                        principalColumn: "StudentId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_StudentResults_Users_EnteredByUserId",
-                        column: x => x.EnteredByUserId,
-                        principalTable: "Users",
-                        principalColumn: "UserId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_StudentResults_Users_UpdatedByUserId",
-                        column: x => x.UpdatedByUserId,
+                        name: "FK_UserRoles_Users_UserId",
+                        column: x => x.UserId,
                         principalTable: "Users",
                         principalColumn: "UserId",
                         onDelete: ReferentialAction.Restrict);
@@ -650,9 +467,11 @@ namespace DataAccessLayer.Migrations
                 values: new object[,]
                 {
                     { 1, "Super Admin" },
-                    { 2, "Admin" },
-                    { 3, "Lecturer" },
-                    { 4, "Student" }
+                    { 2, "UniversityAdmin" },
+                    { 3, "CollegeAdmin" },
+                    { 4, "DepartmentAdmin" },
+                    { 5, "Lecturer" },
+                    { 6, "Student" }
                 });
 
             migrationBuilder.InsertData(
@@ -666,8 +485,8 @@ namespace DataAccessLayer.Migrations
 
             migrationBuilder.InsertData(
                 table: "Users",
-                columns: new[] { "UserId", "CreatedAt", "CreatedByUserId", "Email", "FullName", "IsActive", "PasswordHash", "PhoneNumber", "UpdatedAt", "UpdatedByUserId", "UserName" },
-                values: new object[] { 1, new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, "ahmed@hu.edu.ye", "Dr. Ahmed Al-Hadrami", true, "AQAAAAEAACcQAAAAEP4sN4u5xW9p8oJkzLq2vXy...", "+967 777000111", new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "Ahmed.HU" });
+                columns: new[] { "UserId", "CreatedAt", "CreatedByUserId", "Email", "FullName", "IsActive", "PasswordHash", "PhoneNumber", "Type", "UniversityId", "UpdatedAt", "UpdatedByUserId", "UserName" },
+                values: new object[] { 1, new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, "ahmed@hu.edu.ye", "Dr. Ahmed Al-Hadrami", true, "AQAAAAEAACcQAAAAEP4sN4u5xW9p8oJkzLq2vXy...", "+967 777000111", null, null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "Ahmed.HU" });
 
             migrationBuilder.InsertData(
                 table: "Semesters",
@@ -857,6 +676,17 @@ namespace DataAccessLayer.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_TokenHash",
+                table: "RefreshTokens",
+                column: "TokenHash",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_UserId",
+                table: "RefreshTokens",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Roles_Name",
                 table: "Roles",
                 column: "Name",
@@ -1028,6 +858,11 @@ namespace DataAccessLayer.Migrations
                 filter: "[Email] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Users_UniversityId",
+                table: "Users",
+                column: "UniversityId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Users_UpdatedByUserId",
                 table: "Users",
                 column: "UpdatedByUserId");
@@ -1037,11 +872,305 @@ namespace DataAccessLayer.Migrations
                 table: "Users",
                 column: "UserName",
                 unique: true);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Announcements_Images_ImageId",
+                table: "Announcements",
+                column: "ImageId",
+                principalTable: "Images",
+                principalColumn: "ImageId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Announcements_Users_CreatedByUserId",
+                table: "Announcements",
+                column: "CreatedByUserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Announcements_Users_UpdatedByUserId",
+                table: "Announcements",
+                column: "UpdatedByUserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Announcements_Users_UserId",
+                table: "Announcements",
+                column: "UserId",
+                principalTable: "Users",
+                principalColumn: "UserId");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Batches_Departments_DepartmentId",
+                table: "Batches",
+                column: "DepartmentId",
+                principalTable: "Departments",
+                principalColumn: "DepartmentId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Batches_Users_CreatedByUserId",
+                table: "Batches",
+                column: "CreatedByUserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Batches_Users_UpdatedByUserId",
+                table: "Batches",
+                column: "UpdatedByUserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Colleges_Universities_UniversityId",
+                table: "Colleges",
+                column: "UniversityId",
+                principalTable: "Universities",
+                principalColumn: "UniversityId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Colleges_Users_CreatedByUserId",
+                table: "Colleges",
+                column: "CreatedByUserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Colleges_Users_UpdatedByUserId",
+                table: "Colleges",
+                column: "UpdatedByUserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Departments_Users_CreatedByUserId",
+                table: "Departments",
+                column: "CreatedByUserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Departments_Users_UpdatedByUserId",
+                table: "Departments",
+                column: "UpdatedByUserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Employees_Universities_UniversityId",
+                table: "Employees",
+                column: "UniversityId",
+                principalTable: "Universities",
+                principalColumn: "UniversityId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Employees_Users_UserId",
+                table: "Employees",
+                column: "UserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Images_Users_UpdatedByUserId",
+                table: "Images",
+                column: "UpdatedByUserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Images_Users_UploadedByUserId",
+                table: "Images",
+                column: "UploadedByUserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Posts_Users_CreatedByUserId",
+                table: "Posts",
+                column: "CreatedByUserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Posts_Users_UpdatedByUserId",
+                table: "Posts",
+                column: "UpdatedByUserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Posts_Users_UserId",
+                table: "Posts",
+                column: "UserId",
+                principalTable: "Users",
+                principalColumn: "UserId");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_RefreshTokens_Users_UserId",
+                table: "RefreshTokens",
+                column: "UserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Cascade);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Sections_Users_CreatedByUserId",
+                table: "Sections",
+                column: "CreatedByUserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Sections_Users_UpdatedByUserId",
+                table: "Sections",
+                column: "UpdatedByUserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_SectionSubjects_Semesters_SemesterId",
+                table: "SectionSubjects",
+                column: "SemesterId",
+                principalTable: "Semesters",
+                principalColumn: "SemesterId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_SectionSubjects_Subjects_SubjectId",
+                table: "SectionSubjects",
+                column: "SubjectId",
+                principalTable: "Subjects",
+                principalColumn: "SubjectId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_SectionSubjects_Users_CreatedByUserId",
+                table: "SectionSubjects",
+                column: "CreatedByUserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_SectionSubjects_Users_UpdatedByUserId",
+                table: "SectionSubjects",
+                column: "UpdatedByUserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Semesters_Users_CreatedByUserId",
+                table: "Semesters",
+                column: "CreatedByUserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Semesters_Users_UpdatedByUserId",
+                table: "Semesters",
+                column: "UpdatedByUserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_StudentResults_Students_StudentId",
+                table: "StudentResults",
+                column: "StudentId",
+                principalTable: "Students",
+                principalColumn: "StudentId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_StudentResults_Users_EnteredByUserId",
+                table: "StudentResults",
+                column: "EnteredByUserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_StudentResults_Users_UpdatedByUserId",
+                table: "StudentResults",
+                column: "UpdatedByUserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Students_Users_UserId",
+                table: "Students",
+                column: "UserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Subjects_Users_CreatedByUserId",
+                table: "Subjects",
+                column: "CreatedByUserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Subjects_Users_UpdatedByUserId",
+                table: "Subjects",
+                column: "UpdatedByUserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Universities_Users_CreatedByUserId",
+                table: "Universities",
+                column: "CreatedByUserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_Universities_Users_UpdatedByUserId",
+                table: "Universities",
+                column: "UpdatedByUserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Restrict);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropForeignKey(
+                name: "FK_Universities_Users_CreatedByUserId",
+                table: "Universities");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_Universities_Users_UpdatedByUserId",
+                table: "Universities");
+
             migrationBuilder.DropTable(
                 name: "Announcements");
 
@@ -1050,6 +1179,9 @@ namespace DataAccessLayer.Migrations
 
             migrationBuilder.DropTable(
                 name: "Posts");
+
+            migrationBuilder.DropTable(
+                name: "RefreshTokens");
 
             migrationBuilder.DropTable(
                 name: "StudentResults");
@@ -1091,10 +1223,10 @@ namespace DataAccessLayer.Migrations
                 name: "Colleges");
 
             migrationBuilder.DropTable(
-                name: "Universities");
+                name: "Users");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "Universities");
         }
     }
 }

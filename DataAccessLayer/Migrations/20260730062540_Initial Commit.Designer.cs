@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(AppDbcontext))]
-    [Migration("20260701081809_Initial Migration ")]
-    partial class InitialMigration
+    [Migration("20260730062540_Initial Commit")]
+    partial class InitialCommit
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -477,16 +477,26 @@ namespace DataAccessLayer.Migrations
                         new
                         {
                             RoleId = 2,
-                            Name = "Admin"
+                            Name = "UniversityAdmin"
                         },
                         new
                         {
                             RoleId = 3,
-                            Name = "Lecturer"
+                            Name = "CollegeAdmin"
                         },
                         new
                         {
                             RoleId = 4,
+                            Name = "DepartmentAdmin"
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            Name = "Lecturer"
+                        },
+                        new
+                        {
+                            RoleId = 6,
                             Name = "Student"
                         });
                 });
@@ -524,6 +534,12 @@ namespace DataAccessLayer.Migrations
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("NVARCHAR(25)");
 
+                    b.Property<byte?>("Type")
+                        .HasColumnType("tinyint");
+
+                    b.Property<int?>("UniversityId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -541,6 +557,8 @@ namespace DataAccessLayer.Migrations
                     b.HasIndex("Email")
                         .IsUnique()
                         .HasFilter("[Email] IS NOT NULL");
+
+                    b.HasIndex("UniversityId");
 
                     b.HasIndex("UpdatedByUserId");
 
@@ -996,6 +1014,41 @@ namespace DataAccessLayer.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Domain.Entities.Token.RefreshToken", b =>
+                {
+                    b.Property<int>("RefreshTokenId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RefreshTokenId"));
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ReplacedByTokenId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("RefreshTokenId");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RefreshTokens", (string)null);
+                });
+
             modelBuilder.Entity("Domain.Entities.Academic_Structure.Batch", b =>
                 {
                     b.HasOne("Domain.Entities.Identity.User", "CreatedByUser")
@@ -1216,12 +1269,19 @@ namespace DataAccessLayer.Migrations
                         .HasForeignKey("CreatedByUserId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.HasOne("Domain.Entities.Academic_Structure.University", "University")
+                        .WithMany("Users")
+                        .HasForeignKey("UniversityId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Domain.Entities.Identity.User", "UpdatedByUser")
                         .WithMany("UpdatedUsers")
                         .HasForeignKey("UpdatedByUserId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("CreatedByUser");
+
+                    b.Navigation("University");
 
                     b.Navigation("UpdatedByUser");
                 });
@@ -1417,6 +1477,17 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("UpdatedByUser");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Token.RefreshToken", b =>
+                {
+                    b.HasOne("Domain.Entities.Identity.User", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("Domain.Entities.Academic_Structure.Batch", b =>
                 {
                     b.Navigation("Sections");
@@ -1452,6 +1523,8 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("Colleges");
 
                     b.Navigation("Employees");
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("Domain.Entities.Identity.Role", b =>
@@ -1470,6 +1543,8 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("EnteredByStudentResults");
 
                     b.Navigation("Posts");
+
+                    b.Navigation("RefreshTokens");
 
                     b.Navigation("Student");
 

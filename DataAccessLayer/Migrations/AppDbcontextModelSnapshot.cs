@@ -474,16 +474,26 @@ namespace DataAccessLayer.Migrations
                         new
                         {
                             RoleId = 2,
-                            Name = "Admin"
+                            Name = "UniversityAdmin"
                         },
                         new
                         {
                             RoleId = 3,
-                            Name = "Lecturer"
+                            Name = "CollegeAdmin"
                         },
                         new
                         {
                             RoleId = 4,
+                            Name = "DepartmentAdmin"
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            Name = "Lecturer"
+                        },
+                        new
+                        {
+                            RoleId = 6,
                             Name = "Student"
                         });
                 });
