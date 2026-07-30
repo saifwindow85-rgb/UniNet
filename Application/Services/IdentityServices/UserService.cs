@@ -38,7 +38,7 @@ namespace Application.Services.IdentityServices
                     (e => $"{e.PropertyName} : {e.ErrorMessage}").ToList(), EnErrorTypes.InvalidData);
             }
 
-            if(await _unitOfWork.UserRepository.IsUserExsist(newUser.UserName))
+            if(await _unitOfWork.UserRepository.IsUserExist(newUser.UserName))
             {
                 return AddUpdateServiceResponse<UserDTO>.AlreadyExists<User>();
             }
@@ -102,7 +102,7 @@ namespace Application.Services.IdentityServices
 
         public async Task<bool> IsUserExists(string userName)
         {
-            return await _unitOfWork.UserRepository.IsUserExsist(userName);
+            return await _unitOfWork.UserRepository.IsUserExist(userName);
         }
 
         public async Task<AddUpdateServiceResponse<UserDTO>> UpdateUser(int updatedUserId, UpdateUserDTO updatedUser, int userId)

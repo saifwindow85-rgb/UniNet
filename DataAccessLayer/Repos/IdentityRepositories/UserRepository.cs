@@ -43,7 +43,7 @@ namespace DataAccessLayer.Repos
             return  await _context.Users.Select(ToDTO).SingleOrDefaultAsync(u => u.UserId == Id);
         }
 
-        public async Task<bool> IsUserExsist(string userName)
+        public async Task<bool> IsUserExist(string userName)
         {
             return await _context.Users.AnyAsync(u=>u.UserName == userName);
         }

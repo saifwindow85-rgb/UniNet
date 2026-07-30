@@ -66,7 +66,7 @@ namespace Application.Services.EmployeeService
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.InvalidRelatedData();
             }
-            if(await _unitOfWorkRepository.UserRepository.IsUserExsist(newCollegeAdmin.UserName))
+            if(await _unitOfWorkRepository.UserRepository.IsUserExist(newCollegeAdmin.UserName))
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.AlreadyExists<User>();
             }
@@ -95,7 +95,7 @@ namespace Application.Services.EmployeeService
                 return AddUpdateServiceResponse<EmployeeDTO>.ResourceDoesntExist<Department>();
                 // not returning 403 because we dont want the end user to know that resource exists even
             }
-            if (await _unitOfWorkRepository.UserRepository.IsUserExsist(newDepartmentAdmin.UserName))
+            if (await _unitOfWorkRepository.UserRepository.IsUserExist(newDepartmentAdmin.UserName))
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.AlreadyExists<User>();
             }
@@ -130,7 +130,7 @@ namespace Application.Services.EmployeeService
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.InvalidRelatedData();
             }
-            if(await _unitOfWorkRepository.UserRepository.IsUserExsist(newUniversityAdmin.UserName))
+            if(await _unitOfWorkRepository.UserRepository.IsUserExist(newUniversityAdmin.UserName))
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.AlreadyExists<User>();
             }
@@ -197,7 +197,7 @@ namespace Application.Services.EmployeeService
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.ResourceDoesntExist<User>();
             }
-            if(await _unitOfWorkRepository.UserRepository.IsUserExsist(updatedCollegeAdmin.UserName)&&user.UserName != updatedCollegeAdmin.UserName)
+            if(await _unitOfWorkRepository.UserRepository.IsUserExist(updatedCollegeAdmin.UserName)&&user.UserName != updatedCollegeAdmin.UserName)
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.AlreadyExists<User>();
             }
@@ -241,7 +241,7 @@ namespace Application.Services.EmployeeService
                 return AddUpdateServiceResponse<EmployeeDTO>.ResourceDoesntExist<User>();
             }
 
-            if(await _unitOfWorkRepository.UserRepository.IsUserExsist(updatedDepartmentAdmin.UserName)&&user.UserName!=updatedDepartmentAdmin.UserName)
+            if(await _unitOfWorkRepository.UserRepository.IsUserExist(updatedDepartmentAdmin.UserName)&&user.UserName!=updatedDepartmentAdmin.UserName)
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.AlreadyExists<User>();
             }
@@ -276,7 +276,7 @@ namespace Application.Services.EmployeeService
                 return AddUpdateServiceResponse<EmployeeDTO>.ResourceDoesntExist<User>();
             }
 
-            if(await _unitOfWorkRepository.UserRepository.IsUserExsist(updatedUniversityAdmin.UserName)&& user.UserName != updatedUniversityAdmin.UserName)
+            if(await _unitOfWorkRepository.UserRepository.IsUserExist(updatedUniversityAdmin.UserName)&& user.UserName != updatedUniversityAdmin.UserName)
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.AlreadyExists<User>();
             }
