@@ -132,7 +132,7 @@ namespace Application.Services.EmployeeService
             }
             if(await _unitOfWorkRepository.UserRepository.IsUserExsist(newUniversityAdmin.UserName))
             {
-                return AddUpdateServiceResponse<EmployeeDTO>.AlreadyExists<Employee>();
+                return AddUpdateServiceResponse<EmployeeDTO>.AlreadyExists<User>();
             }
 
             var employeeEntity = await CreateEmployee(newUniversityAdmin, currentUserId, newUniversityAdmin.UniversityId,role.RoleId);
