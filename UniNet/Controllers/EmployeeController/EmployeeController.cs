@@ -58,6 +58,8 @@ namespace UniNet.Controllers.EmployeeController
                 return NotFound(ErrorMessages.NotFound<Employee>(employeeIdParameter.EmployeeId));
 
             var authorizarion = await _authorizationService.AuthorizeAsync(User, employeeInfo, "EmployeeOwnerPolicy");
+            if (!authorizarion.Succeeded)
+                return authorizarion.Succeeded.AuthorizationFaield();
 
             var employee = await _employeeService.GetDTOById(employeeIdParameter.EmployeeId);
             return employee.GetResourceEndpoints(employeeIdParameter.EmployeeId, typeof(Employee).Name);
