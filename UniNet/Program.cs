@@ -173,7 +173,9 @@ builder.Configuration.GetConnectionString("DefaultConnection")));
                     policy
                         .WithOrigins(
                             "https://localhost:7082",
-                            "http://localhost:5126"
+                            "http://localhost:5126",
+                            "http://localhost:5500",
+                            "http://127.0.0.1:5500"
                         )
                         .AllowAnyHeader()
                         .AllowAnyMethod();
@@ -197,6 +199,9 @@ builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
             app.UseHttpsRedirection();
+            // Serve the frontend (wwwroot/index.html) from the same host
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
             app.UseCors("UniNetPolicy");
             app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
             app.UseAuthentication();

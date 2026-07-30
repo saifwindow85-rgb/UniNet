@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UniNet — University Management</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- ===================== LOGIN VIEW ===================== -->
+  <div id="login-view" class="login-wrap">
+    <div class="login-card">
+      <div class="login-logo">🎓</div>
+      <h1>UniNet</h1>
+      <p class="login-sub">University Management System</p>
+      <form id="login-form" autocomplete="off">
+        <label class="field">
+          <span>Username</span>
+          <input id="login-username" type="text" placeholder="Ahmed.HU" required />
+        </label>
+        <label class="field">
+          <span>Password</span>
+          <input id="login-password" type="password" placeholder="P@ssw0rd123!" required />
+        </label>
+        <button type="submit" class="btn btn-primary btn-block" id="login-btn">Login</button>
+        <p id="login-error" class="login-error"></p>
+      </form>
+      <details class="login-hint">
+        <summary>API base URL</summary>
+        <input id="api-base-input" type="text" placeholder="(same origin)" />
+        <small>Leave empty to use the same origin serving this page. Save to apply.</small>
+      </details>
+    </div>
+  </div>
+
+  <!-- ===================== APP VIEW ===================== -->
+  <div id="app-view" class="app hidden">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">🎓 UniNet</div>
+      <nav class="nav" id="nav"></nav>
+      <div class="sidebar-foot">
+        <div class="user-chip" id="user-chip"></div>
+        <button class="btn btn-ghost btn-block" id="logout-btn">Logout</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="icon-btn" id="sidebar-toggle" title="Menu">☰</button>
+        <h2 id="page-title">Dashboard</h2>
+        <div class="topbar-spacer"></div>
+        <span class="badge-scope" id="scope-chip"></span>
+      </header>
+
+      <section class="view" id="view"></section>
+    </main>
+  </div>
+
+  <!-- ===================== TOASTS ===================== -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- ===================== MODAL ===================== -->
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal" id="modal">
+      <div class="modal-head">
+        <h3 id="modal-title">Title</h3>
+        <button class="icon-btn" id="modal-close">✕</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-foot" id="modal-foot"></div>
+    </div>
+  </div>
+
+  <!-- ===================== SCRIPTS ===================== -->
+  <script src="js/config.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/modules.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

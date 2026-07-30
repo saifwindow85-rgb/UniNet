@@ -54,6 +54,7 @@ namespace UniNet.Extensions
                     StatusCode = 409,
                     Errors = response.Errors
                 }),
+                EnErrorTypes.ResourceNotFound => new NotFoundObjectResult(new {Status = 404,Errors = response.Errors}),
 
                 _ => new ObjectResult(new { Status = 500, Title = "Server Error" }) { StatusCode = 500 }
             };
