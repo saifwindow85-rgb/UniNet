@@ -69,7 +69,8 @@ namespace UniNet.Extensions
         {
             return resource != null ? new OkObjectResult(resource) : new NotFoundObjectResult(ErrorMessages.NotFound(EntityName, Id));
         }
-        public static ActionResult<T> GetResourceEndpoints<T>(this T? resource, string name, string EntityName)
+      
+        public static ActionResult GetResourceEndpoints<T>(this T? resource, string name, string EntityName)
         {
             return resource != null ? new OkObjectResult(resource) : new NotFoundObjectResult(ErrorMessages.NotFound(EntityName, name));
         }

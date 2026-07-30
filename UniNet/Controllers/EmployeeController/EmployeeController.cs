@@ -6,12 +6,14 @@ using Contracts.Requests.RequestParameters;
 using Contracts.Responses;
 using Contracts.Responses.EmployeeResponse;
 using Contracts.Results;
+using Domain.Entities.Employees;
 using Domain.Interfaces.EmployeeInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using UniNet.Extensions;
+using Contracts.Common.Messages;
 
 namespace UniNet.Controllers.EmployeeController
 {
@@ -52,7 +54,13 @@ namespace UniNet.Controllers.EmployeeController
         public async Task<ActionResult<EmployeeDTO>> GetEmployeeById([FromQuery]EmployeeIdParameter employeeIdParameter)
         {
             var employeeInfo = await _employeeService.GetEmployeeAuthorizationInfoAsync(employeeIdParameter.EmployeeId);
-            var authorizarion = await _authorizationService.AuthorizeAsync(_currentUserService, employeeInfo, "EmployeeOwnerPolicy");
+            if (employeeInfo == null)
+                return NotFound(ErrorMessages.NotFound<Employee>(employeeIdParameter.EmployeeId));
+
+            var authorizarion = await _authorizationService.AuthorizeAsync(User, employeeInfo, "EmployeeOwnerPolicy");
+
+            var employee = await _employeeService.GetDTOById(employeeIdParameter.EmployeeId);
+            return employee.GetResourceEndpoints(employeeIdParameter.EmployeeId, typeof(Employee).Name);
         }
 
         [Authorize(Roles = "Super Admin")]
