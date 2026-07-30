@@ -1,4 +1,5 @@
 ﻿using Contracts.Responses.AcademicResponses.StudentResponses;
+using Contracts.Results;
 using Domain.Entities.Students;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ namespace Domain.Interfaces.StudentInterfaces.StatusInterfaces
 {
     public interface IStatusRepository
     {
-        public Task<StudentStatusDTO> GetStatuses(int pageNumber, int pageSize);
+        public Task<PagedResult<StudentStatusDTO>> GetStatuses(int pageNumber, int pageSize);
         public Task<StudentStatusDTO?> GetDTOById(int statusId);
         public Task<StudentStatus?>GetEntityById(int statusId);
         public Task<StudentStatusDTO?> GetDTOByName(string name);
