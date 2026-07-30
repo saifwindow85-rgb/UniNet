@@ -82,4 +82,10 @@ Most entities derive from `BaseEntity` (`CreatedAt`, `UpdatedAt`, `CreatedByUser
 
 ## Work in progress (as of EmployeeBranch)
 
-The Employee feature is mid-implementation and not all admin types are wired: `EmployeeService` has `AddUniversityAdmin`/`UpdateUniversityAdmin`/`AddCollegeAdmin` done, but `UpdateCollegeAdmin`, `AddDepartmentAdmin`, `UpdateDepartmentAdmin` still `throw new NotImplementedException()`. The `EmployeeController` currently relies on `[Authorize(Roles=...)]` only and does not yet use the resource-ownership policy path. When extending this, follow the mature `CollegeController` pattern and implement the `EmployeeHandlers` ownership handler.
+The Employee feature is **complete**. All admin types are implemented (`AddUniversityAdmin`/`UpdateUniversityAdmin`, `AddCollegeAdmin`/`UpdateCollegeAdmin`, `AddDepartmentAdmin`/`UpdateDepartmentAdmin`). Scope-based access control (`IsWithinScope`) is shared between the service layer and the `EmployeeOwnerHandler` via `Contracts/Common/Extensions/EmployeeScopeExtension.cs`. The `GetEmployeeById` endpoint uses `EmployeeOwnerPolicy` + `IAuthorizationService` following the `CollegeController` pattern. A `TestDataSeeder` exists under `DataAccessLayer/Seeds/` for development seeding (hundreds of rows, idempotent, BCrypt-hashed passwords).
+
+## Next planned work (not yet started)
+
+- **Logging**: Add `ILogger` to middleware and services.
+- **Unit Testing**: Create a test project (xUnit) with tests for validators and services.
+- **Frontend SPA**: Static files under `UniNet/wwwroot/` (currently scaffolded but needs runtime validation and fixes).
