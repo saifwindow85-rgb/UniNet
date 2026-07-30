@@ -203,7 +203,7 @@ namespace Application.Services.EmployeeService
             }
             employee.CollegeId = collegeInfo.CollegeId;
             employee.UniversityId = collegeInfo.UniversityId;
-            await UpdateEmployee(user,  employee, updatedCollegeAdmin, currentUserId);
+            await UpdateEmployee(user,   updatedCollegeAdmin, currentUserId);
             var employeeDTO = await GetDTOById(employee.EmployeeId);
             return AddUpdateServiceResponse<EmployeeDTO>.Success(employeeDTO!);
         }
@@ -248,7 +248,7 @@ namespace Application.Services.EmployeeService
             employee.DepartmentId = departmentInfo.DepartmentId;
             employee.CollegeId = departmentInfo.CollegeId;
             employee.UniversityId = departmentInfo.UniversityId;
-            await UpdateEmployee(user,employee, updatedDepartmentAdmin, currentUserId);
+            await UpdateEmployee(user, updatedDepartmentAdmin, currentUserId);
             var employeeDTO = await GetDTOById(employee.EmployeeId);
             return AddUpdateServiceResponse<EmployeeDTO>.Success(employeeDTO!);
         }
@@ -281,7 +281,7 @@ namespace Application.Services.EmployeeService
                 return AddUpdateServiceResponse<EmployeeDTO>.AlreadyExists<User>();
             }
 
-            await UpdateEmployee(user,employee, updatedUniversityAdmin, currentUserId);
+            await UpdateEmployee(user, updatedUniversityAdmin, currentUserId);
             var employeeDTO = await GetDTOById(employee.EmployeeId);
             return AddUpdateServiceResponse<EmployeeDTO>.Success(employeeDTO!);
         }
@@ -336,7 +336,7 @@ namespace Application.Services.EmployeeService
             }
           
         }
-        private async Task UpdateEmployee(User user,Employee employee,BaseUpdateEmployeeDTO dto, int currentUserId)
+        private async Task UpdateEmployee(User user,BaseUpdateEmployeeDTO dto, int currentUserId)
         {          
 
             user.FullName = dto.FullName;
