@@ -7,11 +7,11 @@ using UniNet.Extensions;
 
 namespace UniNet.Authorization.AuthorizationHandlers.EmployeeHandlers
 {
-    public class EmployeeHandler : AuthorizationHandler<OwnershipRequirement,EmployeeAuthorizationInfo>
+    public class EmployeeOwnerHandler : AuthorizationHandler<OwnershipRequirement,EmployeeAuthorizationInfo>
     {
         private readonly ICurrentUserService _currentUserService;
 
-        public EmployeeHandler(ICurrentUserService currentUserService)
+        public EmployeeOwnerHandler(ICurrentUserService currentUserService)
         {
             _currentUserService = currentUserService;
         }

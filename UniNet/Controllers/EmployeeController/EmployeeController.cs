@@ -21,14 +21,16 @@ namespace UniNet.Controllers.EmployeeController
     {
         private readonly ICurrentUserService _currentUserService;
         private readonly IEmployeeService _employeeService;
-        public EmployeeController(ICurrentUserService currentUserService, IEmployeeService employeeService)
+        private readonly IAuthorizationService _authorizationService;
+        public EmployeeController(ICurrentUserService currentUserService, IEmployeeService employeeService,IAuthorizationService authorizationService)
         {
             _currentUserService = currentUserService;
             _employeeService = employeeService;
+            _authorizationService = authorizationService;
         }
 
         [Authorize(Roles ="Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
-        [HttpGet("GetEmployees")]
+        [HttpGet(Name ="GetEmployees")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -39,6 +41,18 @@ namespace UniNet.Controllers.EmployeeController
             var scope = _currentUserService.ToEmployeeScope();
             var employees = await _employeeService.GetEmployees(filter,scope,pagedResultParameters.PageNumber, pagedResultParameters.PageSize);
             return employees.ToPagedActioneResult();
+        }
+
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+        [HttpGet("by_id",Name = "GetEmployeeById")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<EmployeeDTO>> GetEmployeeById([FromQuery]EmployeeIdParameter employeeIdParameter)
+        {
+            var employeeInfo = await _employeeService.GetEmployeeAuthorizationInfoAsync(employeeIdParameter.EmployeeId);
+            var authorizarion = await _authorizationService.AuthorizeAsync(_currentUserService, employeeInfo, "EmployeeOwnerPolicy");
         }
 
         [Authorize(Roles = "Super Admin")]

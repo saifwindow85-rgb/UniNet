@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Authorization;
 using UniNet.Authorization.AuthorizationHandlers;
 using UniNet.Authorization.AuthorizationRequirements;
 using DataAccessLayer.Seeds;
+using UniNet.Authorization.AuthorizationHandlers.EmployeeHandlers;
 
 namespace UniNet
 {
@@ -155,9 +156,15 @@ builder.Configuration.GetConnectionString("DefaultConnection")));
                     policy.Requirements.Add(new OwnershipRequirement()));
             });
 
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("EmployeeOwnerPolicy", policy =>
+                    policy.Requirements.Add(new OwnershipRequirement()));
+            });
+
             // Add authorizationHandlers to the DI container
             builder.Services.AddScoped<IAuthorizationHandler, CollegeOwnerHandler>();
-
+            builder.Services.AddScoped<IAuthorizationHandler, EmployeeOwnerHandler>();
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddCors(options =>
             {
@@ -168,7 +175,6 @@ builder.Configuration.GetConnectionString("DefaultConnection")));
                             "https://localhost:7082",
                             "http://localhost:5126"
                         )
-                        .AllowAnyOrigin()
                         .AllowAnyHeader()
                         .AllowAnyMethod();
                 });
