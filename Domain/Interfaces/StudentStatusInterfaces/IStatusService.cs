@@ -17,8 +17,8 @@ namespace Domain.Interfaces.StudentStatusInterfaces
         public Task<StudentStatusDTO?> GetDTOById(int statusId);
         public Task<StudentStatusDTO?> GetDTOByName(string Name);
         public Task<StudentStatus?> GetEntityById(int statusId);
-        public Task<AddUpdateServiceResponse<StudentStatusDTO>> AddStatus(AddUpdateStudentStatusDTO newStatus, int currentUserId);
-        public Task<AddUpdateServiceResponse<StudentStatusDTO>>UpdateStatus(int statusId,AddUpdateStudentStatusDTO updatedStatus, int currentUserId);
+        public Task<AddUpdateServiceResponse<StudentStatusDTO>> AddStatus(AddUpdateStudentStatusDTO newStatus);
+        public Task<AddUpdateServiceResponse<StudentStatusDTO>>UpdateStatus(int statusId,AddUpdateStudentStatusDTO updatedStatus);
         public Task<bool> IsExistsByName(string name);
     }
 }
