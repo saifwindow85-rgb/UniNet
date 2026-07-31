@@ -18,6 +18,10 @@ namespace DataAccessLayer.Repos.StudentRepositories
     public class StudentStatusRepository : IStatusRepository
     {
         private readonly AppDbcontext _context;
+        public StudentStatusRepository(AppDbcontext context)
+        {
+            _context = context;
+        }
         private readonly Expression<Func<StudentStatus, StudentStatusDTO>> ToDTO = s => new StudentStatusDTO
         {
             StatusId = s.StatusId,
@@ -47,6 +51,11 @@ namespace DataAccessLayer.Repos.StudentRepositories
         public async Task<PagedResult<StudentStatusDTO>> GetStatuses(int pageNumber, int pageSize)
         {
             return await _context.StudentStatuses.Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
+        }
+
+        public async Task<bool> IsExistsByName(string name)
+        {
+            return await _context.StudentStatuses.AnyAsync(s=>s.Name == name);
         }
     }
 }
