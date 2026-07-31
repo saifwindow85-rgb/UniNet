@@ -1,10 +1,10 @@
 ﻿using Contracts.Enums;
 using Contracts.Requests.StudentRequests;
 using Contracts.Responses;
-using Contracts.Responses.AcademicResponses.StudentResponses;
+using Contracts.Responses.StudentResponses;
 using Contracts.Results;
 using Domain.Entities.Students;
-using Domain.Interfaces.StudentInterfaces.StatusInterfaces;
+using Domain.Interfaces.StudentStatusInterfaces;
 using Domain.Interfaces.UnitOfWork;
 using FluentValidation;
 using System;

@@ -1,6 +1,6 @@
 ﻿using Contracts.Requests.StudentRequests;
 using Contracts.Responses;
-using Contracts.Responses.AcademicResponses.StudentResponses;
+using Contracts.Responses.StudentResponses;
 using Contracts.Results;
 using Domain.Entities.Students;
 using System;
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Interfaces.StudentInterfaces.StatusInterfaces
+namespace Domain.Interfaces.StudentStatusInterfaces
 {
     public interface IStatusService
     {
