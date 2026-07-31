@@ -44,6 +44,10 @@ using Contracts.Common;
 using Contracts.Requests.EmployeeRequests.UniversityAdminRequests;
 using Contracts.Requests.EmployeeRequests.CollegeAdminRequests;
 using Contracts.Requests.EmployeeRequests.DepartmentAdminRequests;
+using Domain.Interfaces.StudentInterfaces.StatusInterfaces;
+using Application.Services.StudentServices;
+using Contracts.Requests.StudentRequests;
+using Application.Validators.StudentValidators.StudentStatusValidators;
 
 namespace Application.Extensions
 {
@@ -62,14 +66,17 @@ namespace Application.Extensions
             services.AddScoped<IBatchService, BatchService>();
             services.AddScoped<ISectionService, SectionService>();
             services.AddScoped<IEmployeeService, EmployeeService>();
+            services.AddScoped<IStatusService, StudentStatusService>();
             return services;
         }
         public static IServiceCollection Validators(this IServiceCollection services)
         {
+            // Identity Validators
             services.AddScoped<IValidator<LoginRequest>, LoginRequestValidator>();
             services.AddScoped<IValidator<AddUserDTO>, AddUserValidator>();
             services.AddScoped<IValidator<UpdateUserDTO>, UpdateUserValidator>();
             services.AddScoped<IValidator<AddRoleDTO>, AddRoleValidator>();
+            //Academic Validators
             services.AddScoped<IValidator<AddUniversityDTO>, AddUniversityValidator>();
             services.AddScoped<IValidator<UpdateUniversityDTO>, UpdateUniversityValidator>();
             services.AddScoped<IValidator<AddCollegeDTO>, AddCollegeValidator>();
@@ -87,7 +94,8 @@ namespace Application.Extensions
             services.AddScoped<IValidator<UpdateCollegeAdminDTO>, UpdateEmployeeValidator<UpdateCollegeAdminDTO>>();
             services.AddScoped<IValidator<AddDepartmentAdminDTO>, EmployeeValidator<AddDepartmentAdminDTO>>();
             services.AddScoped<IValidator<UpdateDepartmentAdminDTO>, UpdateEmployeeValidator<UpdateDepartmentAdminDTO>>();
-
+            //Student validators
+            services.AddScoped<IValidator<AddUpdateStudentStatusDTO>, AddUpdateStudentStatusValidator>();
             return services;
         }
     }

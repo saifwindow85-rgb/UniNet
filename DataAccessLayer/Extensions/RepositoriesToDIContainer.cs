@@ -2,6 +2,7 @@
 using DataAccessLayer.Repos.AcademicRepositories;
 using DataAccessLayer.Repos.EmployeeRepository;
 using DataAccessLayer.Repos.IdentityRepositories;
+using DataAccessLayer.Repos.StudentRepositories;
 using Domain.Interfaces.AcademicStructureInterfaces.BatchInterfaces;
 using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
 using Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces;
@@ -12,7 +13,9 @@ using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces;
 using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
+using Domain.Interfaces.StudentInterfaces.StatusInterfaces;
 using Domain.Interfaces.UnitOfWork;
+using FluentValidation;
 using FluentValidation.Validators;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -38,6 +41,7 @@ namespace DataAccessLayer.Extensions
             services.AddScoped<IBatchRepository, BatchRepository>();
             services.AddScoped<ISectionRepository, SectionRepository>();
             services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+            services.AddScoped<IStatusRepository, StudentStatusRepository>();
             return services;
         }
     }
