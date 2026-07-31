@@ -26,7 +26,7 @@ namespace Application.Services.StudentServices
             _validator = validator;
         }
 
-        public async Task<AddUpdateServiceResponse<StudentStatusDTO>> AddStatus(AddUpdateStudentStatusDTO newStatus, int currentUserId)
+        public async Task<AddUpdateServiceResponse<StudentStatusDTO>> AddStatus(AddUpdateStudentStatusDTO newStatus)
         {
             var validationResult = await _validator.ValidateAsync(newStatus);
             if(!validationResult.IsValid)
@@ -76,7 +76,7 @@ namespace Application.Services.StudentServices
             return await _unitOfWorkRepository.StatusRepository.IsExistsByName(name);
         }
 
-        public async Task<AddUpdateServiceResponse<StudentStatusDTO>> UpdateStatus(int statusId, AddUpdateStudentStatusDTO updatedStatus, int currentUserId)
+        public async Task<AddUpdateServiceResponse<StudentStatusDTO>> UpdateStatus(int statusId, AddUpdateStudentStatusDTO updatedStatus)
         {
             var validationResult = await _validator.ValidateAsync(updatedStatus);
             if(!validationResult.IsValid)
