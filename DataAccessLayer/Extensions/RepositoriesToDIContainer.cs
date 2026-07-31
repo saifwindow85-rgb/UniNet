@@ -13,7 +13,7 @@ using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces;
 using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
-using Domain.Interfaces.StudentInterfaces.StatusInterfaces;
+using Domain.Interfaces.StudentStatusInterfaces;
 using Domain.Interfaces.UnitOfWork;
 using FluentValidation;
 using FluentValidation.Validators;

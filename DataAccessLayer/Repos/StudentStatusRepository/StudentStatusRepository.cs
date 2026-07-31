@@ -5,13 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using Domain.Interfaces.StudentInterfaces;
 using Domain.Entities.Students;
-using Domain.Interfaces.StudentInterfaces.StatusInterfaces;
-using Contracts.Responses.AcademicResponses.StudentResponses;
 using DataAccessLayer.Dbcontext;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Contracts.Results;
 using DataAccessLayer.Extensions;
+using Domain.Interfaces.StudentStatusInterfaces;
+using Contracts.Responses.StudentResponses;
 
 namespace DataAccessLayer.Repos.StudentRepositories
 {

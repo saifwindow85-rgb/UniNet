@@ -44,10 +44,10 @@ using Contracts.Common;
 using Contracts.Requests.EmployeeRequests.UniversityAdminRequests;
 using Contracts.Requests.EmployeeRequests.CollegeAdminRequests;
 using Contracts.Requests.EmployeeRequests.DepartmentAdminRequests;
-using Domain.Interfaces.StudentInterfaces.StatusInterfaces;
 using Application.Services.StudentServices;
 using Contracts.Requests.StudentRequests;
 using Application.Validators.StudentValidators.StudentStatusValidators;
+using Domain.Interfaces.StudentStatusInterfaces;
 
 namespace Application.Extensions
 {

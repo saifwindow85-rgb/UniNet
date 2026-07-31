@@ -10,7 +10,7 @@ using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces;
 using Domain.Interfaces.LoginInterfaces;
 using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
-using Domain.Interfaces.StudentInterfaces.StatusInterfaces;
+using Domain.Interfaces.StudentStatusInterfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
