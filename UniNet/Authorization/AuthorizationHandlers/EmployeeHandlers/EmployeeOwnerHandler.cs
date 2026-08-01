@@ -18,7 +18,7 @@ namespace UniNet.Authorization.AuthorizationHandlers.EmployeeHandlers
 
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, OwnershipRequirement requirement, EmployeeAuthorizationInfo resource)
         {
-            var scope = _currentUserService.ToEmployeeScope();
+            var scope = _currentUserService.ToUserScope();
             if (scope.IsWithinScope(resource.UniversityId, resource.CollegeId, resource.DepartmentId))
                 context.Succeed(requirement);
 
