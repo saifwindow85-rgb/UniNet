@@ -1,7 +1,7 @@
 ﻿using Application.Services.IdentityServices;
 using Contracts.Common.Messages;
 using Contracts.Enums;
-using Contracts.Requests.EmployeeRequests;
+using Contracts.Requests.RequestParameters;
 using Contracts.Responses;
 using Contracts.Results;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
@@ -93,9 +93,9 @@ namespace UniNet.Extensions
             return new NotFoundObjectResult("No Result Found!");
         }
 
-        public static EmployeeScope ToEmployeeScope(this ICurrentUserService currentUserService)
+        public static UserScope ToEmployeeScope(this ICurrentUserService currentUserService)
         {
-            return new EmployeeScope
+            return new UserScope
             {
                 UniversityId = currentUserService.UniversityId,
                 CollegeId = currentUserService.CollegeId,

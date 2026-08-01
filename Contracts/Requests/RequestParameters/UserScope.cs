@@ -4,14 +4,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Contracts.Requests.EmployeeRequests
+namespace Contracts.Requests.RequestParameters
 {
-    public class EmployeeScope
+    public class UserScope
     {
         public int? UniversityId { get; set; }
 
         public int? CollegeId { get; set; }
 
         public int? DepartmentId { get; set; }
+        public int? BatchId { get; set; }
     }
 }

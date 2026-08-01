@@ -7,6 +7,7 @@ using Contracts.Requests.EmployeeRequests;
 using Contracts.Requests.EmployeeRequests.CollegeAdminRequests;
 using Contracts.Requests.EmployeeRequests.DepartmentAdminRequests;
 using Contracts.Requests.EmployeeRequests.UniversityAdminRequests;
+using Contracts.Requests.RequestParameters;
 using Contracts.Responses;
 using Contracts.Responses.EmployeeResponse;
 using Contracts.Results;
@@ -40,7 +41,7 @@ namespace Application.Services.EmployeeService
             _serviceProvider = serviceProvider;
         }
 
-        public async Task<AddUpdateServiceResponse<EmployeeDTO>> AddCollegeAdmin(EmployeeScope? scope, AddCollegeAdminDTO newCollegeAdmin, int currentUserId)
+        public async Task<AddUpdateServiceResponse<EmployeeDTO>> AddCollegeAdmin(UserScope? scope, AddCollegeAdminDTO newCollegeAdmin, int currentUserId)
         {
             var validator = _serviceProvider.GetRequiredService<IValidator<AddCollegeAdminDTO>>();
             var validationResult = await validator.ValidateAsync(newCollegeAdmin);
@@ -76,7 +77,7 @@ namespace Application.Services.EmployeeService
             return AddUpdateServiceResponse<EmployeeDTO>.Success(employeeDTO!);
         }
 
-        public async Task<AddUpdateServiceResponse<EmployeeDTO>> AddDepartmentAdmin(EmployeeScope?scope,AddDepartmentAdminDTO newDepartmentAdmin, int currentUserId)
+        public async Task<AddUpdateServiceResponse<EmployeeDTO>> AddDepartmentAdmin(UserScope?scope,AddDepartmentAdminDTO newDepartmentAdmin, int currentUserId)
         {
             var validator = _serviceProvider.GetRequiredService<IValidator<AddDepartmentAdminDTO>>();
             var validationResult = await validator.ValidateAsync(newDepartmentAdmin);
@@ -155,7 +156,7 @@ namespace Application.Services.EmployeeService
             return await _unitOfWorkRepository.EmployeeRepository.GetEmployeeAuthorizationInfoByUserIdAsync(userId);
         }
 
-        public async Task<PagedResult<EmployeeDTO>> GetEmployees(EmployeeFilter? filter, EmployeeScope? scope, int pageNumber, int pageSize)
+        public async Task<PagedResult<EmployeeDTO>> GetEmployees(EmployeeFilter? filter, UserScope? scope, int pageNumber, int pageSize)
         {
             return await _unitOfWorkRepository.EmployeeRepository.GetEmployees(filter, scope, pageNumber, pageSize);
         }
@@ -166,7 +167,7 @@ namespace Application.Services.EmployeeService
         }
 
 
-        public async Task<AddUpdateServiceResponse<EmployeeDTO>> UpdateCollegeAdmin(EmployeeScope?scope,int employeeId, UpdateCollegeAdminDTO updatedCollegeAdmin, int currentUserId)
+        public async Task<AddUpdateServiceResponse<EmployeeDTO>> UpdateCollegeAdmin(UserScope?scope,int employeeId, UpdateCollegeAdminDTO updatedCollegeAdmin, int currentUserId)
         {
             var validator = _serviceProvider.GetRequiredService<IValidator<UpdateCollegeAdminDTO>>();
             var validationResult = await validator.ValidateAsync(updatedCollegeAdmin);
@@ -208,7 +209,7 @@ namespace Application.Services.EmployeeService
             return AddUpdateServiceResponse<EmployeeDTO>.Success(employeeDTO!);
         }
 
-        public async Task<AddUpdateServiceResponse<EmployeeDTO>> UpdateDepartmentAdmin(EmployeeScope?scope,int employeeId, UpdateDepartmentAdminDTO updatedDepartmentAdmin, int currentUserId)
+        public async Task<AddUpdateServiceResponse<EmployeeDTO>> UpdateDepartmentAdmin(UserScope?scope,int employeeId, UpdateDepartmentAdminDTO updatedDepartmentAdmin, int currentUserId)
         {
             var validator = _serviceProvider.GetRequiredService<IValidator<UpdateDepartmentAdminDTO>>();
             var validationResult = await validator.ValidateAsync(updatedDepartmentAdmin);

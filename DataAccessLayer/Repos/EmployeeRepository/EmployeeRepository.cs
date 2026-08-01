@@ -1,4 +1,5 @@
 ﻿using Contracts.Requests.EmployeeRequests;
+using Contracts.Requests.RequestParameters;
 using Contracts.Responses.EmployeeResponse;
 using Contracts.Results;
 using DataAccessLayer.Dbcontext;
@@ -74,7 +75,7 @@ namespace DataAccessLayer.Repos.EmployeeRepository
             return await _context.Employees.AsNoTracking().Where(e => e.UserId == userId).Select(ToInfo).SingleOrDefaultAsync();
         }
 
-        public async Task<PagedResult<EmployeeDTO>> GetEmployees(EmployeeFilter? employeeFilter, EmployeeScope? employeeScope, int pageNumber, int pageSize)
+        public async Task<PagedResult<EmployeeDTO>> GetEmployees(EmployeeFilter? employeeFilter, UserScope? employeeScope, int pageNumber, int pageSize)
         {
             var query = _context.Employees.AsNoTracking().AsQueryable();
             if(employeeFilter == null)
