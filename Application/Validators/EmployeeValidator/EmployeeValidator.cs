@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Application.Validators.EmployeeValidator
 {
-    public class EmployeeValidator <T> : AbstractValidator<T> where T : BaseAddEmployeeDTO
+    public class EmployeeValidator <T> : AbstractValidator<T> where T : BaseAddEmployeeOrStudentDTO
     {
         public EmployeeValidator() 
         {
@@ -53,7 +53,8 @@ namespace Application.Validators.EmployeeValidator
                 .When(x => !string.IsNullOrEmpty(x.Email));
 
             // 5. Phone Number (Optional, E.164 international standard format)
-            RuleFor(x => x.PhoneNumber)
+            RuleFor(x => x.PhoneNumber).MinimumLength(9).WithMessage("Phone number must be at least 9 digits long.")
+                .MaximumLength(25).WithMessage("Phone number cannot exceed 25 digits.")
                 .Matches(@"^\+?[1-9]\d{1,14}$").WithMessage("Invalid phone number format. Please use international format (e.g., +1234567890).")
                 .When(x => !string.IsNullOrEmpty(x.PhoneNumber));
         }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Contracts.Common
 {
-    public abstract class BaseAddEmployeeDTO
+    public abstract class BaseAddEmployeeOrStudentDTO
     {
         public string FullName { get; set; } = null!;
 
@@ -20,7 +20,7 @@ namespace Contracts.Common
 
         public bool IsActive { get; set; }
     }
-    public abstract class BaseUpdateEmployeeDTO
+    public abstract class BaseUpdateEmployeeOrStudentDTO
     {
         public string FullName { get; set; } = null!;
 

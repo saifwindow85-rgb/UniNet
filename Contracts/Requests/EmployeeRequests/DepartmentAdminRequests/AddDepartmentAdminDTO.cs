@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Contracts.Requests.EmployeeRequests.DepartmentAdminRequests
 {
-    public class AddDepartmentAdminDTO : BaseAddEmployeeDTO
+    public class AddDepartmentAdminDTO : BaseAddEmployeeOrStudentDTO
     {
         public int DepartmentId { get; set; }
        

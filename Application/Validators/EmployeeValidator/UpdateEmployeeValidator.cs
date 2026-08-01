@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Application.Validators.EmployeeValidator
 {
-    public class UpdateEmployeeValidator <T> : AbstractValidator<T> where T : BaseUpdateEmployeeDTO
+    public class UpdateEmployeeValidator <T> : AbstractValidator<T> where T : BaseUpdateEmployeeOrStudentDTO
     {
         public UpdateEmployeeValidator()
         {
