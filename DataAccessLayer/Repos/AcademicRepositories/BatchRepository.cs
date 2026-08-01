@@ -1,4 +1,5 @@
-﻿using Contracts.Responses.AcademicResponses.BatchResponses;
+﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
+using Contracts.Responses.AcademicResponses.BatchResponses;
 using Contracts.Results;
 using DataAccessLayer.Dbcontext;
 using DataAccessLayer.Extensions;
@@ -32,7 +33,13 @@ namespace DataAccessLayer.Repos.AcademicRepositories
             UpdatedByUserId = b.UpdatedByUserId,
             UpdatedByUserName = b.UpdatedByUser == null ? null : b.UpdatedByUser.UserName,
         };
-
+        private readonly Expression<Func<Batch, BatchAuthorizationInfo>> ToInfo = b => new BatchAuthorizationInfo
+        {
+            UniverseId = b.Department.College.UniversityId,
+            CollegeId = b.Department.CollegeId,
+            DepartmentId = b.DepartmentId,
+            BatchId = b.BatchId,
+        };
         public BatchRepository(AppDbcontext context)
         {
             _context = context;
@@ -66,6 +73,11 @@ namespace DataAccessLayer.Repos.AcademicRepositories
         {
             return await _context.Batches.AsNoTracking().OrderBy(b=>b.DepartmentId).Select(ToDTO)
                 .ToPagedResultAsync(pageNumber, pageSize);
+        }
+
+        public async Task<BatchAuthorizationInfo?> GetBatchAuthorizationInfoAsync(int batchId)
+        {
+            return await _context.Batches.Where(b => b.BatchId == batchId).Select(ToInfo).SingleOrDefaultAsync();
         }
 
         public async Task<PagedResult<BatchDTO>> GetBatchesPerDepartment(int departmentId, int pageNumber, int pageSize)

@@ -1,4 +1,5 @@
-﻿using Contracts.Requests.RequestParameters;
+﻿using Contracts.Common.AuthorizationInfos.StudentAuthorizationInfo;
+using Contracts.Requests.RequestParameters;
 using Contracts.Requests.StudentRequests;
 using Contracts.Responses.StudentResponses;
 using Contracts.Results;
@@ -33,6 +34,14 @@ namespace DataAccessLayer.Repos.StudentRepository
             StatusName = s.Status.Name,
 
         };
+
+        private readonly Expression<Func<Student, StudentAuthorizationInfo>> ToInfo = s => new StudentAuthorizationInfo
+        {
+            UniversityId = s.Batch.Department.College.UniversityId,
+            CollegeId = s.Batch.Department.CollegeId,
+            DepartmentId = s.Batch.DepartmentId,
+            BatchId = s.BatchId,
+        };
         public StudentRepository(AppDbcontext context)
         {
             _context = context;
@@ -66,6 +75,11 @@ namespace DataAccessLayer.Repos.StudentRepository
         public async Task<Student?> GetEntityById(int studentId)
         {
             return await _context.Students.FindAsync(studentId);
+        }
+
+        public async Task<StudentAuthorizationInfo?> GetStudentAuthorizationInfoAsync(int studentId)
+        {
+            return await _context.Students.Where(s => s.StudentId == studentId).Select(ToInfo).SingleOrDefaultAsync();
         }
 
         public Task<PagedResult<StudentDTO>> GetStudents(UserScope? scope, StudentFilter? filter, int pageNumber, int pageSize)

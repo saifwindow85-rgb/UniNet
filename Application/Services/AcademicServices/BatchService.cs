@@ -1,4 +1,5 @@
-﻿using Contracts.Enums;
+﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
+using Contracts.Enums;
 using Contracts.Requests.AcademicRequests.BatchRequests;
 using Contracts.Responses;
 using Contracts.Responses.AcademicResponses.BatchResponses;
@@ -81,6 +82,11 @@ namespace Application.Services.AcademicServices
         public async Task<PagedResult<BatchDTO>> GetAllBatches(int pageNumber, int pageSize)
         {
             return await _unitOfWorkRepository.BatchRepository.GetAllBatches(pageNumber, pageSize);
+        }
+
+        public async Task<BatchAuthorizationInfo?> GetBatchAuthorizationInfoAsync(int batchId)
+        {
+            return await _unitOfWorkRepository.BatchRepository.GetBatchAuthorizationInfoAsync(batchId);
         }
 
         public async Task<PagedResult<BatchDTO>> GetBatchesPerDepartment(int departmentId, int pageNumber, int pageSize)
