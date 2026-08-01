@@ -1,4 +1,5 @@
-﻿using Contracts.Enums;
+﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
+using Contracts.Enums;
 using Contracts.Requests.AcademicRequests.SectionRequests;
 using Contracts.Responses;
 using Contracts.Responses.AcademicResponses.SectionResponses;
@@ -15,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace Application.Services.AcademicServices
 {
-    public class SectionService :  ISectionService
+    public class SectionService : ISectionService
     {
         private readonly IUnitOfWorkRepository _unitOfWorkRepository;
         private readonly IValidator<AddSectionDTO> _addValidator;
@@ -101,6 +102,11 @@ namespace Application.Services.AcademicServices
         public Task<Section?> GetEntityByName(int batchId, string name)
         {
             return _unitOfWorkRepository.SectionRepository.GetEntityByName(batchId, name);
+        }
+
+        public async Task<SectionAuthorizationInfo?> GetSectionAuthorizationInfoAsync(int sectionId)
+        {
+            return await _unitOfWorkRepository.SectionRepository.GetSectionAuthorizationInfoAsync(sectionId);
         }
 
         public Task<PagedResult<SectionDTO>> GetSectionsPerBatches(int batchId, int pageNumber, int pageSize)

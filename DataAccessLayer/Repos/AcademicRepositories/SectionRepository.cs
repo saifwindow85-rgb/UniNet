@@ -1,4 +1,5 @@
-﻿using Contracts.Responses.AcademicResponses.SectionResponses;
+﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
+using Contracts.Responses.AcademicResponses.SectionResponses;
 using Contracts.Results;
 using DataAccessLayer.Dbcontext;
 using DataAccessLayer.Extensions;
@@ -29,6 +30,12 @@ namespace DataAccessLayer.Repos.AcademicRepositories
             UpdatedAt = s.UpdatedAt,
             UpdatedByUserId = s.UpdatedByUserId,
             UpdatedByUserName = s.UpdatedByUser == null ? null : s.UpdatedByUser.UserName,
+        };
+
+        private readonly Expression<Func<Section, SectionAuthorizationInfo>> ToInfo = s => new SectionAuthorizationInfo
+        {
+            SectionId = s.SectionId,
+            BatchId = s.BatchId,
         };
 
         public SectionRepository(AppDbcontext context)
@@ -89,6 +96,11 @@ namespace DataAccessLayer.Repos.AcademicRepositories
         public async Task<PagedResult<SectionDTO>> GetSectionsPerBatch(int batchId, int pageNumber, int pageSize)
         {
            return await _context.Sections.AsNoTracking().Where(s=>s.BatchId == batchId).Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
+        }
+
+        public async Task<SectionAuthorizationInfo?> GetSectionAuthorizationInfoAsync(int sectionId)
+        {
+            return await _context.Sections.Where(s => s.SectionId == sectionId).Select(ToInfo).SingleOrDefaultAsync();
         }
     }
 }
