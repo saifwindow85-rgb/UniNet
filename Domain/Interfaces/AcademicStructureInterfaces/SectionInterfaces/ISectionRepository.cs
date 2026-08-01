@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Contracts.Responses.AcademicResponses.SectionResponses;
 using Domain.Entities.Academic_Structure;
+using Contracts.Common.AuthorizationInfos.AcademicInfos;
 
 namespace Domain.Interfaces.AcademicStructureInterfaces.SectionInterfaces
 {
@@ -21,6 +22,7 @@ namespace Domain.Interfaces.AcademicStructureInterfaces.SectionInterfaces
         public Task<bool> Delete(int sectionId);
         public Task<bool>ExistsById(int sectionId);
         public Task<bool> ExistsByName(int batchId,string name);
+        public Task<SectionAuthorizationInfo?> GetSectionAuthorizationInfoAsync(int sectionId);
 
     }
 }
