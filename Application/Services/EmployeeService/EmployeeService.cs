@@ -287,7 +287,7 @@ namespace Application.Services.EmployeeService
         }
 
 
-        private async Task<Employee> CreateEmployee(BaseAddEmployeeDTO dto,int currentUserId,int universityId, int roleId,int? collegeId = null, int? departmentId = null)
+        private async Task<Employee> CreateEmployee(BaseAddEmployeeOrStudentDTO dto,int currentUserId,int universityId, int roleId,int? collegeId = null, int? departmentId = null)
         {
             await _unitOfWorkRepository.BeginTransactionAsync();
             try
@@ -336,7 +336,7 @@ namespace Application.Services.EmployeeService
             }
           
         }
-        private async Task UpdateEmployee(User user,BaseUpdateEmployeeDTO dto, int currentUserId)
+        private async Task UpdateEmployee(User user,BaseUpdateEmployeeOrStudentDTO dto, int currentUserId)
         {          
 
             user.FullName = dto.FullName;

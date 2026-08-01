@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Contracts.Requests.EmployeeRequests.UniversityAdminRequests
 {
-    public class AddUniversityAdminDTO : BaseAddEmployeeDTO
+    public class AddUniversityAdminDTO : BaseAddEmployeeOrStudentDTO
     {
         public int UniversityId { get; set; } // only required if the user is a UniversityAdmin
         

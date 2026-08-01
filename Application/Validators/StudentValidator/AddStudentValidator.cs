@@ -1,4 +1,4 @@
-﻿using Contracts.Common;
+﻿using Contracts.Requests.StudentRequests;
 using FluentValidation;
 using System;
 using System.Collections.Generic;
@@ -6,11 +6,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Validators.EmployeeValidator
+namespace Application.Validators.StudentValidator
 {
-    public class EmployeeValidator <T> : AbstractValidator<T> where T : BaseAddEmployeeOrStudentDTO
+    public class AddStudentValidator : AbstractValidator<AddStudentDTO>
     {
-        public EmployeeValidator() 
+        public AddStudentValidator() 
         {
             // 1. Full Name
             RuleFor(x => x.FullName)
@@ -28,22 +28,22 @@ namespace Application.Validators.EmployeeValidator
 
             // 3. Password (Robust Security Policy)
             RuleFor(x => x.Password)
-       .NotEmpty()
-           .WithMessage("Password is required.")
-
-       .Length(8, 32)
-           .WithMessage("Password must be between 8 and 32 characters.")
-
-       .Matches("[A-Z]")
-           .WithMessage("Password must contain at least one uppercase letter.")
-
-       .Matches("[a-z]")
-           .WithMessage("Password must contain at least one lowercase letter.")
-
-       .Matches(@"\d")
-           .WithMessage("Password must contain at least one digit.")
-
-       .Matches(@"[^a-zA-Z0-9]")
+                   .NotEmpty()
+                       .WithMessage("Password is required.")
+                   
+                   .Length(8, 32)
+                       .WithMessage("Password must be between 8 and 32 characters.")
+                   
+                   .Matches("[A-Z]")
+                       .WithMessage("Password must contain at least one uppercase letter.")
+                   
+                   .Matches("[a-z]")
+                       .WithMessage("Password must contain at least one lowercase letter.")
+                   
+                   .Matches(@"\d")
+                       .WithMessage("Password must contain at least one digit.")
+                   
+                   .Matches(@"[^a-zA-Z0-9]")
            .WithMessage("Password must contain at least one special character.");
 
             // 4. Email (Optional, but validated if provided)
@@ -54,9 +54,16 @@ namespace Application.Validators.EmployeeValidator
 
             // 5. Phone Number (Optional, E.164 international standard format)
             RuleFor(x => x.PhoneNumber).MinimumLength(9).WithMessage("Phone number must be at least 9 digits long.")
-                .MaximumLength(25).WithMessage("Phone number cannot exceed 25 digits.")
-                .Matches(@"^\+?[1-9]\d{1,14}$").WithMessage("Invalid phone number format. Please use international format (e.g., +1234567890).")
-                .When(x => !string.IsNullOrEmpty(x.PhoneNumber));
+             .MaximumLength(25).WithMessage("Phone number cannot exceed 25 digits.")
+             .Matches(@"^\+?[1-9]\d{1,14}$").WithMessage("Invalid phone number format. Please use international format (e.g., +1234567890).")
+             .When(x => !string.IsNullOrEmpty(x.PhoneNumber));
+
+            // 6. Student Number
+            RuleFor(x => x.StudentNumber)
+                .NotEmpty().WithMessage("Student number is required.")
+                  .Matches(@"^\+?[1-9]\d{1,14}$").WithMessage("Invalid phone number format. Please use international format (e.g., +1234567890).")
+                  .When(x => !string.IsNullOrEmpty(x.PhoneNumber));
+
         }
     }
 }

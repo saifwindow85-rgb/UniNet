@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Contracts.Requests.EmployeeRequests.CollegeAdminRequests
 {
-    public class UpdateCollegeAdminDTO :BaseUpdateEmployeeDTO
+    public class UpdateCollegeAdminDTO :BaseUpdateEmployeeOrStudentDTO
     {
         public int CollegeId { get; set; }
     }
