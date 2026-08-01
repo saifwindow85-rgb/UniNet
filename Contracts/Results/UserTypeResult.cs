@@ -1,4 +1,4 @@
-﻿using Contracts.Responses.EmployeeResponse;
+﻿using Contracts.Common.AuthorizationInfos.EmployeeAuthorizationInfo;
 using System;
 using System.Collections.Generic;
 using System.Linq;

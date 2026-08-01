@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Contracts.Responses.EmployeeResponse
+namespace Contracts.Common.AuthorizationInfos.EmployeeAuthorizationInfo
 {
     public class EmployeeAuthorizationInfo
     {
