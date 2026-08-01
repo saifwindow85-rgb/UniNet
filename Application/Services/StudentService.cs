@@ -1,9 +1,13 @@
 ﻿using Contracts.Common.AuthorizationInfos.StudentAuthorizationInfo;
+using Contracts.Common.Extensions;
+using Contracts.Enums;
 using Contracts.Requests.RequestParameters;
 using Contracts.Requests.StudentRequests;
 using Contracts.Responses;
 using Contracts.Responses.StudentResponses;
 using Contracts.Results;
+using Domain.Entities.Academic_Structure;
+using Domain.Entities.Identity;
 using Domain.Entities.Students;
 using Domain.Interfaces.StudentInterfaces;
 using Domain.Interfaces.UnitOfWork;
@@ -11,8 +15,10 @@ using FluentValidation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace Application.Services
 {
@@ -29,14 +35,25 @@ namespace Application.Services
             _updateStudentValidator = updateStudentValidator;
         }
 
-        public Task<AddUpdateServiceResponse<StudentDTO>> AddBatchAdmin(AddStudentDTO newStudent, int currentUser)
+        public async Task<AddUpdateServiceResponse<StudentDTO>> AddBatchAdmin(UserScope? scope, AddStudentDTO newStudent, int currentUser)
         {
-            throw new NotImplementedException();
+            var role = await _unitOfWork.RoleRepository.GetRoleDTOByRoleName("BatchAdmin");
+            if (role == null)
+            {
+                return AddUpdateServiceResponse<StudentDTO>.ResourceDoesntExist<Role>();
+            }
+            return await CreateStudent(scope, newStudent, currentUser, role.RoleId);
         }
 
-        public Task<AddUpdateServiceResponse<StudentDTO>> AddStudent(AddStudentDTO newStudent, int currentUser)
+        public async Task<AddUpdateServiceResponse<StudentDTO>> AddStudent(UserScope? scope, AddStudentDTO newStudent, int currentUser)
         {
-            throw new NotImplementedException();
+            var role = await _unitOfWork.RoleRepository.GetRoleDTOByRoleName("Student");
+            if (role == null)
+            {
+                return AddUpdateServiceResponse<StudentDTO>.ResourceDoesntExist<Role>();
+            }
+
+            return await CreateStudent(scope, newStudent, currentUser, role.RoleId);
         }
 
         public async Task<bool> ExistsByStudentNumber(string studentNumber)
@@ -69,14 +86,156 @@ namespace Application.Services
             return await _unitOfWork.StudentRepository.GetStudents(scope, filter, pageNumber, pageSize);
         }
 
-        public Task<AddUpdateServiceResponse<StudentDTO>> UpdateBatchAdmin(UpdateStudentDTO updatedStudent, int currentUser)
+        public async Task<AddUpdateServiceResponse<StudentDTO>> UpdateBatchAdmin(int studentId,UserScope? scope, UpdateStudentDTO updatedStudent, int currentUser)
         {
-            throw new NotImplementedException();
+            var role = await _unitOfWork.RoleRepository.GetRoleDTOByRoleName("BatchAdmin");
+            if (role == null)
+            {
+                return AddUpdateServiceResponse<StudentDTO>.ResourceDoesntExist<Role>();
+            }
+            return await UpdateStudentEntity(studentId, scope, updatedStudent, currentUser, role.RoleId);
         }
 
-        public Task<AddUpdateServiceResponse<StudentDTO>> UpdateStudent(UpdateStudentDTO updatedStudent, int currentUser)
+        public async Task<AddUpdateServiceResponse<StudentDTO>> UpdateStudent(int studentId,UserScope? scope, UpdateStudentDTO updatedStudent, int currentUser)
         {
-            throw new NotImplementedException();
+            var role = await _unitOfWork.RoleRepository.GetRoleDTOByRoleName("Student");
+            if(role == null)
+            {
+                return AddUpdateServiceResponse<StudentDTO>.ResourceDoesntExist<Role>();
+            }
+            return await UpdateStudentEntity(studentId, scope, updatedStudent, currentUser, role.RoleId);
         }
+
+        private async Task<AddUpdateServiceResponse<StudentDTO>> CreateStudent(UserScope? scope, AddStudentDTO newStudent, int currentUser, int roleId)
+        {
+            var validationResult = await _addStudentValidator.ValidateAsync(newStudent);
+            if (!validationResult.IsValid)
+            {
+                return AddUpdateServiceResponse<StudentDTO>.Failure(validationResult.Errors.Select(e => e.ErrorMessage).ToList(), EnErrorTypes.InvalidData);
+            }
+            if (await ExistsByStudentNumber(newStudent.StudentNumber))
+            {
+                return AddUpdateServiceResponse<StudentDTO>.AlreadyExists<Student>();
+            }
+            if (await _unitOfWork.UserRepository.IsUserExist(newStudent.UserName))
+            {
+                return AddUpdateServiceResponse<StudentDTO>.AlreadyExists<User>();
+            }
+            var batchInfo = await _unitOfWork.BatchRepository.GetBatchAuthorizationInfoAsync(newStudent.BatchId);
+            if (batchInfo == null)
+            {
+                return AddUpdateServiceResponse<StudentDTO>.ResourceDoesntExist<Batch>();
+            }
+            if (!scope.IsWithinScope(batchInfo.UniverseId, batchInfo.CollegeId, batchInfo.DepartmentId, batchInfo.BatchId))
+            {
+                return AddUpdateServiceResponse<StudentDTO>.ResourceDoesntExist<Batch>();
+            }
+            if (newStudent.SectionId.HasValue)
+            {
+                var sectionInfo = await _unitOfWork.SectionRepository.GetSectionAuthorizationInfoAsync(newStudent.SectionId.Value);
+                if (sectionInfo!.BatchId != batchInfo.BatchId)
+                {
+                    return AddUpdateServiceResponse<StudentDTO>.ResourceDoesntExist<Section>();
+                }
+            }
+            await _unitOfWork.BeginTransactionAsync();
+            try
+            {
+                var userEntity = new User
+                {
+                    FullName = newStudent.FullName,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(newStudent.Password),
+                    UserName = newStudent.UserName,
+                    IsActive = newStudent.IsActive,
+                    Email = newStudent.Email,
+                    PhoneNumber = newStudent.PhoneNumber,
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedByUserId = currentUser,
+                    Type = UserType.Student,
+                    UniversityId = batchInfo.UniverseId,
+                };
+                await _unitOfWork.UserRepository.Add(userEntity);
+                await _unitOfWork.CompleteAsync();
+                var studentEntity = new Student
+                {
+                    UserId = userEntity.UserId,
+                    StudentNumber = newStudent.StudentNumber,
+                    BatchId = newStudent.BatchId,
+                    SectionId = newStudent.SectionId,
+                };
+                _unitOfWork.StudentRepository.Add(studentEntity);
+                var userRole = new UserRole
+                {
+                    UserId = userEntity.UserId,
+                    RoleId = roleId
+                };
+                await _unitOfWork.UserRoleRepository.Add(userRole);
+                await _unitOfWork.CompleteAsync();
+                await _unitOfWork.CommitTransactionAsync();
+                var studentDTO = await GetDTOById(studentEntity.StudentId);
+                return AddUpdateServiceResponse<StudentDTO>.Success(studentDTO!);
+            }
+            catch
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw;
+            }
+        }
+
+        private async Task<AddUpdateServiceResponse<StudentDTO>> UpdateStudentEntity(int studentId, UserScope? scope, UpdateStudentDTO updatedStudent, int currentUser, int roleId)
+        {
+            var validationResult = await _updateStudentValidator.ValidateAsync(updatedStudent);
+            if (!validationResult.IsValid)
+            {
+                return AddUpdateServiceResponse<StudentDTO>.Failure(validationResult.Errors.Select(e => e.ErrorMessage).ToList(), EnErrorTypes.InvalidData);
+            }
+            var studentEntity = await _unitOfWork.StudentRepository.GetEntityById(studentId);
+            if (studentEntity == null)
+            {
+                return AddUpdateServiceResponse<StudentDTO>.ResourceDoesntExist<Student>();
+            }
+            var batchInfo = await _unitOfWork.BatchRepository.GetBatchAuthorizationInfoAsync(studentEntity.BatchId);
+            if (batchInfo == null)
+            {
+                return AddUpdateServiceResponse<StudentDTO>.ResourceDoesntExist<Batch>();
+            }
+            if (!scope.IsWithinScope(batchInfo.UniverseId, batchInfo.CollegeId, batchInfo.DepartmentId, batchInfo.BatchId))
+            {
+                return AddUpdateServiceResponse<StudentDTO>.ResourceDoesntExist<Batch>();
+            }
+            var user = await _unitOfWork.UserRepository.GetUserEntityById(studentEntity.UserId);
+            if (user == null)
+            {
+                return AddUpdateServiceResponse<StudentDTO>.ResourceDoesntExist<User>();
+            }
+
+            if (await _unitOfWork.UserRepository.IsUserExist(updatedStudent.UserName) && user.UserName != updatedStudent.UserName)
+            {
+                return AddUpdateServiceResponse<StudentDTO>.AlreadyExists<User>();
+            }
+            if (updatedStudent.SectionId.HasValue)
+            {
+                var sectionInfo = await _unitOfWork.SectionRepository.GetSectionAuthorizationInfoAsync(updatedStudent.SectionId.Value);
+                if (sectionInfo!.BatchId != batchInfo.BatchId)
+                {
+                    return AddUpdateServiceResponse<StudentDTO>.ResourceDoesntExist<Section>();
+                }
+            }
+
+            user.FullName = updatedStudent.FullName;
+            user.UserName = updatedStudent.UserName;
+            user.Email = updatedStudent.Email;
+            user.PhoneNumber = updatedStudent.PhoneNumber;
+            user.IsActive = updatedStudent.IsActive;
+            user.UpdatedAt = DateTime.UtcNow;
+            user.UpdatedByUserId = currentUser;
+
+            await _unitOfWork.CompleteAsync();
+            // Additional logic for updating the student entity can be added here
+            // For now, we will just return a success response with the existing student DTO
+            var studentDTO = await GetDTOById(studentEntity.StudentId);
+            return AddUpdateServiceResponse<StudentDTO>.Success(studentDTO!);
+        }
+
     }
 }

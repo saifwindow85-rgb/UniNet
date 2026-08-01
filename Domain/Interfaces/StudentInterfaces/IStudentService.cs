@@ -20,10 +20,10 @@ namespace Domain.Interfaces.StudentInterfaces
         public Task<StudentDTO?>GetDTOByStudentNumber(string studentNumber);
         public Task<Student?>GetEntityById(int studentId);
         public Task<bool>ExistsByStudentNumber(string studentNumber);
-        public Task<AddUpdateServiceResponse<StudentDTO>> AddStudent(AddStudentDTO newStudent, int currentUser);
-        public Task<AddUpdateServiceResponse<StudentDTO>> UpdateStudent(UpdateStudentDTO updatedStudent, int currentUser);
-        public Task<AddUpdateServiceResponse<StudentDTO>>AddBatchAdmin(AddStudentDTO newStudent, int currentUser);
-        public Task<AddUpdateServiceResponse<StudentDTO>> UpdateBatchAdmin(UpdateStudentDTO updatedStudent, int currentUser);
+        public Task<AddUpdateServiceResponse<StudentDTO>> AddStudent(UserScope?scope,AddStudentDTO newStudent, int currentUser);
+        public Task<AddUpdateServiceResponse<StudentDTO>> UpdateStudent(int studentId,UserScope?scope,UpdateStudentDTO updatedStudent, int currentUser);
+        public Task<AddUpdateServiceResponse<StudentDTO>>AddBatchAdmin(UserScope? scope, AddStudentDTO newStudent, int currentUser);
+        public Task<AddUpdateServiceResponse<StudentDTO>> UpdateBatchAdmin(int studentId,UserScope? scope, UpdateStudentDTO updatedStudent, int currentUser);
         public Task<StudentAuthorizationInfo?> GetStudentAuthorizationInfoAsync(int studentId);
     }
 }

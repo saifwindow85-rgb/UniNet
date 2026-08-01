@@ -9,8 +9,8 @@ using System.Threading.Tasks;
 
 namespace Application.Extensions
 {
-    public static  class ServicesExtensions
-    {
-     
-    }
+    //public static  class ServicesExtensions
+    //{
+    // Note: This class is currently empty and can be used to add extension methods for services in the future.
+    //}
 }

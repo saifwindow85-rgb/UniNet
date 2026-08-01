@@ -41,11 +41,7 @@ namespace Application.Validators.StudentValidator
              .Matches(@"^\+?[1-9]\d{1,14}$").WithMessage("Invalid phone number format. Please use international format (e.g., +1234567890).")
              .When(x => !string.IsNullOrEmpty(x.PhoneNumber));
 
-            // 5. Student Number
-            RuleFor(x => x.StudentNumber)
-                .NotEmpty().WithMessage("Student number is required.")
-                  .Matches(@"^\+?[1-9]\d{1,14}$").WithMessage("Invalid phone number format. Please use international format (e.g., +1234567890).")
-                  .When(x => !string.IsNullOrEmpty(x.PhoneNumber));
+
         }
     }
 }
