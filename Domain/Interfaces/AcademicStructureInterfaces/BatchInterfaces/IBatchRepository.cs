@@ -1,4 +1,5 @@
-﻿using Contracts.Responses.AcademicResponses.BatchResponses;
+﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
+using Contracts.Responses.AcademicResponses.BatchResponses;
 using Contracts.Results;
 using Domain.Entities.Academic_Structure;
 using System;
@@ -21,5 +22,6 @@ namespace Domain.Interfaces.AcademicStructureInterfaces.BatchInterfaces
         public Task<bool>ExistsById(int batchId);
         public Task<bool>ExistsByName(int departmentId,string name);
         public void Add(Batch batch);
+        public Task<BatchAuthorizationInfo?> GetBatchAuthorizationInfoAsync(int batchId);
     }
 }

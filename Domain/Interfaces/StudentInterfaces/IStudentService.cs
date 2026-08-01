@@ -1,4 +1,5 @@
-﻿using Contracts.Requests.RequestParameters;
+﻿using Contracts.Common.AuthorizationInfos.StudentAuthorizationInfo;
+using Contracts.Requests.RequestParameters;
 using Contracts.Requests.StudentRequests;
 using Contracts.Responses;
 using Contracts.Responses.StudentResponses;
@@ -23,5 +24,6 @@ namespace Domain.Interfaces.StudentInterfaces
         public Task<AddUpdateServiceResponse<StudentDTO>> UpdateStudent(UpdateStudentDTO updatedStudent, int currentUser);
         public Task<AddUpdateServiceResponse<StudentDTO>>AddBatchAdmin(AddStudentDTO newStudent, int currentUser);
         public Task<AddUpdateServiceResponse<StudentDTO>> UpdateBatchAdmin(UpdateStudentDTO updatedStudent, int currentUser);
+        public Task<StudentAuthorizationInfo?> GetStudentAuthorizationInfoAsync(int studentId);
     }
 }

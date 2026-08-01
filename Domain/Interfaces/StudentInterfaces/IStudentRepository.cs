@@ -1,4 +1,5 @@
-﻿using Contracts.Requests.RequestParameters;
+﻿using Contracts.Common.AuthorizationInfos.StudentAuthorizationInfo;
+using Contracts.Requests.RequestParameters;
 using Contracts.Requests.StudentRequests;
 using Contracts.Responses.StudentResponses;
 using Contracts.Results;
@@ -19,5 +20,6 @@ namespace Domain.Interfaces.StudentInterfaces
         public Task<Student?> GetEntityById(int studentId);
         public void Add(Student student);
         public Task<bool> ExistsByStudentNumber(string studentNumber);
+        public Task<StudentAuthorizationInfo?>GetStudentAuthorizationInfoAsync(int studentId);
     }
 }
