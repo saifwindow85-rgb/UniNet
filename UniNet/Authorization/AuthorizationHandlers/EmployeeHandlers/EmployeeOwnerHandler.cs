@@ -1,5 +1,5 @@
-﻿using Contracts.Common.Extensions;
-using Contracts.Responses.EmployeeResponse;
+﻿using Contracts.Common.AuthorizationInfos.EmployeeAuthorizationInfo;
+using Contracts.Common.Extensions;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
 using Microsoft.AspNetCore.Authorization;
 using UniNet.Authorization.AuthorizationRequirements;

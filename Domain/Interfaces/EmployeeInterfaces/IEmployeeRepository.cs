@@ -1,4 +1,5 @@
-﻿using Contracts.Requests.EmployeeRequests;
+﻿using Contracts.Common.AuthorizationInfos.EmployeeAuthorizationInfo;
+using Contracts.Requests.EmployeeRequests;
 using Contracts.Requests.RequestParameters;
 using Contracts.Responses.EmployeeResponse;
 using Contracts.Results;

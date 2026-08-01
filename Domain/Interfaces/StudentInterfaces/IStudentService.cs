@@ -1,0 +1,27 @@
+﻿using Contracts.Requests.RequestParameters;
+using Contracts.Requests.StudentRequests;
+using Contracts.Responses;
+using Contracts.Responses.StudentResponses;
+using Contracts.Results;
+using Domain.Entities.Students;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Domain.Interfaces.StudentInterfaces
+{
+    public interface IStudentService
+    {
+        public Task<PagedResult<StudentDTO>> GetStudents(UserScope? scope, StudentFilter? filter, int pageNumber, int pageSize);
+        public Task<StudentDTO?> GetDTOById(int studentId);
+        public Task<StudentDTO?>GetDTOByStudentNumber(string studentNumber);
+        public Task<Student?>GetEntityById(int studentId);
+        public Task<bool>ExistsByStudentNumber(string studentNumber);
+        public Task<AddUpdateServiceResponse<StudentDTO>> AddStudent(AddStudentDTO newStudent, int currentUser);
+        public Task<AddUpdateServiceResponse<StudentDTO>> UpdateStudent(UpdateStudentDTO updatedStudent, int currentUser);
+        public Task<AddUpdateServiceResponse<StudentDTO>>AddBatchAdmin(AddStudentDTO newStudent, int currentUser);
+        public Task<AddUpdateServiceResponse<StudentDTO>> UpdateBatchAdmin(UpdateStudentDTO updatedStudent, int currentUser);
+    }
+}

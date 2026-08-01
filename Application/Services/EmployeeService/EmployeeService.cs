@@ -1,6 +1,7 @@
 ﻿using Application.Extensions;
 using Contracts.Common;
 using Contracts.Common.AuthorizationInfos.AcademicInfos;
+using Contracts.Common.AuthorizationInfos.EmployeeAuthorizationInfo;
 using Contracts.Common.Extensions;
 using Contracts.Enums;
 using Contracts.Requests.EmployeeRequests;

@@ -1,4 +1,5 @@
-﻿using Contracts.Requests.EmployeeRequests;
+﻿using Contracts.Common.AuthorizationInfos.EmployeeAuthorizationInfo;
+using Contracts.Requests.EmployeeRequests;
 using Contracts.Requests.EmployeeRequests.CollegeAdminRequests;
 using Contracts.Requests.EmployeeRequests.DepartmentAdminRequests;
 using Contracts.Requests.EmployeeRequests.UniversityAdminRequests;
