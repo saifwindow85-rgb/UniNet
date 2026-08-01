@@ -1,4 +1,5 @@
 ﻿using Contracts.Requests.EmployeeRequests;
+using Contracts.Requests.RequestParameters;
 using Contracts.Responses.EmployeeResponse;
 using Contracts.Results;
 using Domain.Entities.Employees;
@@ -13,7 +14,7 @@ namespace Domain.Interfaces.EmployeeInterfaces
 {
     public interface IEmployeeRepository
     {
-        public Task<PagedResult<EmployeeDTO>> GetEmployees(EmployeeFilter? employeeFilter, EmployeeScope? employeeScope, int pageNumber, int pageSize);
+        public Task<PagedResult<EmployeeDTO>> GetEmployees(EmployeeFilter? employeeFilter, UserScope? employeeScope, int pageNumber, int pageSize);
         public void Add(Employee employee);
 
         public Task<EmployeeDTO?>GetDTOById(int employeeId);

@@ -1,4 +1,4 @@
-﻿using Contracts.Requests.EmployeeRequests;
+﻿using Contracts.Requests.RequestParameters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +9,7 @@ namespace Contracts.Common.Extensions
 {
     public static class EmployeeScopeExtension
     {
-        public static bool IsWithinScope(this EmployeeScope?scope,int universityId,int?collegeId = null,int?departmentId =null)
+        public static bool IsWithinScope(this UserScope?scope,int universityId,int?collegeId = null,int?departmentId =null)
         {
             if (scope == null||(scope.UniversityId == null&&scope.CollegeId == null&&scope.DepartmentId ==null))
                 return true;
