@@ -93,7 +93,7 @@ namespace UniNet.Extensions
             return new NotFoundObjectResult("No Result Found!");
         }
 
-        public static UserScope ToEmployeeScope(this ICurrentUserService currentUserService)
+        public static UserScope ToUserScope(this ICurrentUserService currentUserService)
         {
             return new UserScope
             {

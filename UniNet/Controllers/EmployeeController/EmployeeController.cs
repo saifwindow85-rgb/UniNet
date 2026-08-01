@@ -40,7 +40,7 @@ namespace UniNet.Controllers.EmployeeController
         public async Task<ActionResult<PagedResult<EmployeeDTO>>>GetEmployees
             ([FromQuery]EmployeeFilter? filter, [FromQuery]PagedResultParameters pagedResultParameters)
         {
-            var scope = _currentUserService.ToEmployeeScope();
+            var scope = _currentUserService.ToUserScope();
             var employees = await _employeeService.GetEmployees(filter,scope,pagedResultParameters.PageNumber, pagedResultParameters.PageSize);
             return employees.ToPagedActioneResult();
         }
@@ -101,7 +101,7 @@ namespace UniNet.Controllers.EmployeeController
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<AddUpdateServiceResponse<EmployeeDTO>>> AddCollegeAdmin([FromBody] AddCollegeAdminDTO newCollegeAdmin)
         {
-            var scope = _currentUserService.ToEmployeeScope();
+            var scope = _currentUserService.ToUserScope();
             var response = await _employeeService.AddCollegeAdmin(scope,newCollegeAdmin, _currentUserService.UserId);
             return response.ToActionResult();
         }
@@ -115,7 +115,7 @@ namespace UniNet.Controllers.EmployeeController
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<AddUpdateServiceResponse<EmployeeDTO>>> AddDepartmentAdmin([FromBody]AddDepartmentAdminDTO newDepartmentDTO)
         {
-            var scope = _currentUserService.ToEmployeeScope();
+            var scope = _currentUserService.ToUserScope();
             var response = await _employeeService.AddDepartmentAdmin(scope,newDepartmentDTO, _currentUserService.UserId);
             return response.ToActionResult();
         }
@@ -129,7 +129,7 @@ namespace UniNet.Controllers.EmployeeController
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<AddUpdateServiceResponse<EmployeeDTO>>> UpdateCollegeAdmin([FromQuery]EmployeeIdParameter employeeIdParameter, [FromBody]UpdateCollegeAdminDTO updatedCollegeAdmin)
         {
-            var scope = _currentUserService.ToEmployeeScope();
+            var scope = _currentUserService.ToUserScope();
             var response = await _employeeService.UpdateCollegeAdmin(scope, employeeIdParameter.EmployeeId, updatedCollegeAdmin, _currentUserService.UserId);
             return response.ToActionResult();
         }
@@ -144,7 +144,7 @@ namespace UniNet.Controllers.EmployeeController
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<AddUpdateServiceResponse<EmployeeDTO>>> UpdateDepartmentAdmin([FromQuery] EmployeeIdParameter employeeIdParameter, [FromBody] UpdateDepartmentAdminDTO updatedDepartmentAdmin)
         {
-            var scope = _currentUserService.ToEmployeeScope();
+            var scope = _currentUserService.ToUserScope();
             var response = await _employeeService.UpdateDepartmentAdmin(scope, employeeIdParameter.EmployeeId, updatedDepartmentAdmin, _currentUserService.UserId);
             return response.ToActionResult();
         }
