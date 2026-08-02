@@ -34,7 +34,7 @@ namespace UniNet.Controllers.StudentController
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<PagedResult<StudentDTO>>> GetStudents([FromQuery]StudentFilter?filter,PagedResultParameters pagedResultParameters)
+        public async Task<ActionResult<PagedResult<StudentDTO>>> GetStudents([FromQuery] StudentFilter? filter, [FromQuery] PagedResultParameters pagedResultParameters)
         {
             var students = await _studentService.GetStudents(_currentUserService.ToUserScope(),filter,pagedResultParameters.PageNumber, pagedResultParameters.PageSize);
             return students.ToPagedActioneResult();
