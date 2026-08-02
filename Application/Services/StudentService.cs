@@ -93,7 +93,7 @@ namespace Application.Services
             {
                 return AddUpdateServiceResponse<StudentDTO>.ResourceDoesntExist<Role>();
             }
-            return await UpdateStudentEntity(studentId, scope, updatedStudent, currentUser, role.RoleId);
+            return await UpdateStudent(studentId, scope, updatedStudent, currentUser, role.RoleId);
         }
 
         public async Task<AddUpdateServiceResponse<StudentDTO>> UpdateStudent(int studentId,UserScope? scope, UpdateStudentDTO updatedStudent, int currentUser)
@@ -103,7 +103,7 @@ namespace Application.Services
             {
                 return AddUpdateServiceResponse<StudentDTO>.ResourceDoesntExist<Role>();
             }
-            return await UpdateStudentEntity(studentId, scope, updatedStudent, currentUser, role.RoleId);
+            return await UpdateStudent(studentId, scope, updatedStudent, currentUser, role.RoleId);
         }
 
         private async Task<AddUpdateServiceResponse<StudentDTO>> CreateStudent(UserScope? scope, AddStudentDTO newStudent, int currentUser, int roleId)
@@ -182,7 +182,7 @@ namespace Application.Services
             }
         }
 
-        private async Task<AddUpdateServiceResponse<StudentDTO>> UpdateStudentEntity(int studentId, UserScope? scope, UpdateStudentDTO updatedStudent, int currentUser, int roleId)
+        private async Task<AddUpdateServiceResponse<StudentDTO>> UpdateStudent(int studentId, UserScope? scope, UpdateStudentDTO updatedStudent, int currentUser, int roleId)
         {
             var validationResult = await _updateStudentValidator.ValidateAsync(updatedStudent);
             if (!validationResult.IsValid)

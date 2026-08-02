@@ -21,5 +21,6 @@ namespace Domain.Interfaces.StudentInterfaces
         public void Add(Student student);
         public Task<bool> ExistsByStudentNumber(string studentNumber);
         public Task<StudentAuthorizationInfo?>GetStudentAuthorizationInfoAsync(int studentId);
+        public Task<StudentAuthorizationInfo?> GetStudentAuthorizationInfoAsyncByUserId(int userId);
     }
 }

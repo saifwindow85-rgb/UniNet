@@ -14,6 +14,7 @@ using UniNet.Authorization.AuthorizationHandlers;
 using UniNet.Authorization.AuthorizationRequirements;
 using DataAccessLayer.Seeds;
 using UniNet.Authorization.AuthorizationHandlers.EmployeeHandlers;
+using UniNet.Authorization.AuthorizationHandlers.StudentHandler;
 
 namespace UniNet
 {
@@ -162,9 +163,16 @@ builder.Configuration.GetConnectionString("DefaultConnection")));
                     policy.Requirements.Add(new OwnershipRequirement()));
             });
 
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("StudentOwnerPolicy", policy =>
+                    policy.Requirements.Add(new OwnershipRequirement()));
+            });
+
             // Add authorizationHandlers to the DI container
             builder.Services.AddScoped<IAuthorizationHandler, CollegeOwnerHandler>();
             builder.Services.AddScoped<IAuthorizationHandler, EmployeeOwnerHandler>();
+            builder.Services.AddScoped<IAuthorizationHandler, StudentOwnerHandler>();
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddCors(options =>
             {

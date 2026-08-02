@@ -59,7 +59,7 @@ namespace UniNet.Controllers.EmployeeController
 
             var authorizarion = await _authorizationService.AuthorizeAsync(User, employeeInfo, "EmployeeOwnerPolicy");
             if (!authorizarion.Succeeded)
-                return authorizarion.Succeeded.AuthorizationFaield();
+                return authorizarion.Succeeded.NotAuthorized();
 
             var employee = await _employeeService.GetDTOById(employeeIdParameter.EmployeeId);
             return employee.GetResourceEndpoints(employeeIdParameter.EmployeeId, typeof(Employee).Name);

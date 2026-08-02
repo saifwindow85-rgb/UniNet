@@ -82,6 +82,11 @@ namespace DataAccessLayer.Repos.StudentRepository
             return await _context.Students.Where(s => s.StudentId == studentId).Select(ToInfo).SingleOrDefaultAsync();
         }
 
+        public Task<StudentAuthorizationInfo?> GetStudentAuthorizationInfoAsyncByUserId(int userId)
+        {
+            return _context.Students.Where(s => s.UserId == userId).Select(ToInfo).SingleOrDefaultAsync();
+        }
+
         public Task<PagedResult<StudentDTO>> GetStudents(UserScope? scope, StudentFilter? filter, int pageNumber, int pageSize)
         {
             var query = _context.Students.AsNoTracking().AsQueryable();

@@ -92,6 +92,11 @@ namespace Application.Services.IdentityServices
                         return UserTypeResult.Employee(employeeInfo!);
                     }
 
+                    case UserType.Student:
+                    {
+                        var studentInfo = await _unitOfWork.StudentRepository.GetStudentAuthorizationInfoAsyncByUserId(userId);
+                        return UserTypeResult.Student(studentInfo!);
+                    }
                 default:
                     {
                         return null!;

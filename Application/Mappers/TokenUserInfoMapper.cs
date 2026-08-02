@@ -15,7 +15,7 @@ namespace Application.Mappers
         public static TokenUserInfoDTO ToInfoDTO(this User user,List<string>userRoles,UserTypeResult?typeResult)
         {
 
-            if(typeResult == null)
+            if(typeResult == null|| typeResult.EmployeeAuthorizationInfo == null||typeResult.StudentAuthorizationInfo == null)
             {
                 return new TokenUserInfoDTO
                 {
@@ -23,6 +23,21 @@ namespace Application.Mappers
                     UserName = user.UserName,
                     UniversityId = user.UniversityId,
                     UserRoles = userRoles,
+                };
+            }
+
+            if(typeResult.StudentAuthorizationInfo.BatchId!= null)
+            {
+                return new TokenUserInfoDTO
+                {
+                    UserId = user.UserId,
+                    UserName = user.UserName,
+                    UniversityId = user.UniversityId,
+                    UserRoles = userRoles,
+                    BatchId = typeResult.StudentAuthorizationInfo?.BatchId,
+                    DepartmentId = typeResult.StudentAuthorizationInfo?.DepartmentId,
+                    CollegeId = typeResult.StudentAuthorizationInfo?.CollegeId,
+
                 };
             }
 
