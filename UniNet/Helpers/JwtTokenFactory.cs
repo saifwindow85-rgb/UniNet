@@ -40,6 +40,15 @@ namespace UniNet.Helpers
             {
                 claims.Add(new Claim(CustomClaimTypes.BatchId, info.BatchId.ToString()!));
             }
+            if(info.StudentId.HasValue)
+            {
+                claims.Add(new Claim(CustomClaimTypes.StudentId, info.StudentId.ToString()!));
+            }
+
+            if(info.EmployeeId.HasValue)
+            {
+                claims.Add(new Claim(CustomClaimTypes.EmployeeId, info.EmployeeId.ToString()!));
+            }
 
             foreach (var role in info.UserRoles)
             {

@@ -42,6 +42,7 @@ namespace DataAccessLayer.Repos.EmployeeRepository
 
         private readonly Expression<Func<Employee, EmployeeAuthorizationInfo>> ToInfo = e => new EmployeeAuthorizationInfo
         {
+            EmployeeId = e.EmployeeId,
             UniversityId = e.UniversityId,
             CollegeId = e.CollegeId,
             DepartmentId = e.DepartmentId,

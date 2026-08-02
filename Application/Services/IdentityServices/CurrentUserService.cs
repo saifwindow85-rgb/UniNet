@@ -80,5 +80,27 @@ namespace Application.Services.IdentityServices
                 return int.Parse(batchIdClaim);
             }
         }
+
+        public int? StudentId
+        {
+            get
+            {
+                var studentIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst("StudentId")?.Value;
+                if (studentIdClaim == null)
+                    return null;
+                return int.Parse(studentIdClaim);
+            }
+        }
+
+        public int? EmployeeId
+        {
+            get
+            {
+                var employeeIdClaim = _httpContextAccessor.HttpContext?.User.FindFirst("EmployeeId")?.Value;
+                if (employeeIdClaim == null)
+                    return null;
+                return int.Parse(employeeIdClaim);
+            }
+        }
     }
 }

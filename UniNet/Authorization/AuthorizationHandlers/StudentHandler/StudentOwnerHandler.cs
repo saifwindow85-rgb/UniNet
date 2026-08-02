@@ -20,8 +20,16 @@ namespace UniNet.Authorization.AuthorizationHandlers.StudentHandler
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, OwnershipRequirement requirement, StudentAuthorizationInfo resource)
         {
             var scope = _currentUserService.ToUserScope();
-            if (scope.IsWithinScope(resource.UniversityId, resource.CollegeId, resource.DepartmentId, resource.BatchId))
-                 context.Succeed(requirement);
+            var isStudent = context.User.IsInRole("Student");
+            if (isStudent && _currentUserService.StudentId == resource.StudentId)
+            {
+                context.Succeed(requirement);
+            }
+
+            else if (scope.IsWithinScope(resource.UniversityId, resource.CollegeId, resource.DepartmentId, resource.BatchId))
+            {
+                context.Succeed(requirement);
+            }
 
             return Task.CompletedTask;
         }
