@@ -8,6 +8,7 @@ namespace Contracts.Common.AuthorizationInfos.EmployeeAuthorizationInfo
 {
     public class EmployeeAuthorizationInfo
     {
+        public int EmployeeId { get; set; }
         public int UniversityId { get; set; }
         public int ? CollegeId { get; set; }
         public int? DepartmentId { get; set; }

@@ -37,6 +37,7 @@ namespace DataAccessLayer.Repos.StudentRepository
 
         private readonly Expression<Func<Student, StudentAuthorizationInfo>> ToInfo = s => new StudentAuthorizationInfo
         {
+            StudentId = s.StudentId,
             UniversityId = s.Batch.Department.College.UniversityId,
             CollegeId = s.Batch.Department.CollegeId,
             DepartmentId = s.Batch.DepartmentId,

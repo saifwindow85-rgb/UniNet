@@ -14,6 +14,8 @@ namespace Contracts.Common.DTOs.User_Token_DTOs
         public int? CollegeId { get; set; }
         public int ? DepartmentId { get; set; }
         public int? BatchId { get; set; }
+        public int? StudentId { get; set; }
+        public int? EmployeeId { get; set; }
         public List<string>UserRoles { get; set; } = new List<string>();
     }
 }
