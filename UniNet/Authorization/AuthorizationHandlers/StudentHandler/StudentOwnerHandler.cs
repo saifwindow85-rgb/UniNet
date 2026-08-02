@@ -21,12 +21,12 @@ namespace UniNet.Authorization.AuthorizationHandlers.StudentHandler
         {
             var scope = _currentUserService.ToUserScope();
             var isStudent = context.User.IsInRole("Student");
-            if (isStudent && _currentUserService.StudentId == resource.StudentId)
+            if (isStudent && _currentUserService.StudentId != resource.StudentId)
             {
-                context.Succeed(requirement);
+                return Task.CompletedTask;
             }
 
-            else if (scope.IsWithinScope(resource.UniversityId, resource.CollegeId, resource.DepartmentId, resource.BatchId))
+            if (scope.IsWithinScope(resource.UniversityId, resource.CollegeId, resource.DepartmentId, resource.BatchId))
             {
                 context.Succeed(requirement);
             }
