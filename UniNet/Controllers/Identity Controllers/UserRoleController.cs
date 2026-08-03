@@ -24,7 +24,7 @@ namespace UniNet.Controllers.Identity_Controllers
         }
 
         [HttpGet(Name ="GetAllUserUserRoles")]
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+        [Authorize(Roles = "Super Admin")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -35,7 +35,7 @@ namespace UniNet.Controllers.Identity_Controllers
         }
 
         [HttpGet("roleid",Name = "GetFiltredUserRoles")]
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+        [Authorize(Roles = "Super Admin")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -46,7 +46,7 @@ namespace UniNet.Controllers.Identity_Controllers
         }
 
         [HttpGet("by-id",Name ="GetUserRoleById")]
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+        [Authorize(Roles = "Super Admin")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -61,7 +61,7 @@ namespace UniNet.Controllers.Identity_Controllers
         }
 
         [HttpDelete(Name ="DeleteUserRole")]
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+        [Authorize(Roles = "Super Admin")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -77,7 +77,7 @@ namespace UniNet.Controllers.Identity_Controllers
         }
 
         [HttpPost(Name ="AddUserRole")]
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+        [Authorize(Roles = "Super Admin")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status201Created)]

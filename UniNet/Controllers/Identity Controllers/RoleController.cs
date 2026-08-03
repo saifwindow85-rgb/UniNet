@@ -65,7 +65,7 @@ namespace UniNet.Controllers.Identity_Controllers
             return role.GetResourceEndpoints(parametre.Name, typeof(Role).Name);
         }
 
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+        [Authorize(Roles = "Super Admin")]
         [HttpDelete( Name = "DeleteRoleById")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -79,7 +79,7 @@ namespace UniNet.Controllers.Identity_Controllers
             return result.ToDeleteActionResult<Role>(roleIdParameter.RoleId);
         }
 
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+        [Authorize(Roles = "Super Admin")]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -92,7 +92,7 @@ namespace UniNet.Controllers.Identity_Controllers
             return response.ToActionResult();
         }
 
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+        [Authorize(Roles = "Super Admin")]
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
