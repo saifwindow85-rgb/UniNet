@@ -1,4 +1,5 @@
-﻿using Contracts.Requests.AcademicRequests.UniversityRequests;
+﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
+using Contracts.Requests.AcademicRequests.UniversityRequests;
 using Contracts.Responses;
 using Contracts.Responses.AcademicResponses.UniversityResponses;
 using Contracts.Results;
@@ -20,5 +21,6 @@ namespace Domain.Interfaces.AcademicStructureInterfaces.UniversityInterfaces
         public Task<University?>GetUniversityEntityById(int universityId);
         public Task<bool> IsUniversityExists(int universityId);
         public Task<bool> IsUniversityExists(string universityName);
+        public Task<UniversityAuthorizationInfo?> GetUniversityAuthorizationInfoAsync(int universityId);
     }
 }
