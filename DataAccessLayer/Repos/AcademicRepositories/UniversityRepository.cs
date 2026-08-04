@@ -1,4 +1,5 @@
-﻿using Contracts.Responses.AcademicResponses.UniversityResponses;
+﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
+using Contracts.Responses.AcademicResponses.UniversityResponses;
 using Contracts.Results;
 using DataAccessLayer.Dbcontext;
 using DataAccessLayer.Extensions;
@@ -31,6 +32,11 @@ namespace DataAccessLayer.Repos.AcademicRepositories
             UpdatedByUserName = u.UpdatedByUser == null ? null : u.UpdatedByUser.UserName,
 
         };
+
+        private readonly Expression<Func<University, UniversityAuthorizationInfo>> ToAuthorizationInfo = u => new UniversityAuthorizationInfo
+        {
+            UniversityId = u.UniversityId
+        };
         public UniversityRepository(AppDbcontext context)
         {
             _context = context;
@@ -52,6 +58,11 @@ namespace DataAccessLayer.Repos.AcademicRepositories
         public async Task<PagedResult<UniversityDTO>> GetAllUniversities(int pageNumber, int pageSize)
         {
             return await _context.Universities.Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
+        }
+
+        public async Task<UniversityAuthorizationInfo?> GetUniversityAuthorizationInfoAsync(int universityId)
+        {
+            return await _context.Universities.Where(u=>u.UniversityId == universityId).Select(ToAuthorizationInfo).SingleOrDefaultAsync();
         }
 
         public async Task<UniversityDTO?> GetUniversityDTOById(int universityId)

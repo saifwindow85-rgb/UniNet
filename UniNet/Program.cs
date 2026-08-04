@@ -10,11 +10,11 @@ using System.Text;
 using System.Text.Json;
 using UniNet.MiddleWares;
 using Microsoft.AspNetCore.Authorization;
-using UniNet.Authorization.AuthorizationHandlers;
 using UniNet.Authorization.AuthorizationRequirements;
 using DataAccessLayer.Seeds;
 using UniNet.Authorization.AuthorizationHandlers.EmployeeHandlers;
 using UniNet.Authorization.AuthorizationHandlers.StudentHandler;
+using UniNet.Authorization.AuthorizationHandlers.AcademicAuthorizationHandlers;
 
 namespace UniNet
 {

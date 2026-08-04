@@ -3,7 +3,7 @@ using Domain.Entities.Academic_Structure;
 using Microsoft.AspNetCore.Authorization;
 using UniNet.Authorization.AuthorizationRequirements;
 
-namespace UniNet.Authorization.AuthorizationHandlers
+namespace UniNet.Authorization.AuthorizationHandlers.AcademicAuthorizationHandlers
 {
     public class CollegeOwnerHandler : AuthorizationHandler<OwnershipRequirement,CollegeAuthorizationInfo>
     {

@@ -27,7 +27,7 @@ namespace UniNet.Controllers.AcademicControllers
         }
 
 
-        [Authorize]
+        [Authorize(Roles ="Super Admin")]
         [HttpGet(Name ="GetAllUniversities")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -39,7 +39,7 @@ namespace UniNet.Controllers.AcademicControllers
             return universities.ToPagedActioneResult();
         }
 
-        [Authorize]
+        [Authorize(Roles = "Super Admin,UniversityAdmin")]
         [HttpGet("by-id",Name ="GetUniversityById")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -53,7 +53,7 @@ namespace UniNet.Controllers.AcademicControllers
         }
 
 
-        [Authorize]
+        [Authorize(Roles = "Super Admin")]
         [HttpDelete(Name ="DeleteUniversity")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -67,7 +67,7 @@ namespace UniNet.Controllers.AcademicControllers
             return result.ToDeleteActionResult<University>(universityIdParameter.UniversityId);
         }
 
-        [Authorize]
+        [Authorize(Roles = "Super Admin")]
         [HttpPost(Name ="AddUniversity")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -80,7 +80,7 @@ namespace UniNet.Controllers.AcademicControllers
             return response.ToActionResult();
         }
 
-        [Authorize]
+        [Authorize(Roles = "Super Admin")]
         [HttpPut(Name ="UpdateUniversity")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
