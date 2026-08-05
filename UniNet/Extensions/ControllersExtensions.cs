@@ -5,6 +5,7 @@ using Contracts.Requests.RequestParameters;
 using Contracts.Responses;
 using Contracts.Results;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Runtime.CompilerServices;
@@ -89,6 +90,11 @@ namespace UniNet.Extensions
         }
 
         public static ActionResult NotAuthorized(this bool result)
+        {
+            return new NotFoundObjectResult("No Result Found!");
+        }
+
+        public static ActionResult NotAuthorized(this AuthorizationResult authorizationResult)
         {
             return new NotFoundObjectResult("No Result Found!");
         }
