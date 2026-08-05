@@ -1,0 +1,11 @@
+
+1- UniNet(College.cs) VS ZadByan(Section.cs)
+
+- The majior deffrent is that College.cs is a poor entity  becuse it has not a validations inside it 
+ to protect the data from currption the only way to make sure that is the data is correct is the to make 
+ requsts walks in the desinged way  controller => validator => service => repository 
+ on the other hand Section.cs is rich entity becuse it has a validation rules inside it 
+ it dosent matter where the request come from the entity by it self can make sure that data is correct 
+
+- Releation between Section & SectionTranslation  is that SectionTranslation is meaningless with out Section 
+ thats why SectionTranslation operations is inside Section   
