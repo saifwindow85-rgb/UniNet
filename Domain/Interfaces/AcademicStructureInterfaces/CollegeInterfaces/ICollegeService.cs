@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Contracts.Responses.AcademicResponses.CollegeResponses;
+using Contracts.Requests.RequestParameters;
 
 namespace Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces
 {
@@ -25,7 +26,7 @@ namespace Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces
         public Task<bool> Delete(int collegeId);
         public Task<bool>IsCollegeExists(int collegeId);
         public Task<bool> IsCollegeExists(int universityId,string collegeName);
-        public Task<AddUpdateServiceResponse<CollegeDTO>> AddCollege(AddCollegeDTO newCollege, int currentUserId);
+        public Task<AddUpdateServiceResponse<CollegeDTO>> AddCollege(UserScope?scope,AddCollegeDTO newCollege, int currentUserId);
         public Task<AddUpdateServiceResponse<CollegeDTO>> UpdateCollege(int collegeId, UpdateCollegeDTO updatedCollege, int currentUserId);
         public Task<CollegeAuthorizationInfo?> GetCollegeAuthorizationInfo(int collegeId);
         public Task<CollegeAuthorizationInfo?> GetCollegeAuthorizationInfo(int universityID, string collegeName);

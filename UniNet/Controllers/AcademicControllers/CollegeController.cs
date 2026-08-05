@@ -104,6 +104,13 @@ namespace UniNet.Controllers.AcademicControllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult> Delete([FromQuery]CollegeIdParameter @collegeIdParameter)
         {
+            var collegeAuthorizationInfo = await _collegeService.GetCollegeAuthorizationInfo(collegeIdParameter.CollegeId);
+            if (collegeAuthorizationInfo == null)
+                return NotFound(ErrorMessages.NotFound<College>(collegeIdParameter.CollegeId));
+            var authorizationResult = await _authorizationService.AuthorizeAsync(User, collegeAuthorizationInfo, "CollegeOwnerPolicy");
+            if(!authorizationResult.Succeeded)
+                return authorizationResult.NotAuthorized();
+
             var result = await _collegeService.Delete(collegeIdParameter.CollegeId);
             return result.ToDeleteActionResult<College>(collegeIdParameter.CollegeId);
         }
@@ -117,7 +124,7 @@ namespace UniNet.Controllers.AcademicControllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<AddUpdateServiceResponse<CollegeDTO>>> AddCollege([FromBody]AddCollegeDTO newCollege)
         {
-            var response = await _collegeService.AddCollege(newCollege, _currentUserService.UserId);
+            var response = await _collegeService.AddCollege(_currentUserService.ToUserScope(),newCollege, _currentUserService.UserId);
             return response.ToActionResult();
         }
 

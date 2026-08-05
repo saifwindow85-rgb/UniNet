@@ -1,4 +1,5 @@
-﻿using Contracts.Common.Messages;
+﻿using Contracts.Common.Extensions;
+using Contracts.Common.Messages;
 using Contracts.Requests.AcademicRequests.DepartmentRequests;
 using Contracts.Requests.RequestParameters;
 using Contracts.Responses;
@@ -28,7 +29,7 @@ namespace UniNet.Controllers.AcademicControllers
             _authorizationService = authorizationService;
         }
 
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin")]
         [HttpGet(Name ="GetAllDepartments")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -76,7 +77,7 @@ namespace UniNet.Controllers.AcademicControllers
         }
 
 
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin")]
         [HttpPost( Name = "AddDepartment")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -85,10 +86,10 @@ namespace UniNet.Controllers.AcademicControllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<AddUpdateServiceResponse<DepartmentDTO>>> AddDepartment([FromBody]AddDepartmentDTO newDepartment)
         {
-            var response = await _departmentService.AddDepartment(newDepartment, _currentUserService.UserId);
+            var response = await _departmentService.AddDepartment(_currentUserService.ToUserScope(),newDepartment, _currentUserService.UserId);
             return response.ToActionResult();
         }
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin")]
         [HttpPut(Name = "UpdateDepartment")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -103,15 +104,26 @@ namespace UniNet.Controllers.AcademicControllers
             return response.ToActionResult();
         }
 
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin")]
         [HttpDelete(Name = "Delete")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> Delete([FromQuery]DepartmentIdParameter @departmentIdParameter)
         {
+            var departmentAuthorizationInfo = await _departmentService.GetDepartmentAuthorizationInfoAsync(departmentIdParameter.DepartmentId);
+            if(departmentAuthorizationInfo == null)
+            {
+                return NotFound(ErrorMessages.NotFound<Department>(departmentIdParameter.DepartmentId));
+            }
+             
+            var authorizationResult = await _authorizationService.AuthorizeAsync(User, departmentAuthorizationInfo, "DepartmentOwnerPolicy");
+            if (!authorizationResult.Succeeded)
+                return authorizationResult.NotAuthorized();
+
             var result = await _departmentService.Delete(departmentIdParameter.DepartmentId);
             return result.ToDeleteActionResult<Department>(departmentIdParameter.DepartmentId);
         }

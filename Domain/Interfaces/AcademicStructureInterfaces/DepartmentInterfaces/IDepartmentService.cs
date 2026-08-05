@@ -1,5 +1,6 @@
 ﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
 using Contracts.Requests.AcademicRequests.DepartmentRequests;
+using Contracts.Requests.RequestParameters;
 using Contracts.Responses;
 using Contracts.Responses.AcademicResponses.DepartmentResponses;
 using Contracts.Results;
@@ -20,7 +21,7 @@ namespace Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces
         public Task<Department?>GetEntityById(int departmentId);
         public Task<DepartmentDTO?> GetDTOByName(int collegeId, string name);
         public Task<Department?>GetEntityByName(int departmentId, string name);
-        public Task<AddUpdateServiceResponse<DepartmentDTO>> AddDepartment(AddDepartmentDTO newDepartment, int currentUserId);
+        public Task<AddUpdateServiceResponse<DepartmentDTO>> AddDepartment(UserScope?scope,AddDepartmentDTO newDepartment, int currentUserId);
         public Task<AddUpdateServiceResponse<DepartmentDTO>>UpdateDepartment(int departmentId,UpdateDepartmentDTO updatedDepartment,int currentUserId);
         public Task<bool> ExistsById(int departmentId);
         public Task<bool>ExistsByName(int collegeId,string name);
