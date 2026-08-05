@@ -9,5 +9,8 @@ namespace Contracts.Exceptions
     public class DeleteRestrictedException : Exception
     {
         public DeleteRestrictedException(string message) : base(message) { }
+
+        // يحفظ الاستثناء الأصلي (رقم الخطأ SQL، اسم القيد المخالف...) بدل فقدانه
+        public DeleteRestrictedException(string message, Exception innerException) : base(message, innerException) { }
     }
 }

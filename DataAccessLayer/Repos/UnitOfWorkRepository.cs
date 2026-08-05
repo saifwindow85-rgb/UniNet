@@ -81,15 +81,14 @@ namespace DataAccessLayer.Repos
             {
                 return await _context.SaveChangesAsync();
             }
-            catch(DbUpdateException ex)
+            // شرط "when" لا يلتقط الاستثناء إلا حين يتحقق فعلاً؛ فشل الشرط يجعل .NET
+            // يتجاهل هذا الـ catch تماماً ويستمر بالبحث للأعلى — بلا حاجة لـ throw يدوي،
+            // وبلا احتمال سقوط صامت كما كان يحدث سابقاً.
+            catch (DbUpdateException ex) when (ex.InnerException is SqlException { Number: 547 })
             {
-                if(ex.InnerException is SqlException sqlException)
-                {
-                    if (sqlException.Number == 547)
-                        throw new DeleteRestrictedException("Cannot delete this resource because it has related resources.");
-                }
+                throw new DeleteRestrictedException(
+                    "Cannot delete this resource because it has related resources.", ex);
             }
-            throw new Exception();
         }
 
         public void Dispose()
