@@ -13,6 +13,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Contracts.Responses.AcademicResponses.CollegeResponses;
+using Contracts.Requests.RequestParameters;
+using Contracts.Common.Extensions;
 
 namespace Application.Services.AcademicServices
 {
@@ -28,7 +30,7 @@ namespace Application.Services.AcademicServices
             _addValidator = addValidator;
             _updateCollegeValidator = updateValidator;
         }
-        public async Task<AddUpdateServiceResponse<CollegeDTO>> AddCollege(AddCollegeDTO newCollege, int currentUserId)
+        public async Task<AddUpdateServiceResponse<CollegeDTO>> AddCollege(UserScope?scope,AddCollegeDTO newCollege, int currentUserId)
         {
             var validationResult = await _addValidator.ValidateAsync(newCollege);
             if(!validationResult.IsValid)
@@ -37,9 +39,15 @@ namespace Application.Services.AcademicServices
                     Select(x => $"{x.PropertyName} : {x.ErrorMessage}").ToList(), EnErrorTypes.InvalidData);
             }
 
-            if(!await _unitOfWorkRepository.UniversityRepository.IsUniversityExists(newCollege.UniversityId))
+            var UniversityInfo = await _unitOfWorkRepository.UniversityRepository.GetUniversityAuthorizationInfoAsync(newCollege.UniversityId);
+            if(UniversityInfo == null)
             {
-                return AddUpdateServiceResponse<CollegeDTO>.InvalidRelatedData();
+                return AddUpdateServiceResponse<CollegeDTO>.ResourceDoesntExist<University>();
+            }
+
+            if(!scope.IsWithinScope(UniversityInfo.UniversityId))
+            {
+                return AddUpdateServiceResponse<CollegeDTO>.ResourceDoesntExist<University>();
             }
 
             if(await IsCollegeExists(newCollege.UniversityId,newCollege.CollegeName))

@@ -1,6 +1,8 @@
 ﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
+using Contracts.Common.Extensions;
 using Contracts.Enums;
 using Contracts.Requests.AcademicRequests.DepartmentRequests;
+using Contracts.Requests.RequestParameters;
 using Contracts.Responses;
 using Contracts.Responses.AcademicResponses.DepartmentResponses;
 using Contracts.Results;
@@ -28,7 +30,7 @@ namespace Application.Services.AcademicServices
             _addValidator = addValidator;
             _updateValidator = updateValidator;
         }
-        public async Task<AddUpdateServiceResponse<DepartmentDTO>> AddDepartment(AddDepartmentDTO newDepartment, int currentUserId)
+        public async Task<AddUpdateServiceResponse<DepartmentDTO>> AddDepartment(UserScope?scope,AddDepartmentDTO newDepartment, int currentUserId)
         {
             var validationResult = await _addValidator.ValidateAsync(newDepartment);
             if(!validationResult.IsValid)
@@ -36,10 +38,19 @@ namespace Application.Services.AcademicServices
                 return AddUpdateServiceResponse<DepartmentDTO>.Failure
                     (validationResult.Errors.Select(x => $"{x.PropertyName} : {x.ErrorMessage}").ToList(),EnErrorTypes.InvalidData);
             }
-            if(! await _unitOfWork.CollegeRepository.IsCollegeExists(newDepartment.CollegeId))
+
+
+            var collegeInfo = await _unitOfWork.CollegeRepository.GetCollegeAuthorizationInfo(newDepartment.CollegeId);
+            if(collegeInfo == null)
             {
-                return AddUpdateServiceResponse<DepartmentDTO>.InvalidRelatedData();
+                return AddUpdateServiceResponse<DepartmentDTO>.ResourceDoesntExist<Department>();
             }
+            
+            if(!scope.IsWithinScope(collegeInfo.CollegeId))
+            {
+                return AddUpdateServiceResponse<DepartmentDTO>.ResourceDoesntExist<Department>();
+            }
+
             if(await ExistsByName(newDepartment.CollegeId,newDepartment.DepartmentName))
             {
                 return AddUpdateServiceResponse<DepartmentDTO>.AlreadyExists<Department>();
