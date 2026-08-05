@@ -15,6 +15,7 @@ using DataAccessLayer.Seeds;
 using UniNet.Authorization.AuthorizationHandlers.EmployeeHandlers;
 using UniNet.Authorization.AuthorizationHandlers.StudentHandler;
 using UniNet.Authorization.AuthorizationHandlers.AcademicAuthorizationHandlers;
+using UniNet.Extensions;
 
 namespace UniNet
 {
@@ -151,35 +152,12 @@ builder.Configuration.GetConnectionString("DefaultConnection")));
 
 
             //Add Policyes 
-            builder.Services.AddAuthorization(options =>
-            {
-                options.AddPolicy("CollegeOwnerPolicy", policy =>
-                    policy.Requirements.Add(new OwnershipRequirement()));
-            });
-
-            builder.Services.AddAuthorization(options =>
-            {
-                options.AddPolicy("EmployeeOwnerPolicy", policy =>
-                    policy.Requirements.Add(new OwnershipRequirement()));
-            });
-
-            builder.Services.AddAuthorization(options =>
-            {
-                options.AddPolicy("StudentOwnerPolicy", policy =>
-                    policy.Requirements.Add(new OwnershipRequirement()));
-            });
-
-            builder.Services.AddAuthorization(options =>
-            {
-                options.AddPolicy("UniversityOwnerPolicy", policy =>
-                    policy.Requirements.Add(new OwnershipRequirement()));
-            });
+            builder.Services.AddPolicyToDIContainer();
 
             // Add authorizationHandlers to the DI container
-            builder.Services.AddScoped<IAuthorizationHandler, CollegeOwnerHandler>();
-            builder.Services.AddScoped<IAuthorizationHandler, EmployeeOwnerHandler>();
-            builder.Services.AddScoped<IAuthorizationHandler, StudentOwnerHandler>();
-            builder.Services.AddScoped<IAuthorizationHandler, UniversityOwnerHandler>();
+            builder.Services.AuthorizationHandlersToDIContainer();
+
+            // Add HttpContextAccessor to the DI container
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddCors(options =>
             {
