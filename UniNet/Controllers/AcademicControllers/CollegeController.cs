@@ -67,7 +67,7 @@ namespace UniNet.Controllers.AcademicControllers
 
             var authorizationResult = await _authorizationService.AuthorizeAsync(User, collegeAthorizationInfo, "CollegeOwnerPolicy");
             if (!authorizationResult.Succeeded)
-                return authorizationResult.Succeeded.NotAuthorized();
+                return authorizationResult.NotAuthorized();
 
             var college = await _collegeService.GetCollegeDTOById(@collegeIdParameter.CollegeId);
             return college.GetResourceEndpoints(@collegeIdParameter.CollegeId, typeof(College).Name);

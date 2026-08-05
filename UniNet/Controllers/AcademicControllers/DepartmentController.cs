@@ -20,10 +20,12 @@ namespace UniNet.Controllers.AcademicControllers
     {
         private readonly IDepartmentService _departmentService;
         private readonly ICurrentUserService _currentUserService;
-        public DepartmentController(IDepartmentService departmentService, ICurrentUserService currentUserService)
+        private readonly IAuthorizationService _authorizationService;
+        public DepartmentController(IDepartmentService departmentService, ICurrentUserService currentUserService, IAuthorizationService authorizationService)
         {
             _departmentService = departmentService;
             _currentUserService = currentUserService;
+            _authorizationService = authorizationService;
         }
 
         [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
@@ -61,6 +63,14 @@ namespace UniNet.Controllers.AcademicControllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<DepartmentDTO>> GetDepartmentById([FromQuery]DepartmentIdParameter @departmentParameter)
         {
+            var departmentAuthorizationInfo = await _departmentService.GetDepartmentAuthorizationInfoAsync(departmentParameter.DepartmentId);
+            if(departmentAuthorizationInfo == null)
+                return NotFound(ErrorMessages.NotFound<Department>(departmentParameter.DepartmentId));
+
+            var authorizationResult = await _authorizationService.AuthorizeAsync(User, departmentAuthorizationInfo, "DepartmentOwnerPolicy");
+            if (!authorizationResult.Succeeded)
+                return authorizationResult.NotAuthorized();
+
             var department = await _departmentService.GetDTOById(departmentParameter.DepartmentId);
             return department.GetResourceEndpoints(departmentParameter.DepartmentId, typeof(Department).Name);
         }
