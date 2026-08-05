@@ -20,10 +20,12 @@ namespace UniNet.Controllers.AcademicControllers
     {
         private readonly IUniversityService _uinversityService;
         private readonly ICurrentUserService _currentUserService;
-        public UniversityController(IUniversityService universityService, ICurrentUserService currentUserService)
+        private readonly IAuthorizationService _authorizationService;
+        public UniversityController(IUniversityService universityService, ICurrentUserService currentUserService, IAuthorizationService authorizationService)
         {
             _uinversityService = universityService;
-            _currentUserService = currentUserService;
+            _currentUserService = currentUserService;   
+            _authorizationService = authorizationService;
         }
 
 
@@ -48,6 +50,14 @@ namespace UniNet.Controllers.AcademicControllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<UniversityDTO>> GetUniversityById([FromQuery]UniversityIdParameter @universityIdParameter)
         {
+            var universityAuthorizationInfo = await _uinversityService.GetUniversityAuthorizationInfoAsync(universityIdParameter.UniversityId);
+            if (universityAuthorizationInfo == null)
+                return NotFound(ErrorMessages.NotFound<University>(universityIdParameter.UniversityId));
+
+            var authorization = await _authorizationService.AuthorizeAsync(User, universityAuthorizationInfo, "UniversityOwnerPolicy");
+            if (!authorization.Succeeded)
+                return authorization.NotAuthorized();
+
             var university = await _uinversityService.FindUniversityDTOById(@universityIdParameter.UniversityId);
             return university.GetResourceEndpoints(universityIdParameter.UniversityId, typeof(University).Name);
         }
