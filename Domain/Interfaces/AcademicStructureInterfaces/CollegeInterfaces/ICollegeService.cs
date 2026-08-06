@@ -12,13 +12,14 @@ using System.Text;
 using System.Threading.Tasks;
 using Contracts.Responses.AcademicResponses.CollegeResponses;
 using Contracts.Requests.RequestParameters;
+using Contracts.Requests.AcademicRequests.CommonAcademicRequests;
 
 namespace Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces
 {
     public interface ICollegeService
     {
-        public Task<PagedResult<CollegeDTO>>GetColleges(CollegeFilter?filter,int pageNumber, int pageSize);
-        public Task<PagedResult<CollegeDTO>>GetCollegesPerUniversity(UserScope?scope,CollegeFilter?filter,int pageNumber, int pageSize);
+        public Task<PagedResult<CollegeDTO>>GetColleges(AcademicFilter?filter,int pageNumber, int pageSize);
+        public Task<PagedResult<CollegeDTO>>GetCollegesPerUniversity(UserScope?scope,AcademicFilter?filter,int pageNumber, int pageSize);
         public Task<CollegeDTO?> GetCollegeDTOById(int collegeId);
         public Task<College?>GetCollegeEntityById(int collegeId);
         public Task<bool> Delete(int collegeId);

@@ -34,6 +34,9 @@ namespace DataAccessLayer.Repos.AcademicRepositories
 
         private readonly Expression<Func<Section, SectionAuthorizationInfo>> ToInfo = s => new SectionAuthorizationInfo
         {
+            UniversityId = s.Batch.Department.College.UniversityId,
+            CollegeId = s.Batch.Department.CollegeId,
+            DepartmentId = s.Batch.DepartmentId,
             SectionId = s.SectionId,
             BatchId = s.BatchId,
         };

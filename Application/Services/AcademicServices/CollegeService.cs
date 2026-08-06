@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Contracts.Responses.AcademicResponses.CollegeResponses;
 using Contracts.Requests.RequestParameters;
 using Contracts.Common.Extensions;
+using Contracts.Requests.AcademicRequests.CommonAcademicRequests;
 
 namespace Application.Services.AcademicServices
 {
@@ -95,12 +96,12 @@ namespace Application.Services.AcademicServices
             return await _unitOfWorkRepository.CollegeRepository.GetCollegeEntityById(collegeId);
         }
 
-        public async Task<PagedResult<CollegeDTO>> GetColleges(CollegeFilter?filter,int pageNumber, int pageSize)
+        public async Task<PagedResult<CollegeDTO>> GetColleges(AcademicFilter?filter,int pageNumber, int pageSize)
         {
             return await _unitOfWorkRepository.CollegeRepository.GetAllColleges(filter,pageNumber, pageSize);
         }
 
-        public async Task<PagedResult<CollegeDTO>> GetCollegesPerUniversity(UserScope?scope,CollegeFilter?filter, int pageNumber, int pageSize)
+        public async Task<PagedResult<CollegeDTO>> GetCollegesPerUniversity(UserScope?scope,AcademicFilter?filter, int pageNumber, int pageSize)
         {
             return await _unitOfWorkRepository.CollegeRepository.GetAllCollegesPerUniversity(scope,filter, pageNumber, pageSize);
         }

@@ -7,15 +7,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Contracts.Responses.AcademicResponses.CollegeResponses;
-using Contracts.Requests.AcademicRequests.CollegeRequests;
 using Contracts.Requests.RequestParameters;
+using Contracts.Requests.AcademicRequests.CommonAcademicRequests;
 
 namespace Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces
 {
     public interface ICollegeRepository
     {
-        public Task<PagedResult<CollegeDTO>> GetAllColleges(CollegeFilter?filter,int pageNumber, int pageSize);
-        public Task<PagedResult<CollegeDTO>> GetAllCollegesPerUniversity(UserScope?scope,CollegeFilter?filter,int pageNumber, int pageSize);
+        public Task<PagedResult<CollegeDTO>> GetAllColleges(AcademicFilter?filter,int pageNumber, int pageSize);
+        public Task<PagedResult<CollegeDTO>> GetAllCollegesPerUniversity(UserScope?scope,AcademicFilter?filter,int pageNumber, int pageSize);
 
         public void Add(College college);
         public Task<bool> Delete(int collegeId);

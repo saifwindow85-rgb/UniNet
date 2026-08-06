@@ -14,6 +14,7 @@ namespace UniNet.Extensions
             services.AddScoped<IAuthorizationHandler, CollegeOwnerHandler>();
             services.AddScoped<IAuthorizationHandler, DepartmentOwnerHandler>();
             services.AddScoped<IAuthorizationHandler, BatchOwnerHandler>();
+            services.AddScoped<IAuthorizationHandler, SectionOwnerHandler>();
             // Employee Authorization Handlers
             services.AddScoped<IAuthorizationHandler, EmployeeOwnerHandler>();
             // Student Authorization Handlers

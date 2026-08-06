@@ -1,4 +1,5 @@
 ﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
+using Contracts.Requests.AcademicRequests.CommonAcademicRequests;
 using Contracts.Requests.AcademicRequests.DepartmentRequests;
 using Contracts.Requests.RequestParameters;
 using Contracts.Responses;
@@ -15,8 +16,8 @@ namespace Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces
 {
     public  interface IDepartmentService
     {
-        public Task<PagedResult<DepartmentDTO>> GetAllDepartments(int pageNumber, int pageSize);
-        public Task<PagedResult<DepartmentDTO>>GetDepartmentsPerCollege(int collegeId,int pageNumber,int pageSize);
+        public Task<PagedResult<DepartmentDTO>> GetAllDepartments(AcademicFilter?filter,int pageNumber, int pageSize);
+        public Task<PagedResult<DepartmentDTO>>GetDepartmentsPerCollege(UserScope?scope,AcademicFilter?filter,int pageNumber,int pageSize);
         public Task<DepartmentDTO?> GetDTOById(int departmentId);
         public Task<Department?>GetEntityById(int departmentId);
         public Task<DepartmentDTO?> GetDTOByName(int collegeId, string name);

@@ -1,5 +1,6 @@
 ﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
 using Contracts.Requests.AcademicRequests.SectionRequests;
+using Contracts.Requests.RequestParameters;
 using Contracts.Responses;
 using Contracts.Responses.AcademicResponses.SectionResponses;
 using Contracts.Results;
@@ -23,8 +24,8 @@ namespace Domain.Interfaces.AcademicStructureInterfaces.SectionInterfaces
         public Task<bool> ExistsById(int sectionId);
         public Task<bool> ExistsByName(int batchId, string name);
         public Task<bool>Delete(int sectionId);
-        public Task<AddUpdateServiceResponse<SectionDTO>> AddSection(AddSectionDTO newSection, int currentUserId);
-        public Task<AddUpdateServiceResponse<SectionDTO>>UpdateSection(int SectionId,UpdateSectionDTO updatedSection,int currentUserId);
+        public Task<AddUpdateServiceResponse<SectionDTO>> AddSection(UserScope?scope,AddSectionDTO newSection, int currentUserId);
+        public Task<AddUpdateServiceResponse<SectionDTO>>UpdateSection(UserScope?scope,int SectionId,UpdateSectionDTO updatedSection,int currentUserId);
         public Task<SectionAuthorizationInfo?> GetSectionAuthorizationInfoAsync(int sectionId);
     }
 }

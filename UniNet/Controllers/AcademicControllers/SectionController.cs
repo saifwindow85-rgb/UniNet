@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using UniNet.Extensions;
+using Contracts.Common.Messages;
 
 namespace UniNet.Controllers.AcademicControllers
 {
@@ -19,11 +20,13 @@ namespace UniNet.Controllers.AcademicControllers
     {
         private readonly ISectionService _sectionService;
         private readonly ICurrentUserService _currentUserService;
+        private readonly IAuthorizationService _authorizationService;
 
-        public SectionController(ISectionService sectionService, ICurrentUserService currentUserService)
+        public SectionController(ISectionService sectionService, ICurrentUserService currentUserService,IAuthorizationService authorizationService)
         {
             _sectionService = sectionService;
             _currentUserService = currentUserService;
+            _authorizationService = authorizationService;
         }
 
         [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
@@ -59,6 +62,14 @@ namespace UniNet.Controllers.AcademicControllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<SectionDTO>> GetSectionById([FromQuery] SectionIdParameter sectionIdParameter)
         {
+            var sectionInfo = await _sectionService.GetSectionAuthorizationInfoAsync(sectionIdParameter.SectionId);
+            if (sectionInfo == null)
+                return NotFound(ErrorMessages.NotFound<Section>(sectionIdParameter.SectionId));
+
+            var authorizationResult = await _authorizationService.AuthorizeAsync(User, sectionInfo, "SectionOwnerPolicy");
+            if (!authorizationResult.Succeeded)
+                return authorizationResult.NotAuthorized();
+
             var section = await _sectionService.GetDTOById(sectionIdParameter.SectionId);
             return section.GetResourceEndpoints(sectionIdParameter.SectionId, typeof(Section).Name);
         }
@@ -101,7 +112,7 @@ namespace UniNet.Controllers.AcademicControllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<AddUpdateServiceResponse<SectionDTO>>> CreateSection([FromBody]AddSectionDTO newSection)
         {
-            var response = await _sectionService.AddSection(newSection,_currentUserService.UserId);
+            var response = await _sectionService.AddSection(_currentUserService.ToUserScope(),newSection,_currentUserService.UserId);
             return response.ToActionResult();
         }
 
@@ -116,7 +127,7 @@ namespace UniNet.Controllers.AcademicControllers
         public async Task<ActionResult<AddUpdateServiceResponse<SectionDTO>>> UpdateSection
             ([FromQuery]SectionIdParameter sectionIdParameter,[FromBody] UpdateSectionDTO updatedSection)
         {
-            var response = await _sectionService.UpdateSection(sectionIdParameter.SectionId, updatedSection, _currentUserService.UserId);
+            var response = await _sectionService.UpdateSection(_currentUserService.ToUserScope(),sectionIdParameter.SectionId, updatedSection, _currentUserService.UserId);
             return response.ToActionResult();
         }
     }
