@@ -83,19 +83,11 @@ namespace Application.Services.AcademicServices
             return await  _unitOfWorkRepository.CollegeRepository.GetCollegeAuthorizationInfo(collegeId);
         }
 
-        public async Task<CollegeAuthorizationInfo?> GetCollegeAuthorizationInfo(int universityId, string collegeName)
-        {
-           return await _unitOfWorkRepository.CollegeRepository.GetCollegeAuthorizationInfo(universityId, collegeName);
-        }
+     
 
         public async Task<CollegeDTO?> GetCollegeDTOById(int collegeId)
         {
             return await _unitOfWorkRepository.CollegeRepository.GetCollegeDTOById(collegeId);
-        }
-
-        public async Task<CollegeDTO?> GetCollegeDTOByName(int universityId, string collegeName)
-        {
-            return await _unitOfWorkRepository.CollegeRepository.GetCollegeDTOByName(universityId,collegeName);
         }
 
         public async Task<College?> GetCollegeEntityById(int collegeId)
@@ -103,19 +95,14 @@ namespace Application.Services.AcademicServices
             return await _unitOfWorkRepository.CollegeRepository.GetCollegeEntityById(collegeId);
         }
 
-        public async Task<College?> GetCollegeEntityByName(int universityId, string collegeName)
+        public async Task<PagedResult<CollegeDTO>> GetColleges(CollegeFilter?filter,int pageNumber, int pageSize)
         {
-            return await _unitOfWorkRepository.CollegeRepository.GetCollegeEntityByName(universityId,collegeName);
+            return await _unitOfWorkRepository.CollegeRepository.GetAllColleges(filter,pageNumber, pageSize);
         }
 
-        public async Task<PagedResult<CollegeDTO>> GetColleges(int pageNumber, int pageSize)
+        public async Task<PagedResult<CollegeDTO>> GetCollegesPerUniversity(UserScope?scope,CollegeFilter?filter, int pageNumber, int pageSize)
         {
-            return await _unitOfWorkRepository.CollegeRepository.GetAllColleges(pageNumber, pageSize);
-        }
-
-        public async Task<PagedResult<CollegeDTO>> GetCollegesPerUniversity(int universityId, int pageNumber, int pageSize)
-        {
-            return await _unitOfWorkRepository.CollegeRepository.GetAllCollegesPerUniversity(universityId, pageNumber, pageSize);
+            return await _unitOfWorkRepository.CollegeRepository.GetAllCollegesPerUniversity(scope,filter, pageNumber, pageSize);
         }
 
         public async Task<bool> IsCollegeExists( int collegeId)

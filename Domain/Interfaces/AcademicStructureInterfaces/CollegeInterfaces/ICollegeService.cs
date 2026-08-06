@@ -17,18 +17,15 @@ namespace Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces
 {
     public interface ICollegeService
     {
-        public Task<PagedResult<CollegeDTO>>GetColleges(int pageNumber, int pageSize);
-        public Task<PagedResult<CollegeDTO>>GetCollegesPerUniversity(int universityId,int pageNumber, int pageSize);
+        public Task<PagedResult<CollegeDTO>>GetColleges(CollegeFilter?filter,int pageNumber, int pageSize);
+        public Task<PagedResult<CollegeDTO>>GetCollegesPerUniversity(UserScope?scope,CollegeFilter?filter,int pageNumber, int pageSize);
         public Task<CollegeDTO?> GetCollegeDTOById(int collegeId);
         public Task<College?>GetCollegeEntityById(int collegeId);
-        public Task<CollegeDTO?> GetCollegeDTOByName(int universityId,string collegeName);
-        public Task<College?>GetCollegeEntityByName(int universityId, string collegeName);
         public Task<bool> Delete(int collegeId);
         public Task<bool>IsCollegeExists(int collegeId);
         public Task<bool> IsCollegeExists(int universityId,string collegeName);
         public Task<AddUpdateServiceResponse<CollegeDTO>> AddCollege(UserScope?scope,AddCollegeDTO newCollege, int currentUserId);
         public Task<AddUpdateServiceResponse<CollegeDTO>> UpdateCollege(int collegeId, UpdateCollegeDTO updatedCollege, int currentUserId);
         public Task<CollegeAuthorizationInfo?> GetCollegeAuthorizationInfo(int collegeId);
-        public Task<CollegeAuthorizationInfo?> GetCollegeAuthorizationInfo(int universityID, string collegeName);
     }
 }
