@@ -101,7 +101,7 @@ namespace DataAccessLayer.Repos.AcademicRepositories
                 query = query.Where(c => c.UniversityId == filter.UniversityId);
             }
 
-            if(string.IsNullOrEmpty(filter.Search))
+            if(!string.IsNullOrEmpty(filter.Search))
             {
                 query = query.Where(c => EF.Functions.Like(c.Name, $"%{filter.Search}%"));
             }
