@@ -1,5 +1,6 @@
 ﻿using Contracts.Common.Extensions;
 using Contracts.Common.Messages;
+using Contracts.Requests.AcademicRequests.CommonAcademicRequests;
 using Contracts.Requests.AcademicRequests.DepartmentRequests;
 using Contracts.Requests.RequestParameters;
 using Contracts.Responses;
@@ -35,9 +36,9 @@ namespace UniNet.Controllers.AcademicControllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<PagedResult<DepartmentDTO>>> GetAllDepartments([FromQuery]PagedResultParameters @pagedResultParameters)
+        public async Task<ActionResult<PagedResult<DepartmentDTO>>> GetAllDepartments([FromQuery]PagedResultParameters @pagedResultParameters,AcademicFilter?filter)
         {
-            var departments = await _departmentService.GetAllDepartments(@pagedResultParameters.PageNumber, @pagedResultParameters.PageSize);
+            var departments = await _departmentService.GetAllDepartments(filter,@pagedResultParameters.PageNumber, @pagedResultParameters.PageSize);
             return departments.ToPagedActioneResult();
         }
 
@@ -48,9 +49,9 @@ namespace UniNet.Controllers.AcademicControllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<PagedResult<DepartmentDTO>>> GetDepartmentsPerCollege
-            ([FromQuery]CollegeIdParameter @collegeParameter, [FromQuery]PagedResultParameters @pagedResultParameters)
+            ([FromQuery]CollegeIdParameter @collegeParameter, [FromQuery]AcademicFilter?filter, [FromQuery]PagedResultParameters @pagedResultParameters)
         {
-            var departments = await _departmentService.GetDepartmentsPerCollege(collegeParameter.CollegeId,pagedResultParameters.PageNumber,@pagedResultParameters.PageSize);
+            var departments = await _departmentService.GetDepartmentsPerCollege(_currentUserService.ToUserScope(),filter,pagedResultParameters.PageNumber,@pagedResultParameters.PageSize);
             return departments.ToPagedActioneResult();
         }
 

@@ -1,6 +1,8 @@
 ﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
+using Contracts.Common.Extensions;
 using Contracts.Enums;
 using Contracts.Requests.AcademicRequests.SectionRequests;
+using Contracts.Requests.RequestParameters;
 using Contracts.Responses;
 using Contracts.Responses.AcademicResponses.SectionResponses;
 using Contracts.Results;
@@ -28,7 +30,7 @@ namespace Application.Services.AcademicServices
             _addValidator = addValidator;
             _updateValidator = updateValidator;
         }
-        public async Task<AddUpdateServiceResponse<SectionDTO>> AddSection(AddSectionDTO newSection, int currentUserId)
+        public async Task<AddUpdateServiceResponse<SectionDTO>> AddSection(UserScope?scope,AddSectionDTO newSection, int currentUserId)
         {
             var validationResult = await _addValidator.ValidateAsync(newSection);
             if(!validationResult.IsValid)
@@ -37,9 +39,16 @@ namespace Application.Services.AcademicServices
                     Errors.Select(e => e.ErrorMessage).ToList(), EnErrorTypes.InvalidData);
             }
 
-            if(! await _unitOfWorkRepository.BatchRepository.ExistsById(newSection.BatchId))
+            var batchInfo = await _unitOfWorkRepository.BatchRepository.GetBatchAuthorizationInfoAsync(newSection.BatchId);
+            if(batchInfo == null)
             {
-                return AddUpdateServiceResponse<SectionDTO>.InvalidRelatedData();
+                return AddUpdateServiceResponse<SectionDTO>.ResourceDoesntExist<Batch>();
+
+            }
+
+            if(!scope.IsWithinScope(batchInfo.UniverseId,batchInfo.CollegeId,batchInfo.DepartmentId))
+            {
+                return AddUpdateServiceResponse<SectionDTO>.ResourceDoesntExist<Batch>();
             }
 
             if (await ExistsByName(newSection.BatchId,newSection.SectionName))
@@ -114,7 +123,7 @@ namespace Application.Services.AcademicServices
             return _unitOfWorkRepository.SectionRepository.GetSectionsPerBatch(batchId, pageNumber, pageSize);
         }
 
-        public async Task<AddUpdateServiceResponse<SectionDTO>> UpdateSection(int SectionId, UpdateSectionDTO updatedSection, int currentUserId)
+        public async Task<AddUpdateServiceResponse<SectionDTO>> UpdateSection(UserScope?scope,int SectionId, UpdateSectionDTO updatedSection, int currentUserId)
         {
             var validationResult = await _updateValidator.ValidateAsync(updatedSection);
             if(!validationResult.IsValid)
@@ -123,13 +132,22 @@ namespace Application.Services.AcademicServices
                     Errors.Select(e => e.ErrorMessage).ToList(), EnErrorTypes.InvalidData);
             }
 
-            var  section = await GetEntityById(SectionId);
-            if(section == null)
+            var sectionInfo = await GetSectionAuthorizationInfoAsync(SectionId);
+            if(sectionInfo == null)
             {
                 return AddUpdateServiceResponse<SectionDTO>.ResourceDoesntExist<Section>();
             }
 
-            if(await ExistsByName(section.BatchId, updatedSection.SectionName)&& section.Name != updatedSection.SectionName)
+            if(!scope.IsWithinScope(sectionInfo.UniversityId,sectionInfo.CollegeId,sectionInfo.DepartmentId,sectionInfo.BatchId))
+            {
+                return AddUpdateServiceResponse<SectionDTO>.ResourceDoesntExist<Section>();
+            }
+
+
+            var  section = await GetEntityById(SectionId);
+
+
+            if(await ExistsByName(section!.BatchId, updatedSection.SectionName)&& section.Name != updatedSection.SectionName)
             {
                 return AddUpdateServiceResponse<SectionDTO>.AlreadyExists<Section>();
             }

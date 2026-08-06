@@ -8,6 +8,9 @@ namespace Contracts.Common.AuthorizationInfos.AcademicInfos
 {
     public class SectionAuthorizationInfo
     {
+        public int UniversityId { get; set; }
+        public int CollegeId { get; set; }
+        public int DepartmentId { get; set; }
         public int BatchId { get; set; }
         public int SectionId { get; set; }
     }

@@ -12,8 +12,8 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using Contracts.Responses.AcademicResponses.CollegeResponses;
-using Contracts.Requests.AcademicRequests.CollegeRequests;
 using Contracts.Requests.RequestParameters;
+using Contracts.Requests.AcademicRequests.CommonAcademicRequests;
 
 namespace DataAccessLayer.Repos.AcademicRepositories
 {
@@ -59,11 +59,11 @@ namespace DataAccessLayer.Repos.AcademicRepositories
             return true;
         }
 
-        public async Task<PagedResult<CollegeDTO>> GetAllColleges(CollegeFilter? filter,int pageNumber, int pageSize)
+        public async Task<PagedResult<CollegeDTO>> GetAllColleges(AcademicFilter? filter,int pageNumber, int pageSize)
         {
             var query = _context.Colleges.AsNoTracking().OrderBy(c=>c.UniversityId).ThenBy(c=>c.CollegeId).AsQueryable();
             if (filter == null)
-                filter = new CollegeFilter();
+                filter = new AcademicFilter();
 
             if (!string.IsNullOrEmpty(filter?.Search))
             {
@@ -75,20 +75,25 @@ namespace DataAccessLayer.Repos.AcademicRepositories
                 query = query.Where(c => c.UniversityId == filter.UniversityId.Value);
             }
 
-            if(filter.StartDate.HasValue||filter.EndDate.HasValue)
+            if(filter.StartDate.HasValue)
             {
-                query = query.Where(c=>c.CreatedAt >= filter.StartDate && c.CreatedAt <= filter.EndDate);
+                query = query.Where(c => c.CreatedAt >= filter.StartDate);
+            }
+
+            if(filter.EndDate.HasValue)
+            {
+                query = query.Where(c => c.CreatedAt <= filter.EndDate);
             }
             return await query.Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
         }
 
-        public async Task<PagedResult<CollegeDTO>> GetAllCollegesPerUniversity(UserScope?scope,CollegeFilter?filter, int pageNumber, int pageSize)
+        public async Task<PagedResult<CollegeDTO>> GetAllCollegesPerUniversity(UserScope?scope,AcademicFilter?filter, int pageNumber, int pageSize)
         {
             if (scope == null)
                 scope = new UserScope();
 
             if (filter == null)
-                filter = new CollegeFilter();
+                filter = new AcademicFilter();
 
             var query = _context.Colleges.AsNoTracking().OrderBy(c => c.UniversityId).ThenBy(c=>c.CollegeId).AsQueryable();
 
@@ -106,9 +111,14 @@ namespace DataAccessLayer.Repos.AcademicRepositories
                 query = query.Where(c => EF.Functions.Like(c.Name, $"%{filter.Search}%"));
             }
 
-            if (filter.StartDate.HasValue || filter.EndDate.HasValue)
+            if (filter.StartDate.HasValue)
             {
-                query = query.Where(c => c.CreatedAt >= filter.StartDate && c.CreatedAt <= filter.EndDate);
+                query = query.Where(c => c.CreatedAt >= filter.StartDate);
+            }
+
+            if(filter.EndDate.HasValue)
+            {
+                query = query.Where(c=>c.CreatedAt <= filter.EndDate);
             }
 
             return await query.Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);

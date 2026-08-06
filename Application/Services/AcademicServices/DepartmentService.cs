@@ -1,6 +1,7 @@
 ﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
 using Contracts.Common.Extensions;
 using Contracts.Enums;
+using Contracts.Requests.AcademicRequests.CommonAcademicRequests;
 using Contracts.Requests.AcademicRequests.DepartmentRequests;
 using Contracts.Requests.RequestParameters;
 using Contracts.Responses;
@@ -88,9 +89,9 @@ namespace Application.Services.AcademicServices
             return await _unitOfWork.DepartmentRepository.ExistsByName(collegeId, name);
         }
 
-        public async Task<PagedResult<DepartmentDTO>> GetAllDepartments(int pageNumber, int pageSize)
+        public async Task<PagedResult<DepartmentDTO>> GetAllDepartments(AcademicFilter?filter,int pageNumber, int pageSize)
         {
-            return await _unitOfWork.DepartmentRepository.GetAllDepartments(pageNumber, pageSize); 
+            return await _unitOfWork.DepartmentRepository.GetAllDepartments(filter,pageNumber, pageSize); 
         }
 
         public async Task<DepartmentAuthorizationInfo?> GetDepartmentAuthorizationInfoAsync(int departmentId)
@@ -99,9 +100,9 @@ namespace Application.Services.AcademicServices
         }
 
 
-        public async Task<PagedResult<DepartmentDTO>> GetDepartmentsPerCollege(int collegeId, int pageNumber, int pageSize)
+        public async Task<PagedResult<DepartmentDTO>> GetDepartmentsPerCollege(UserScope?scope,AcademicFilter?filter, int pageNumber, int pageSize)
         {
-            return await _unitOfWork.DepartmentRepository.GetDepartmentsPerCollege(collegeId, pageNumber, pageSize);
+            return await _unitOfWork.DepartmentRepository.GetDepartmentsPerCollege(scope,filter, pageNumber, pageSize);
         }
 
         public async Task<DepartmentDTO?> GetDTOById(int departmentId)
@@ -137,12 +138,12 @@ namespace Application.Services.AcademicServices
             var departmentInfo = await GetDepartmentAuthorizationInfoAsync(departmentId);
             if(departmentInfo == null)
             {
-                return AddUpdateServiceResponse<DepartmentDTO>.AlreadyExists<Department>();
+                return AddUpdateServiceResponse<DepartmentDTO>.ResourceDoesntExist<Department>();
             }
 
             if(!scope.IsWithinScope(departmentInfo.UniversityId,departmentInfo.CollegeId,departmentInfo.DepartmentId))
             {
-                return AddUpdateServiceResponse<DepartmentDTO>.AlreadyExists<Department>();
+                return AddUpdateServiceResponse<DepartmentDTO>.ResourceDoesntExist<Department>();
             }
 
 

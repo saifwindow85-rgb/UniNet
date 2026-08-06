@@ -1,4 +1,6 @@
 ﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
+using Contracts.Requests.AcademicRequests.CommonAcademicRequests;
+using Contracts.Requests.RequestParameters;
 using Contracts.Responses.AcademicResponses.DepartmentResponses;
 using Contracts.Results;
 using DataAccessLayer.Dbcontext;
@@ -66,9 +68,43 @@ namespace DataAccessLayer.Repos.AcademicRepositories
             return await _context.Departments.AnyAsync(d=>d.CollegeId == collegeId&& d.Name == name);
         }
 
-        public async Task<PagedResult<DepartmentDTO>> GetAllDepartments(int pageNumber, int pageSize)
+        public async Task<PagedResult<DepartmentDTO>> GetAllDepartments(AcademicFilter?filter,int pageNumber, int pageSize)
         {
-           return await _context.Departments.Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
+            if(filter == null)
+                filter = new AcademicFilter();
+            var query = _context.Departments.AsNoTracking().OrderBy(d=>d.College.UniversityId).ThenBy(c=>c.CollegeId).ThenBy(c=>c.DepartmentId).AsQueryable();
+
+            if(filter.UniversityId.HasValue)
+            {
+                query = query.Where(d=>d.College.UniversityId == filter.UniversityId);
+            }
+
+            if(filter.CollegeId.HasValue)
+            {
+                query = query.Where(d=>d.CollegeId == filter.CollegeId);
+            }
+
+            if(filter.DepartmentId.HasValue)
+            {
+                query = query.Where(d => d.DepartmentId == filter.DepartmentId);
+            }
+
+            if(!string.IsNullOrEmpty(filter.Search))
+            {
+                query = query.Where(d => EF.Functions.Like(d.Name, $"%{filter.Search}%"));
+            }
+
+            if (filter.StartDate.HasValue)
+            {
+                query = query.Where(c => c.CreatedAt >= filter.StartDate);
+            }
+
+            if (filter.EndDate.HasValue)
+            {
+                query = query.Where(c => c.CreatedAt <= filter.EndDate);
+            }
+
+            return await query.Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
         }
 
         public async Task<DepartmentAuthorizationInfo?> GetDepartmentAuthorizationInfoAsync(int departmentId)
@@ -77,10 +113,49 @@ namespace DataAccessLayer.Repos.AcademicRepositories
         }
 
 
-        public async Task<PagedResult<DepartmentDTO>> GetDepartmentsPerCollege(int collegeId, int pageNumber, int pageSize)
+        public async Task<PagedResult<DepartmentDTO>> GetDepartmentsPerCollege(UserScope?scope,AcademicFilter?filter, int pageNumber, int pageSize)
         {
-            return await _context.Departments.Where(d=>d.CollegeId == collegeId)
-                .Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
+            if (scope == null)
+                scope = new UserScope();
+
+            if(filter == null)
+                filter = new AcademicFilter();
+
+            var query = _context.Departments.AsNoTracking().OrderBy(d => d.College.UniversityId).ThenBy(c => c.CollegeId).ThenBy(c => c.DepartmentId).AsQueryable();
+            if (scope.UniversityId.HasValue)
+            {
+                query = query.Where(d => d.College.UniversityId == scope.UniversityId);
+            }
+            else if(filter.UniversityId.HasValue)
+            {
+                query = query.Where(d => d.College.UniversityId == filter.UniversityId);
+            }
+
+            if(scope.CollegeId.HasValue)
+            {
+                query = query.Where(d=>d.CollegeId == scope.CollegeId);
+            }
+            else if(filter.CollegeId.HasValue)
+            {
+                query = query.Where(d => d.CollegeId == filter.CollegeId);
+            }
+
+            if(!string.IsNullOrEmpty(filter.Search))
+            {
+                query = query.Where(d => EF.Functions.Like(d.Name, $"%{filter.Search}%"));
+            }
+
+            if (filter.StartDate.HasValue)
+            {
+                query = query.Where(d => d.CreatedAt >= filter.StartDate);
+            }
+
+            if(filter.EndDate.HasValue)
+            {
+                query = query.Where(d=>d.CreatedAt <= filter.EndDate);
+            }
+
+            return await query.Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
         }
 
         public async Task<DepartmentDTO?> GetDTOById(int departmentId)

@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using UniNet.Extensions;
 using Contracts.Responses.AcademicResponses.CollegeResponses;
+using Contracts.Requests.AcademicRequests.CommonAcademicRequests;
 
 namespace UniNet.Controllers.AcademicControllers
 {
@@ -33,7 +34,7 @@ namespace UniNet.Controllers.AcademicControllers
         [HttpGet(Name ="GetAllColleges")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<PagedResult<CollegeDTO>>> GetAllColleges([FromQuery]CollegeFilter?filter,[FromQuery]PagedResultParameters @parameters)
+        public async Task<ActionResult<PagedResult<CollegeDTO>>> GetAllColleges([FromQuery]AcademicFilter?filter,[FromQuery]PagedResultParameters @parameters)
         {
             var colleges = await _collegeService.GetColleges(filter,parameters.PageNumber, parameters.PageSize);
             return  colleges.ToPagedActioneResult();
@@ -46,7 +47,7 @@ namespace UniNet.Controllers.AcademicControllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<PagedResult<CollegeDTO>>> GetCollegesPerUniversity
-            ([FromQuery]CollegeFilter?filter, [FromQuery]PagedResultParameters @parameters)
+            ([FromQuery]AcademicFilter?filter, [FromQuery]PagedResultParameters @parameters)
         {
             var colleges = await _collegeService.GetCollegesPerUniversity(_currentUserService.ToUserScope(),filter,parameters.PageNumber,parameters.PageSize);
             return colleges.ToPagedActioneResult();
