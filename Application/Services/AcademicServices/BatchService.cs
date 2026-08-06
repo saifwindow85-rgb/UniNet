@@ -1,6 +1,8 @@
 ﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
+using Contracts.Common.Extensions;
 using Contracts.Enums;
 using Contracts.Requests.AcademicRequests.BatchRequests;
+using Contracts.Requests.RequestParameters;
 using Contracts.Responses;
 using Contracts.Responses.AcademicResponses.BatchResponses;
 using Contracts.Results;
@@ -28,7 +30,7 @@ namespace Application.Services.AcademicServices
             _addValidator = addValidator;
             _updateValidator = updateValidator;
         }
-        public async Task<AddUpdateServiceResponse<BatchDTO>> AddBatch(AddBatchDTO newBatch, int currentUserId)
+        public async Task<AddUpdateServiceResponse<BatchDTO>> AddBatch(UserScope?scope,AddBatchDTO newBatch, int currentUserId)
         {
             var validationResult = await _addValidator.ValidateAsync(newBatch);
             if(!validationResult.IsValid)
@@ -36,10 +38,18 @@ namespace Application.Services.AcademicServices
                 return AddUpdateServiceResponse<BatchDTO>.Failure(validationResult.Errors
                     .Select(x => $"{x.PropertyName} : {x.ErrorMessage}").ToList(), EnErrorTypes.InvalidData);
             }
-            if(!await _unitOfWorkRepository.DepartmentRepository.ExistsById(newBatch.DepartmentId))
+
+            var departmentAuthorizationInfo = await _unitOfWorkRepository.DepartmentRepository.GetDepartmentAuthorizationInfoAsync(newBatch.DepartmentId);
+            if(departmentAuthorizationInfo == null)
             {
-                return AddUpdateServiceResponse<BatchDTO>.InvalidRelatedData();
+                return AddUpdateServiceResponse<BatchDTO>.ResourceDoesntExist<Department>();
             }
+
+            if(!scope.IsWithinScope(departmentAuthorizationInfo.UniversityId,departmentAuthorizationInfo.CollegeId,departmentAuthorizationInfo.DepartmentId))
+            {
+                return AddUpdateServiceResponse<BatchDTO>.ResourceDoesntExist<Department>();
+            }
+
             if(await ExistsByName(newBatch.DepartmentId,newBatch.BatchName))
             {
                 return AddUpdateServiceResponse<BatchDTO>.AlreadyExists<Batch>();

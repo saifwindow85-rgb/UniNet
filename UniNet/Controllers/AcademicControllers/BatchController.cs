@@ -11,6 +11,7 @@ using UniNet.Extensions;
 using Contracts.Common.Messages;
 using Contracts.Responses;
 using Contracts.Requests.AcademicRequests.BatchRequests;
+using Contracts.Common.Extensions;
 
 namespace UniNet.Controllers.AcademicControllers
 {
@@ -20,10 +21,12 @@ namespace UniNet.Controllers.AcademicControllers
     {
         private readonly IBatchService _batchService;
         private readonly ICurrentUserService _currentUserService;
-        public BatchController(IBatchService batchService, ICurrentUserService currentUserService)
+        private readonly IAuthorizationService _authorizationService;
+        public BatchController(IBatchService batchService, ICurrentUserService currentUserService, IAuthorizationService authorizationService   )
         {
             _batchService = batchService;
             _currentUserService = currentUserService;
+            _authorizationService = authorizationService;
         }
 
 
@@ -61,6 +64,17 @@ namespace UniNet.Controllers.AcademicControllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<BatchDTO>> GetBatchById([FromQuery]BatchIdParameter @batchIdParameter)
         {
+            var batchInfo = await _batchService.GetBatchAuthorizationInfoAsync(batchIdParameter.BatchId);
+            if(batchInfo == null)
+            {
+                return NotFound(ErrorMessages.NotFound<Batch>(batchIdParameter.BatchId));
+            }
+
+            var authorizationResult = await _authorizationService.AuthorizeAsync(User, batchInfo, "BatchOwnerPolicy");
+            if (!authorizationResult.Succeeded)
+                return authorizationResult.NotAuthorized();
+
+
             var batch = await _batchService.GetDTOById(batchIdParameter.BatchId);
             return batch.GetResourceEndpoints(batchIdParameter.BatchId, typeof(Batch).Name);
         }
@@ -88,6 +102,17 @@ namespace UniNet.Controllers.AcademicControllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> Delete([FromQuery]BatchIdParameter @batchIdParameter)
         {
+            var batchInfo = await _batchService.GetBatchAuthorizationInfoAsync(batchIdParameter.BatchId);
+            if(batchInfo == null)
+            {
+                return NotFound(ErrorMessages.NotFound<Batch>(batchIdParameter.BatchId));
+            }
+            var scope = _currentUserService.ToUserScope();
+            if(!scope.IsWithinScope(batchInfo.UniverseId,batchInfo.CollegeId,batchInfo.DepartmentId,batchInfo.BatchId))
+            {
+                return NotFound(ErrorMessages.NotFound<Batch>(batchIdParameter.BatchId));
+            }
+
             var result = await _batchService.Delete(batchIdParameter.BatchId);
           return result.ToDeleteActionResult<Batch>(batchIdParameter.BatchId);
         }
@@ -101,7 +126,7 @@ namespace UniNet.Controllers.AcademicControllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<AddUpdateServiceResponse<BatchDTO>>> AddBatch([FromBody]AddBatchDTO newBatch)
         {
-            var response = await _batchService.AddBatch(newBatch, _currentUserService.UserId);
+            var response = await _batchService.AddBatch(_currentUserService.ToUserScope(),newBatch, _currentUserService.UserId);
             return response.ToActionResult();
         }
 

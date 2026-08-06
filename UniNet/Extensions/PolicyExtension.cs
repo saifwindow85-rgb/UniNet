@@ -35,6 +35,12 @@ namespace UniNet.Extensions
                 options.AddPolicy("DepartmentOwnerPolicy", policy =>
                     policy.Requirements.Add(new OwnershipRequirement()));
             });
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("BatchOwnerPolicy", policy =>
+                    policy.Requirements.Add(new OwnershipRequirement()));
+            });
             return services;
         }
     }
