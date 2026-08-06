@@ -12,6 +12,8 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using Contracts.Responses.AcademicResponses.CollegeResponses;
+using Contracts.Requests.AcademicRequests.CollegeRequests;
+using Contracts.Requests.RequestParameters;
 
 namespace DataAccessLayer.Repos.AcademicRepositories
 {
@@ -57,15 +59,59 @@ namespace DataAccessLayer.Repos.AcademicRepositories
             return true;
         }
 
-        public async Task<PagedResult<CollegeDTO>> GetAllColleges(int pageNumber, int pageSize)
+        public async Task<PagedResult<CollegeDTO>> GetAllColleges(CollegeFilter? filter,int pageNumber, int pageSize)
         {
-            return await _context.Colleges.AsNoTracking().Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
+            var query = _context.Colleges.AsNoTracking().OrderBy(c=>c.UniversityId).ThenBy(c=>c.CollegeId).AsQueryable();
+            if (filter == null)
+                filter = new CollegeFilter();
+
+            if (!string.IsNullOrEmpty(filter?.Search))
+            {
+                query = query.Where(c =>EF.Functions.Like(c.Name,$"%{filter.Search}%"));
+            }
+
+            if(filter.UniversityId.HasValue)
+            {
+                query = query.Where(c => c.UniversityId == filter.UniversityId.Value);
+            }
+
+            if(filter.StartDate.HasValue||filter.EndDate.HasValue)
+            {
+                query = query.Where(c=>c.CreatedAt >= filter.StartDate && c.CreatedAt <= filter.EndDate);
+            }
+            return await query.Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
         }
 
-        public async Task<PagedResult<CollegeDTO>> GetAllCollegesPerUniversity(int universityId, int pageNumber, int pageSize)
+        public async Task<PagedResult<CollegeDTO>> GetAllCollegesPerUniversity(UserScope?scope,CollegeFilter?filter, int pageNumber, int pageSize)
         {
-            return await _context.Colleges.AsNoTracking().Where(c=>c.UniversityId == universityId)
-                .OrderBy(c=>c.CollegeId).Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
+            if (scope == null)
+                scope = new UserScope();
+
+            if (filter == null)
+                filter = new CollegeFilter();
+
+            var query = _context.Colleges.AsNoTracking().OrderBy(c => c.UniversityId).ThenBy(c=>c.CollegeId).AsQueryable();
+
+            if(scope.UniversityId.HasValue)
+            {
+                query = query.Where(c => c.UniversityId == scope.UniversityId.Value);
+            }
+            else if(filter.UniversityId.HasValue)
+            {
+                query = query.Where(c => c.UniversityId == filter.UniversityId);
+            }
+
+            if(string.IsNullOrEmpty(filter.Search))
+            {
+                query = query.Where(c => EF.Functions.Like(c.Name, $"%{filter.Search}%"));
+            }
+
+            if (filter.StartDate.HasValue || filter.EndDate.HasValue)
+            {
+                query = query.Where(c => c.CreatedAt >= filter.StartDate && c.CreatedAt <= filter.EndDate);
+            }
+
+            return await query.Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
         }
 
         public async Task<CollegeDTO?> GetCollegeDTOById(int collegeId)
@@ -88,25 +134,12 @@ namespace DataAccessLayer.Repos.AcademicRepositories
             return await _context.Colleges.AnyAsync(c => c.Name == collegeName && c.UniversityId == universityId);
         }
 
-        public async Task<CollegeDTO?> GetCollegeDTOByName(int universityId,string collegeName)
-        {
-            return await _context.Colleges.AsNoTracking().Where(c=>c.UniversityId == universityId && c.Name == collegeName)
-                .Select(ToDTO).SingleOrDefaultAsync();
-        }
-
-        public async Task<College?> GetCollegeEntityByName(int universityId, string collegeName)
-        {
-            return await _context.Colleges.Where(c=>c.UniversityId == universityId && c.Name == collegeName).SingleOrDefaultAsync();
-        }
 
         public async Task<CollegeAuthorizationInfo?> GetCollegeAuthorizationInfo(int collegeId)
         {
             return await _context.Colleges.AsNoTracking().Select(ToInfo).SingleOrDefaultAsync(c => c.CollegeId == collegeId);
         }
 
-        public async Task<CollegeAuthorizationInfo?> GetCollegeAuthorizationInfo(int universityId, string collegeName)
-        {
-            return await _context.Colleges.AsNoTracking().Where(c => c.UniversityId == universityId && c.Name == collegeName).Select(ToInfo).SingleOrDefaultAsync();
-        }
+       
     }
 }

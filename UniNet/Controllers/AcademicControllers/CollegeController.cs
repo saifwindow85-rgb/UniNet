@@ -33,9 +33,9 @@ namespace UniNet.Controllers.AcademicControllers
         [HttpGet(Name ="GetAllColleges")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<PagedResult<CollegeDTO>>> GetAllColleges([FromQuery]PagedResultParameters @parameters)
+        public async Task<ActionResult<PagedResult<CollegeDTO>>> GetAllColleges([FromQuery]CollegeFilter?filter,[FromQuery]PagedResultParameters @parameters)
         {
-            var colleges = await _collegeService.GetColleges(parameters.PageNumber, parameters.PageSize);
+            var colleges = await _collegeService.GetColleges(filter,parameters.PageNumber, parameters.PageSize);
             return  colleges.ToPagedActioneResult();
         }
 
@@ -45,9 +45,10 @@ namespace UniNet.Controllers.AcademicControllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<PagedResult<CollegeDTO>>> GetCollegesPerUniversity([FromQuery]UniversityIdParameter universityIdParameter, [FromQuery]PagedResultParameters @parameters)
+        public async Task<ActionResult<PagedResult<CollegeDTO>>> GetCollegesPerUniversity
+            ([FromQuery]CollegeFilter?filter, [FromQuery]PagedResultParameters @parameters)
         {
-            var colleges = await _collegeService.GetCollegesPerUniversity(universityIdParameter.UniversityId,parameters.PageNumber,parameters.PageSize);
+            var colleges = await _collegeService.GetCollegesPerUniversity(_currentUserService.ToUserScope(),filter,parameters.PageNumber,parameters.PageSize);
             return colleges.ToPagedActioneResult();
         }
 
@@ -80,19 +81,7 @@ namespace UniNet.Controllers.AcademicControllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<CollegeDTO>> GetCollegeByName([FromQuery]UniversityIdParameter @universityIdParameter,[FromQuery] BaseStringParametre @Parameter)
-        {
-            var collegeAuthorizationInfo = await _collegeService.GetCollegeAuthorizationInfo(universityIdParameter.UniversityId, Parameter.Name);
-            if (collegeAuthorizationInfo == null)
-                return ControllersExtensions.AuthorizationInfoNotFound();
-
-            var authorizationResult = await _authorizationService.AuthorizeAsync(User, collegeAuthorizationInfo, "CollegeOwnerPolicy");
-            if (!authorizationResult.Succeeded)
-                return authorizationResult.Succeeded.NotAuthorized();
-
-            var college = await _collegeService.GetCollegeDTOByName(@universityIdParameter.UniversityId, Parameter.Name);
-            return college.GetResourceEndpoints(Parameter.Name, typeof(College).Name);
-        }
+    
 
         [Authorize(Roles = "Super Admin,UniversityAdmin")]
         [HttpDelete(Name ="DeleteCollege")]
