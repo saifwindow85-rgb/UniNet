@@ -76,10 +76,6 @@ namespace DataAccessLayer.Repos.AcademicRepositories
             return await _context.Departments.AsNoTracking().Where(d => d.DepartmentId == departmentId).Select(ToInfo).SingleOrDefaultAsync();
         }
 
-        public async Task<DepartmentAuthorizationInfo?> GetDepartmentAuthorizationInfoByNameAsync(int collegeId, string departmentName)
-        {
-            return await _context.Departments.Where(d => d.CollegeId == collegeId && d.Name == departmentName).Select(ToInfo).SingleOrDefaultAsync();
-        }
 
         public async Task<PagedResult<DepartmentDTO>> GetDepartmentsPerCollege(int collegeId, int pageNumber, int pageSize)
         {

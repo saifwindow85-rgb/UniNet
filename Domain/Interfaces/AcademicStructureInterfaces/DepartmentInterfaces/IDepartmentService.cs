@@ -22,12 +22,11 @@ namespace Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces
         public Task<DepartmentDTO?> GetDTOByName(int collegeId, string name);
         public Task<Department?>GetEntityByName(int departmentId, string name);
         public Task<AddUpdateServiceResponse<DepartmentDTO>> AddDepartment(UserScope?scope,AddDepartmentDTO newDepartment, int currentUserId);
-        public Task<AddUpdateServiceResponse<DepartmentDTO>>UpdateDepartment(int departmentId,UpdateDepartmentDTO updatedDepartment,int currentUserId);
+        public Task<AddUpdateServiceResponse<DepartmentDTO>>UpdateDepartment(UserScope?scope,int departmentId,UpdateDepartmentDTO updatedDepartment,int currentUserId);
         public Task<bool> ExistsById(int departmentId);
         public Task<bool>ExistsByName(int collegeId,string name);
         public Task<bool> Delete(int departmentId);
         public Task<DepartmentAuthorizationInfo?> GetDepartmentAuthorizationInfoAsync(int departmentId);
-        public Task<DepartmentAuthorizationInfo?> GetDepartmentAuthorizationInfoByNameAsync(int collegeId, string departmentName);
 
     }
 }

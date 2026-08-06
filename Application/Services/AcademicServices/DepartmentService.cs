@@ -46,7 +46,7 @@ namespace Application.Services.AcademicServices
                 return AddUpdateServiceResponse<DepartmentDTO>.ResourceDoesntExist<Department>();
             }
             
-            if(!scope.IsWithinScope(collegeInfo.CollegeId))
+            if(!scope.IsWithinScope(collegeInfo.UniversityId,collegeInfo.CollegeId))
             {
                 return AddUpdateServiceResponse<DepartmentDTO>.ResourceDoesntExist<Department>();
             }
@@ -98,10 +98,6 @@ namespace Application.Services.AcademicServices
             return await _unitOfWork.DepartmentRepository.GetDepartmentAuthorizationInfoAsync(departmentId);
         }
 
-        public async Task<DepartmentAuthorizationInfo?> GetDepartmentAuthorizationInfoByNameAsync(int collegeId, string departmentName)
-        {
-            return await _unitOfWork.DepartmentRepository.GetDepartmentAuthorizationInfoByNameAsync(collegeId, departmentName);
-        }
 
         public async Task<PagedResult<DepartmentDTO>> GetDepartmentsPerCollege(int collegeId, int pageNumber, int pageSize)
         {
@@ -128,7 +124,7 @@ namespace Application.Services.AcademicServices
             return await _unitOfWork.DepartmentRepository.GetEntityByName(departmentId, name);
         }
 
-        public async Task<AddUpdateServiceResponse<DepartmentDTO>> UpdateDepartment(int departmentId, UpdateDepartmentDTO updatedDepartment, int currentUserId)
+        public async Task<AddUpdateServiceResponse<DepartmentDTO>> UpdateDepartment(UserScope?scope,int departmentId, UpdateDepartmentDTO updatedDepartment, int currentUserId)
         {
             var validationResult = await _updateValidator.ValidateAsync(updatedDepartment);
 
@@ -137,6 +133,18 @@ namespace Application.Services.AcademicServices
                 return AddUpdateServiceResponse<DepartmentDTO>.Failure
                    (validationResult.Errors.Select(x => $"{x.PropertyName} : {x.ErrorMessage}").ToList(), EnErrorTypes.InvalidData);
             }
+
+            var departmentInfo = await GetDepartmentAuthorizationInfoAsync(departmentId);
+            if(departmentInfo == null)
+            {
+                return AddUpdateServiceResponse<DepartmentDTO>.AlreadyExists<Department>();
+            }
+
+            if(!scope.IsWithinScope(departmentInfo.UniversityId,departmentInfo.CollegeId,departmentInfo.DepartmentId))
+            {
+                return AddUpdateServiceResponse<DepartmentDTO>.AlreadyExists<Department>();
+            }
+
 
             var department = await GetEntityById(departmentId);
 

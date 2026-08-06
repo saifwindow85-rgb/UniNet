@@ -100,7 +100,7 @@ namespace UniNet.Controllers.AcademicControllers
         public async Task<ActionResult<AddUpdateServiceResponse<DepartmentDTO>>> UpdateDepartment
             ([FromQuery]DepartmentIdParameter @departmentIdParameter,[FromBody] UpdateDepartmentDTO UpdatedDepartment)
         {
-            var response = await _departmentService.UpdateDepartment(departmentIdParameter.DepartmentId,UpdatedDepartment, _currentUserService.UserId);
+            var response = await _departmentService.UpdateDepartment(_currentUserService.ToUserScope(),departmentIdParameter.DepartmentId,UpdatedDepartment, _currentUserService.UserId);
             return response.ToActionResult();
         }
 
