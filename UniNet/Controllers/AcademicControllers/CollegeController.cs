@@ -73,14 +73,6 @@ namespace UniNet.Controllers.AcademicControllers
             var college = await _collegeService.GetCollegeDTOById(@collegeIdParameter.CollegeId);
             return college.GetResourceEndpoints(@collegeIdParameter.CollegeId, typeof(College).Name);
         }
-
-        [Authorize(Roles = "Super Admin,UniversityAdmin")]
-        [HttpGet("by-name", Name = "GetCollegeByName")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
     
 
         [Authorize(Roles = "Super Admin,UniversityAdmin")]
@@ -127,7 +119,7 @@ namespace UniNet.Controllers.AcademicControllers
         [ProducesResponseType(StatusCodes.Status409Conflict)]
         public async Task<ActionResult<AddUpdateServiceResponse<CollegeDTO>>> UpdateCollege([FromQuery]CollegeIdParameter @collegeIdParameter,[FromBody] UpdateCollegeDTO updatedCollege)
         {
-            var response = await _collegeService.UpdateCollege(collegeIdParameter.CollegeId, updatedCollege, _currentUserService.UserId);
+            var response = await _collegeService.UpdateCollege(_currentUserService.ToUserScope(),collegeIdParameter.CollegeId, updatedCollege, _currentUserService.UserId);
             return response.ToActionResult();
         }
 

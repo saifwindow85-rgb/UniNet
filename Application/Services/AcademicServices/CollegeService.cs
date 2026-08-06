@@ -115,7 +115,7 @@ namespace Application.Services.AcademicServices
             return await _unitOfWorkRepository.CollegeRepository.IsCollegeExists(universityId, collegeName);
         }
 
-        public async Task<AddUpdateServiceResponse<CollegeDTO>> UpdateCollege(int collegeId, UpdateCollegeDTO updatedCollege, int currentUserId)
+        public async Task<AddUpdateServiceResponse<CollegeDTO>> UpdateCollege(UserScope?scope,int collegeId, UpdateCollegeDTO updatedCollege, int currentUserId)
         {
             var validationResult = await _updateCollegeValidator.ValidateAsync(updatedCollege);
             if(!validationResult.IsValid)
@@ -124,6 +124,18 @@ namespace Application.Services.AcademicServices
                                    Select(x => $"{x.PropertyName} : {x.ErrorMessage}").ToList(), EnErrorTypes.InvalidData);
             }
 
+            var collegeInfo = await GetCollegeAuthorizationInfo(collegeId);
+            if(collegeInfo == null)
+            {
+                return AddUpdateServiceResponse<CollegeDTO>.ResourceDoesntExist<College>();
+
+            }
+
+            if(!scope.IsWithinScope(collegeInfo.UniversityId,collegeInfo.CollegeId))
+            {
+                return AddUpdateServiceResponse<CollegeDTO>.ResourceDoesntExist<College>();
+
+            }
             var college = await GetCollegeEntityById(collegeId);
             if(college == null)
             {
