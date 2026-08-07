@@ -30,7 +30,7 @@ namespace UniNet.Controllers.AcademicControllers
             _authorizationService = authorizationService;
         }
 
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+        [Authorize(Roles = "Super Admin")]
         [HttpGet(Name = "GetAllSections")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -42,7 +42,7 @@ namespace UniNet.Controllers.AcademicControllers
             return sections.ToPagedActioneResult();
         }
 
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin,BatchAdmin")]
         [HttpGet("batchId", Name = "GetSectionsPerBatch")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -54,7 +54,7 @@ namespace UniNet.Controllers.AcademicControllers
             return sections.ToPagedActioneResult();
         }
 
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin,BatchAdmin")]
         [HttpGet("by-id", Name = "GetSectionById")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -77,7 +77,7 @@ namespace UniNet.Controllers.AcademicControllers
 
 
 
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin,BatchAdmin")]
         [HttpDelete(Name = "DeleteSection")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -100,7 +100,7 @@ namespace UniNet.Controllers.AcademicControllers
             return result.ToDeleteActionResult<Section>(sectionIdParameter.SectionId);
         }
 
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin,BatchAdmin")]
         [HttpPost(Name = "CreateSection")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -113,7 +113,7 @@ namespace UniNet.Controllers.AcademicControllers
             return response.ToActionResult();
         }
 
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin,BatchAdmin")]
         [HttpPut(Name ="UpdateSection")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]

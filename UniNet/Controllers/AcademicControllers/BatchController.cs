@@ -31,7 +31,7 @@ namespace UniNet.Controllers.AcademicControllers
         }
 
 
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+        [Authorize(Roles = "Super Admin")]
         [HttpGet(Name ="GetAllBatches")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
