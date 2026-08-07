@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using UniNet.Extensions;
 using Contracts.Common.Messages;
+using Contracts.Requests.AcademicRequests.CommonAcademicRequests;
 
 namespace UniNet.Controllers.AcademicControllers
 {
@@ -35,9 +36,9 @@ namespace UniNet.Controllers.AcademicControllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<PagedResult<SectionDTO>>> GetAllSections([FromQuery] PagedResultParameters pagedResultParameters)
+        public async Task<ActionResult<PagedResult<SectionDTO>>> GetAllSections([FromQuery]AcademicFilter?filter,[FromQuery] PagedResultParameters pagedResultParameters)
         {
-            var sections = await _sectionService.GetAllSections(pagedResultParameters.PageNumber, pagedResultParameters.PageSize);
+            var sections = await _sectionService.GetAllSections(filter,pagedResultParameters.PageNumber, pagedResultParameters.PageSize);
             return sections.ToPagedActioneResult();
         }
 
@@ -47,9 +48,9 @@ namespace UniNet.Controllers.AcademicControllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<PagedResult<SectionDTO>>> GetSectionsPerBatch([FromQuery] BatchIdParameter batchIdParameter, [FromQuery] PagedResultParameters pagedResultParameters)
+        public async Task<ActionResult<PagedResult<SectionDTO>>> GetSectionsPerBatch([FromQuery]AcademicFilter?filter, [FromQuery] PagedResultParameters pagedResultParameters)
         {
-            var sections = await _sectionService.GetSectionsPerBatches(batchIdParameter.BatchId, pagedResultParameters.PageNumber, pagedResultParameters.PageSize);
+            var sections = await _sectionService.GetSectionsPerBatches(_currentUserService.ToUserScope(),filter, pagedResultParameters.PageNumber, pagedResultParameters.PageSize);
             return sections.ToPagedActioneResult();
         }
 
@@ -74,18 +75,6 @@ namespace UniNet.Controllers.AcademicControllers
             return section.GetResourceEndpoints(sectionIdParameter.SectionId, typeof(Section).Name);
         }
 
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
-        [HttpGet("by-name", Name = "GetSectionByName")]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<SectionDTO>> GetSectionByName([FromQuery] BatchIdParameter batchIdParameter, [FromQuery] BaseStringParametre sectionNameParameter)
-        {
-            var section = await _sectionService.GetDTOByName(batchIdParameter.BatchId, sectionNameParameter.Name);
-            return section.GetResourceEndpoints(sectionNameParameter.Name, typeof(Section).Name);
-        }
 
 
         [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]

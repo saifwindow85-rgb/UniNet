@@ -1,6 +1,7 @@
 ﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
 using Contracts.Common.Extensions;
 using Contracts.Enums;
+using Contracts.Requests.AcademicRequests.CommonAcademicRequests;
 using Contracts.Requests.AcademicRequests.SectionRequests;
 using Contracts.Requests.RequestParameters;
 using Contracts.Responses;
@@ -88,9 +89,9 @@ namespace Application.Services.AcademicServices
             return _unitOfWorkRepository.SectionRepository.ExistsByName(batchId, name);
         }
 
-        public Task<PagedResult<SectionDTO>> GetAllSections(int pageNumber, int pageSize)
+        public Task<PagedResult<SectionDTO>> GetAllSections(AcademicFilter?filter,int pageNumber, int pageSize)
         {
-            return _unitOfWorkRepository.SectionRepository.GetAllSections(pageNumber, pageSize);
+            return _unitOfWorkRepository.SectionRepository.GetAllSections(filter,pageNumber, pageSize);
         }
 
         public Task<SectionDTO?> GetDTOById(int sectionId)
@@ -98,29 +99,21 @@ namespace Application.Services.AcademicServices
             return _unitOfWorkRepository.SectionRepository.GetDTOById(sectionId);
         }
 
-        public Task<SectionDTO?> GetDTOByName(int batchId, string name)
-        {
-            return _unitOfWorkRepository.SectionRepository.GetDTOByName(batchId, name);
-        }
 
         public Task<Section?> GetEntityById(int sectionId)
         {
             return _unitOfWorkRepository.SectionRepository.GetEntityById(sectionId);
         }
 
-        public Task<Section?> GetEntityByName(int batchId, string name)
-        {
-            return _unitOfWorkRepository.SectionRepository.GetEntityByName(batchId, name);
-        }
 
         public async Task<SectionAuthorizationInfo?> GetSectionAuthorizationInfoAsync(int sectionId)
         {
             return await _unitOfWorkRepository.SectionRepository.GetSectionAuthorizationInfoAsync(sectionId);
         }
 
-        public Task<PagedResult<SectionDTO>> GetSectionsPerBatches(int batchId, int pageNumber, int pageSize)
+        public Task<PagedResult<SectionDTO>> GetSectionsPerBatches(UserScope?scope,AcademicFilter?filter, int pageNumber, int pageSize)
         {
-            return _unitOfWorkRepository.SectionRepository.GetSectionsPerBatch(batchId, pageNumber, pageSize);
+            return _unitOfWorkRepository.SectionRepository.GetSectionsPerBatch(scope,filter, pageNumber, pageSize);
         }
 
         public async Task<AddUpdateServiceResponse<SectionDTO>> UpdateSection(UserScope?scope,int SectionId, UpdateSectionDTO updatedSection, int currentUserId)
