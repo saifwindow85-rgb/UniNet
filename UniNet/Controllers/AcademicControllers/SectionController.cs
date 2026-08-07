@@ -88,6 +88,14 @@ namespace UniNet.Controllers.AcademicControllers
 
         public async Task<ActionResult> DeleteSection([FromQuery] SectionIdParameter sectionIdParameter)
         {
+            var sectionInfo = await _sectionService.GetSectionAuthorizationInfoAsync(sectionIdParameter.SectionId);
+            if (sectionInfo == null)
+                return NotFound(ErrorMessages.NotFound<Section>(sectionIdParameter.SectionId));
+
+            var authorizationResult = await _authorizationService.AuthorizeAsync(User, sectionInfo, "SectionOwnerPolicy");
+            if (!authorizationResult.Succeeded)
+                return authorizationResult.NotAuthorized();
+
             var result = await _sectionService.Delete(sectionIdParameter.SectionId);
             return result.ToDeleteActionResult<Section>(sectionIdParameter.SectionId);
         }
