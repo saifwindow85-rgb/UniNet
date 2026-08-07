@@ -2,6 +2,8 @@
 using Contracts.Requests.LoginRequests;
 using Contracts.Results;
 using Domain.Entities.Identity;
+using Contracts.Enums;
+using Contracts.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,8 +16,10 @@ namespace Application.Mappers
     {
         public static TokenUserInfoDTO ToInfoDTO(this User user,List<string>userRoles,UserTypeResult?typeResult)
         {
+            if(typeResult == null)
+                typeResult = new UserTypeResult();
 
-            if(typeResult == null||(typeResult.EmployeeAuthorizationInfo == null && typeResult.StudentAuthorizationInfo == null))
+            if(typeResult.Type == UserType.SystemAdmin)
             {
                 return new TokenUserInfoDTO
                 {
@@ -26,7 +30,7 @@ namespace Application.Mappers
                 };
             }
 
-            if(typeResult.StudentAuthorizationInfo.BatchId!= null)
+            if(typeResult.Type == UserType.Student)
             {
                 return new TokenUserInfoDTO
                 {
@@ -42,22 +46,30 @@ namespace Application.Mappers
                 };
             }
 
-            return new TokenUserInfoDTO
+            if(typeResult.Type == UserType.Employee)
             {
-                UserId = user.UserId,
-                UserName = user.UserName,
-                UniversityId = user.UniversityId,
-                UserRoles = userRoles,
-                CollegeId = typeResult.EmployeeAuthorizationInfo?.CollegeId,
-                DepartmentId = typeResult.EmployeeAuthorizationInfo?.DepartmentId,
-                EmployeeId = typeResult.EmployeeAuthorizationInfo?.EmployeeId,
+                return new TokenUserInfoDTO
+                {
+                    UserId = user.UserId,
+                    UserName = user.UserName,
+                    UniversityId = user.UniversityId,
+                    UserRoles = userRoles,
+                    CollegeId = typeResult.EmployeeAuthorizationInfo?.CollegeId,
+                    DepartmentId = typeResult.EmployeeAuthorizationInfo?.DepartmentId,
+                    EmployeeId = typeResult.EmployeeAuthorizationInfo?.EmployeeId,
 
-            };
+                };
+            }
+
+            return new TokenUserInfoDTO();
         }
 
         public static TokenUserInfoDTO ToInfoDTO(this UserToken token,List<string>userRoles,UserTypeResult? typeResult)
         {
-            if (typeResult == null||(typeResult.EmployeeAuthorizationInfo == null&&typeResult.StudentAuthorizationInfo ==null))
+            if (typeResult == null)
+                typeResult = new UserTypeResult();
+
+            if (typeResult.Type == UserType.SystemAdmin)
             {
                 return new TokenUserInfoDTO
                 {
@@ -67,7 +79,7 @@ namespace Application.Mappers
                     UserRoles = userRoles,
                 };
             }
-            if(typeResult.StudentAuthorizationInfo.BatchId != null)
+            if(typeResult.Type == UserType.Student)
             {
                 return new TokenUserInfoDTO
                 {
@@ -81,16 +93,22 @@ namespace Application.Mappers
                     StudentId = typeResult.StudentAuthorizationInfo?.StudentId,
                 };
             }
-            return new TokenUserInfoDTO
+
+            if(typeResult.Type == UserType.Employee)
             {
-                UserId = token.UserId,
-                UserName = token.UserName,
-                UniversityId= token.UniversityId,
-                UserRoles = userRoles,
-                CollegeId = typeResult.EmployeeAuthorizationInfo?.CollegeId,
-                DepartmentId = typeResult.EmployeeAuthorizationInfo?.DepartmentId,
-                EmployeeId = typeResult.EmployeeAuthorizationInfo?.EmployeeId,
-            };
+                return new TokenUserInfoDTO
+                {
+                    UserId = token.UserId,
+                    UserName = token.UserName,
+                    UniversityId = token.UniversityId,
+                    UserRoles = userRoles,
+                    CollegeId = typeResult.EmployeeAuthorizationInfo?.CollegeId,
+                    DepartmentId = typeResult.EmployeeAuthorizationInfo?.DepartmentId,
+                    EmployeeId = typeResult.EmployeeAuthorizationInfo?.EmployeeId,
+                };
+            }
+
+            return new TokenUserInfoDTO();
         }
     }
 }

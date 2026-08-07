@@ -93,6 +93,10 @@ namespace DataAccessLayer.Repos.StudentRepository
             var query = _context.Students.AsNoTracking().AsQueryable();
             if (filter == null)
                 filter = new StudentFilter();
+
+            if (scope == null || (scope.UniversityId == null && scope.CollegeId == null && scope.DepartmentId == null && scope.BatchId == null))
+                scope = new UserScope();
+
             if (!scope.BatchId.HasValue)
             {
                 if (scope.UniversityId.HasValue)
