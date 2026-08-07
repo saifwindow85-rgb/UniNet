@@ -62,7 +62,7 @@ namespace DataAccessLayer.Repos.AcademicRepositories
         public async Task<PagedResult<CollegeDTO>> GetAllColleges(AcademicFilter? filter,int pageNumber, int pageSize)
         {
             var query = _context.Colleges.AsNoTracking().OrderBy(c=>c.UniversityId).ThenBy(c=>c.CollegeId).AsQueryable();
-            if (filter == null)
+            if(filter == null)
                 filter = new AcademicFilter();
 
             if (!string.IsNullOrEmpty(filter?.Search))
@@ -73,6 +73,11 @@ namespace DataAccessLayer.Repos.AcademicRepositories
             if(filter.UniversityId.HasValue)
             {
                 query = query.Where(c => c.UniversityId == filter.UniversityId.Value);
+            }
+
+            if(filter.CollegeId.HasValue)
+            {
+                query = query.Where(c => c.CollegeId == filter.CollegeId);
             }
 
             if(filter.StartDate.HasValue)
@@ -89,7 +94,8 @@ namespace DataAccessLayer.Repos.AcademicRepositories
 
         public async Task<PagedResult<CollegeDTO>> GetAllCollegesPerUniversity(UserScope?scope,AcademicFilter?filter, int pageNumber, int pageSize)
         {
-            if (scope == null)
+
+            if (scope == null || (scope.UniversityId == null && scope.CollegeId == null && scope.DepartmentId == null && scope.BatchId == null))
                 scope = new UserScope();
 
             if (filter == null)
@@ -105,6 +111,7 @@ namespace DataAccessLayer.Repos.AcademicRepositories
             {
                 query = query.Where(c => c.UniversityId == filter.UniversityId);
             }
+
 
             if(!string.IsNullOrEmpty(filter.Search))
             {

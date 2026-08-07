@@ -110,20 +110,13 @@ namespace Application.Services.AcademicServices
             return await _unitOfWork.DepartmentRepository.GetDTOById(departmentId);
         }
 
-        public async Task<DepartmentDTO?> GetDTOByName(int collegeId, string name)
-        {
-            return await _unitOfWork.DepartmentRepository.GetDTOByName(collegeId, name);
-        }
 
         public async Task<Department?> GetEntityById(int departmentId)
         {
             return await _unitOfWork.DepartmentRepository.GetEntityById(departmentId);
         }
 
-        public async Task<Department?> GetEntityByName(int departmentId, string name)
-        {
-            return await _unitOfWork.DepartmentRepository.GetEntityByName(departmentId, name);
-        }
+     
 
         public async Task<AddUpdateServiceResponse<DepartmentDTO>> UpdateDepartment(UserScope?scope,int departmentId, UpdateDepartmentDTO updatedDepartment, int currentUserId)
         {
