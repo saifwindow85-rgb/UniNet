@@ -12,6 +12,7 @@ using Contracts.Common.Messages;
 using Contracts.Responses;
 using Contracts.Requests.AcademicRequests.BatchRequests;
 using Contracts.Common.Extensions;
+using Contracts.Requests.AcademicRequests.CommonAcademicRequests;
 
 namespace UniNet.Controllers.AcademicControllers
 {
@@ -36,9 +37,9 @@ namespace UniNet.Controllers.AcademicControllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<PagedResult<BatchDTO>>> GetBatches([FromQuery]PagedResultParameters @pagedResultParameters)
+        public async Task<ActionResult<PagedResult<BatchDTO>>> GetBatches([FromQuery]AcademicFilter?filter,[FromQuery]PagedResultParameters @pagedResultParameters)
         {
-            var batches = await _batchService.GetAllBatches(pagedResultParameters.PageNumber, @pagedResultParameters.PageSize);
+            var batches = await _batchService.GetAllBatches(filter,pagedResultParameters.PageNumber, @pagedResultParameters.PageSize);
             return batches.ToPagedActioneResult();
         }
 
@@ -49,9 +50,9 @@ namespace UniNet.Controllers.AcademicControllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<PagedResult<BatchDTO>>> GetBatchesPerDepartment
-            ([FromQuery] PagedResultParameters @pagedResultParameters, [FromQuery]DepartmentIdParameter @departmentIdParameter)
+            ([FromQuery]AcademicFilter?filter,[FromQuery] PagedResultParameters @pagedResultParameters)
         {
-            var batches = await _batchService.GetBatchesPerDepartment(departmentIdParameter.DepartmentId,pagedResultParameters.PageNumber, @pagedResultParameters.PageSize);
+            var batches = await _batchService.GetBatchesPerDepartment(_currentUserService.ToUserScope(),filter,pagedResultParameters.PageNumber, @pagedResultParameters.PageSize);
             return batches.ToPagedActioneResult();
         }
 
@@ -79,19 +80,6 @@ namespace UniNet.Controllers.AcademicControllers
             return batch.GetResourceEndpoints(batchIdParameter.BatchId, typeof(Batch).Name);
         }
 
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
-        [HttpGet("by-name", Name = "GetBatchByName")]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<BatchDTO>> GetBatchByName
-            ([FromQuery]DepartmentIdParameter @departmentIdParameter,[FromQuery] BaseStringParametre @stringparameter)
-        {
-            var batch = await _batchService.GetDTOByName(departmentIdParameter.DepartmentId,stringparameter.Name);
-            return batch.GetResourceEndpoints(stringparameter.Name, typeof(Batch).Name);
-        }
 
         [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
         [HttpDelete(Name = "DeleteBatch")]
@@ -140,7 +128,7 @@ namespace UniNet.Controllers.AcademicControllers
         public async Task<ActionResult<AddUpdateServiceResponse<BatchDTO>>> UpdateBatch
             ([FromQuery]BatchIdParameter @batchIdParameter, [FromBody]UpdateBatchDTO updatedBatch)
         {
-            var response = await _batchService.UpdateBatch(batchIdParameter.BatchId,updatedBatch, _currentUserService.UserId);
+            var response = await _batchService.UpdateBatch(_currentUserService.ToUserScope(),batchIdParameter.BatchId,updatedBatch, _currentUserService.UserId);
             return response.ToActionResult();
         }
     }

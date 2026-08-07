@@ -1,4 +1,6 @@
 ﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
+using Contracts.Requests.AcademicRequests.CommonAcademicRequests;
+using Contracts.Requests.RequestParameters;
 using Contracts.Responses.AcademicResponses.BatchResponses;
 using Contracts.Results;
 using DataAccessLayer.Dbcontext;
@@ -69,10 +71,50 @@ namespace DataAccessLayer.Repos.AcademicRepositories
             return await _context.Batches.AnyAsync(b => b.DepartmentId == departmentId && b.Name == name);
         }
 
-        public async Task<PagedResult<BatchDTO>> GetAllBatches(int pageNumber, int pageSize)
+        public async Task<PagedResult<BatchDTO>> GetAllBatches(AcademicFilter?filter,int pageNumber, int pageSize)
         {
-            return await _context.Batches.AsNoTracking().OrderBy(b=>b.DepartmentId).Select(ToDTO)
-                .ToPagedResultAsync(pageNumber, pageSize);
+           if(filter == null)
+                filter = new AcademicFilter();
+
+            var query = _context.Batches.AsNoTracking().OrderBy(b => b.Department.College.UniversityId).ThenBy(b => b.Department.CollegeId)
+                 .ThenBy(b => b.DepartmentId).ThenBy(b => b.BatchId).AsQueryable();
+
+            if(filter.UniversityId.HasValue)
+            {
+                query = query.Where(b=>b.Department.College.UniversityId == filter.UniversityId);
+            }
+
+            if(filter.CollegeId.HasValue)
+            {
+                query = query.Where(b => b.Department.CollegeId == filter.CollegeId);
+            }
+
+            if(filter.DepartmentId.HasValue)
+            {
+                query = query.Where(b=>b.DepartmentId == filter.DepartmentId);
+            }
+
+            if(filter.BatchId.HasValue)
+            {
+                query = query.Where(b => b.BatchId == filter.BatchId);
+            }
+
+            if(!string.IsNullOrEmpty(filter.Search))
+            {
+                query = query.Where(b => EF.Functions.Like(b.Name, $"%{filter.Search}%"));
+            }
+
+            if(filter.StartDate.HasValue)
+            {
+                query = query.Where(b=>b.CreatedAt >= filter.StartDate);
+            }
+
+            if(filter.EndDate.HasValue)
+            {
+                query = query.Where(b=>b.CreatedAt <= filter.EndDate);
+            }
+
+            return await query.Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
         }
 
         public async Task<BatchAuthorizationInfo?> GetBatchAuthorizationInfoAsync(int batchId)
@@ -80,11 +122,73 @@ namespace DataAccessLayer.Repos.AcademicRepositories
             return await _context.Batches.Where(b => b.BatchId == batchId).Select(ToInfo).SingleOrDefaultAsync();
         }
 
-        public async Task<PagedResult<BatchDTO>> GetBatchesPerDepartment(int departmentId, int pageNumber, int pageSize)
+        public async Task<PagedResult<BatchDTO>> GetBatchesPerDepartment(UserScope?scope,AcademicFilter?filter, int pageNumber, int pageSize)
         {
-            return await _context.Batches.AsNoTracking()
-                .Where(b=>b.DepartmentId == departmentId).OrderBy(b => b.DepartmentId).Select(ToDTO)
-                        .ToPagedResultAsync(pageNumber, pageSize);
+           if(filter == null)
+                filter = new AcademicFilter();
+
+            if (scope == null || (scope.UniversityId == null && scope.CollegeId == null && scope.DepartmentId == null && scope.BatchId == null))
+                scope = new UserScope();
+
+            var query = _context.Batches.AsNoTracking().OrderBy(b => b.Department.College.UniversityId).ThenBy(b => b.Department.CollegeId)
+                       .ThenBy(b => b.DepartmentId).ThenBy(b => b.BatchId).AsQueryable();
+
+            if(scope.UniversityId.HasValue)
+            {
+                query = query.Where(b => b.Department.College.UniversityId == scope.UniversityId);
+            }
+
+            else if(filter.UniversityId.HasValue)
+            {
+                query = query.Where(b => b.Department.College.UniversityId == filter.UniversityId);
+            }
+
+            if(scope.CollegeId.HasValue)
+            {
+                query = query.Where(b => b.Department.CollegeId == scope.CollegeId);
+            }
+
+            else if(filter.CollegeId.HasValue)
+            {
+                query = query.Where(b => b.Department.CollegeId == filter.CollegeId);
+            }
+
+            if(scope.DepartmentId.HasValue)
+            {
+                query = query.Where(b => b.DepartmentId == scope.DepartmentId);
+            }
+
+            else if(filter.DepartmentId.HasValue)
+            {
+                query = query.Where(b => b.DepartmentId == filter.DepartmentId);
+            }
+            
+            if(scope.BatchId.HasValue)
+            {
+                query = query.Where(b=>b.BatchId == scope.BatchId);
+            }
+
+            else if(filter.BatchId.HasValue)
+            {
+                query = query.Where(b => b.BatchId == filter.BatchId);
+            }
+
+            if(!string.IsNullOrEmpty(filter.Search))
+            {
+                query = query.Where(b => EF.Functions.Like(b.Name, $"%{filter.Search}%"));
+            }
+
+            if(filter.StartDate.HasValue)
+            {
+                query = query.Where(b => b.CreatedAt >= filter.StartDate);
+            }
+
+            if(filter.EndDate.HasValue)
+            {
+                query = query.Where(b => b.CreatedAt <= filter.EndDate);
+            }
+
+            return await query.Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
         }
 
         public async Task<BatchDTO?> GetDTOById(int batchId)
@@ -92,19 +196,11 @@ namespace DataAccessLayer.Repos.AcademicRepositories
             return await _context.Batches.Select(ToDTO).SingleOrDefaultAsync(b=>b.BatchId==batchId);
         }
 
-        public async Task<BatchDTO?> GetDTOByName(int departmentId, string name)
-        {
-            return await _context.Batches.Where(b => b.DepartmentId == departmentId && b.Name == name).Select(ToDTO).SingleOrDefaultAsync();
-        }
 
         public async Task<Batch?> GetEntityById(int batchId)
         {
             return await _context.Batches.FindAsync(batchId);
         }
 
-        public async Task<Batch?> GetEntityByName(int departmentId, string name)
-        {
-            return await _context.Batches.Where(b=>b.DepartmentId == departmentId && b.Name == name).SingleOrDefaultAsync();
-        }
     }
 }
