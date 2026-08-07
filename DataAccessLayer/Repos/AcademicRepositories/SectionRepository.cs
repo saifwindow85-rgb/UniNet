@@ -1,4 +1,6 @@
 ﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
+using Contracts.Requests.AcademicRequests.CommonAcademicRequests;
+using Contracts.Requests.RequestParameters;
 using Contracts.Responses.AcademicResponses.SectionResponses;
 using Contracts.Results;
 using DataAccessLayer.Dbcontext;
@@ -71,34 +73,126 @@ namespace DataAccessLayer.Repos.AcademicRepositories
             return await _context.Sections.Where(s => s.BatchId == batchId).AnyAsync(s => s.Name == name);
         }
 
-        public async Task<PagedResult<SectionDTO>> GetAllSections(int pageNumber, int pageSize)
+        public async Task<PagedResult<SectionDTO>> GetAllSections(AcademicFilter?filter,int pageNumber, int pageSize)
         {
-            return await _context.Sections.AsNoTracking().OrderBy(s => s.BatchId).Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
+            if(filter == null)
+                filter = new AcademicFilter();
+
+            var query = _context.Sections.AsNoTracking().OrderBy(s => s.BatchId).ThenBy(s => s.SectionId).AsQueryable();
+
+            if(filter.UniversityId.HasValue)
+            {
+                query = query.Where(s => s.Batch.Department.College.UniversityId == filter.UniversityId);
+            }
+
+            if(filter.CollegeId.HasValue)
+            {
+                query = query.Where(s => s.Batch.Department.CollegeId == filter.CollegeId);
+            }
+
+            if(filter.DepartmentId.HasValue)
+            {
+                query = query.Where(s=>s.Batch.DepartmentId == filter.DepartmentId);
+            }
+
+            if(filter.BatchId.HasValue)
+            {
+                query = query.Where(s=>s.BatchId == filter.BatchId);
+            }
+
+            if(filter.SectionId.HasValue)
+            {
+                query = query.Where(s=>s.SectionId == filter.SectionId);
+            }
+
+            if(!string.IsNullOrEmpty(filter.Search))
+            {
+                query = query.Where(s => EF.Functions.Like(s.Name, $"%{filter.Search}%"));
+            }
+
+            if(filter.StartDate.HasValue)
+            {
+                query = query.Where(s=>s.CreatedAt >=  filter.StartDate);
+            }
+
+            if(filter.EndDate.HasValue)
+            {
+                query = query.Where(s=>s.CreatedAt <= filter.EndDate);
+            }
+
+            return await query.Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
         }
+
+
 
         public async Task<SectionDTO?> GetDTOById(int sectionId)
         {
             return await _context.Sections.AsNoTracking().Select(ToDTO).SingleOrDefaultAsync(s => s.SectionId == sectionId);
         }
-
-        public async Task<SectionDTO?> GetDTOByName(int batchId,string name)
-        {
-            return await  _context.Sections.AsNoTracking().Where(s=>s.BatchId == batchId && s.Name == name).Select(ToDTO).SingleOrDefaultAsync();
-        }
-
+  
         public async Task<Section?> GetEntityById(int sectionId)
         {
             return await _context.Sections.FindAsync(sectionId);
         }
 
-        public async Task<Section?> GetEntityByName(int batchId,string name)
-        {
-            return await _context.Sections.Where(s => s.BatchId == batchId && s.Name == name).SingleOrDefaultAsync();
-        }
 
-        public async Task<PagedResult<SectionDTO>> GetSectionsPerBatch(int batchId, int pageNumber, int pageSize)
+        public async Task<PagedResult<SectionDTO>> GetSectionsPerBatch(UserScope?scope,AcademicFilter?filter, int pageNumber, int pageSize)
         {
-           return await _context.Sections.AsNoTracking().Where(s=>s.BatchId == batchId).Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
+            if (filter == null)
+                filter = new AcademicFilter();
+
+            if (scope == null || (scope.UniversityId == null && scope.CollegeId == null && scope.DepartmentId == null && scope.BatchId == null))
+                scope = new UserScope();
+
+            var query = _context.Sections.AsNoTracking().OrderBy(s => s.BatchId).ThenBy(s => s.SectionId).AsQueryable();
+
+            if (scope.UniversityId.HasValue)
+            {
+                query = query.Where(s => s.Batch.Department.College.UniversityId == scope.UniversityId);
+            }
+
+            else if (filter.UniversityId.HasValue)
+            {
+                query = query.Where(s => s.Batch.Department.College.UniversityId == filter.UniversityId);
+            }
+
+            if (scope.CollegeId.HasValue)
+            {
+                query = query.Where(s => s.Batch.Department.CollegeId == scope.CollegeId);
+            }
+
+            else if (filter.CollegeId.HasValue)
+            {
+                query = query.Where(s => s.Batch.Department.CollegeId == filter.CollegeId);
+            }
+
+            if (scope.DepartmentId.HasValue)
+            {
+                query = query.Where(s => s.Batch.DepartmentId == scope.DepartmentId);
+            }
+
+            else if (filter.DepartmentId.HasValue)
+            {
+                query = query.Where(s => s.Batch.DepartmentId == filter.DepartmentId);
+            }
+
+
+            if (!string.IsNullOrEmpty(filter.Search))
+            {
+                query = query.Where(s => EF.Functions.Like(s.Name, $"%{filter.Search}%"));
+            }
+
+            if (filter.StartDate.HasValue)
+            {
+                query = query.Where(s => s.CreatedAt >= filter.StartDate);
+            }
+
+            if (filter.EndDate.HasValue)
+            {
+                query = query.Where(s => s.CreatedAt <= filter.EndDate);
+            }
+
+            return await query.Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
         }
 
         public async Task<SectionAuthorizationInfo?> GetSectionAuthorizationInfoAsync(int sectionId)
