@@ -163,15 +163,6 @@ namespace DataAccessLayer.Repos.AcademicRepositories
                 query = query.Where(b => b.DepartmentId == filter.DepartmentId);
             }
             
-            if(scope.BatchId.HasValue)
-            {
-                query = query.Where(b=>b.BatchId == scope.BatchId);
-            }
-
-            else if(filter.BatchId.HasValue)
-            {
-                query = query.Where(b => b.BatchId == filter.BatchId);
-            }
 
             if(!string.IsNullOrEmpty(filter.Search))
             {

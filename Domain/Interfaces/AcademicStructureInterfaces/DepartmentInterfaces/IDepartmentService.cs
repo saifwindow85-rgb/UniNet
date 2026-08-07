@@ -20,8 +20,6 @@ namespace Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces
         public Task<PagedResult<DepartmentDTO>>GetDepartmentsPerCollege(UserScope?scope,AcademicFilter?filter,int pageNumber,int pageSize);
         public Task<DepartmentDTO?> GetDTOById(int departmentId);
         public Task<Department?>GetEntityById(int departmentId);
-        public Task<DepartmentDTO?> GetDTOByName(int collegeId, string name);
-        public Task<Department?>GetEntityByName(int departmentId, string name);
         public Task<AddUpdateServiceResponse<DepartmentDTO>> AddDepartment(UserScope?scope,AddDepartmentDTO newDepartment, int currentUserId);
         public Task<AddUpdateServiceResponse<DepartmentDTO>>UpdateDepartment(UserScope?scope,int departmentId,UpdateDepartmentDTO updatedDepartment,int currentUserId);
         public Task<bool> ExistsById(int departmentId);
