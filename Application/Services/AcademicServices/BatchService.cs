@@ -2,6 +2,7 @@
 using Contracts.Common.Extensions;
 using Contracts.Enums;
 using Contracts.Requests.AcademicRequests.BatchRequests;
+using Contracts.Requests.AcademicRequests.CommonAcademicRequests;
 using Contracts.Requests.RequestParameters;
 using Contracts.Responses;
 using Contracts.Responses.AcademicResponses.BatchResponses;
@@ -89,9 +90,9 @@ namespace Application.Services.AcademicServices
             return await _unitOfWorkRepository.BatchRepository.ExistsByName(departmentId, name); 
         }
 
-        public async Task<PagedResult<BatchDTO>> GetAllBatches(int pageNumber, int pageSize)
+        public async Task<PagedResult<BatchDTO>> GetAllBatches(AcademicFilter?filter,int pageNumber, int pageSize)
         {
-            return await _unitOfWorkRepository.BatchRepository.GetAllBatches(pageNumber, pageSize);
+            return await _unitOfWorkRepository.BatchRepository.GetAllBatches(filter,pageNumber, pageSize);
         }
 
         public async Task<BatchAuthorizationInfo?> GetBatchAuthorizationInfoAsync(int batchId)
@@ -99,9 +100,9 @@ namespace Application.Services.AcademicServices
             return await _unitOfWorkRepository.BatchRepository.GetBatchAuthorizationInfoAsync(batchId);
         }
 
-        public async Task<PagedResult<BatchDTO>> GetBatchesPerDepartment(int departmentId, int pageNumber, int pageSize)
+        public async Task<PagedResult<BatchDTO>> GetBatchesPerDepartment(UserScope?scope,AcademicFilter?filter, int pageNumber, int pageSize)
         {
-            return await _unitOfWorkRepository.BatchRepository.GetBatchesPerDepartment(departmentId, pageNumber, pageSize);
+            return await _unitOfWorkRepository.BatchRepository.GetBatchesPerDepartment(scope,filter, pageNumber, pageSize);
         }
 
         public async Task<BatchDTO?> GetDTOById(int batchId)
@@ -109,22 +110,14 @@ namespace Application.Services.AcademicServices
             return await _unitOfWorkRepository.BatchRepository.GetDTOById(batchId);
         }
 
-        public async Task<BatchDTO?> GetDTOByName(int departmentId, string name)
-        {
-            return await _unitOfWorkRepository.BatchRepository.GetDTOByName(departmentId, name);
-        }
-
+ 
         public async Task<Batch?> GetEntityById(int batchId)
         {
             return await _unitOfWorkRepository.BatchRepository.GetEntityById(batchId);
         }
 
-        public async Task<Batch?> GetEntityByName(int departmentId, string name)
-        {
-            return await _unitOfWorkRepository.BatchRepository.GetEntityByName(departmentId, name);
-        }
 
-        public async Task<AddUpdateServiceResponse<BatchDTO>> UpdateBatch(int batchId, UpdateBatchDTO updatedBatch, int currentUserId)
+        public async Task<AddUpdateServiceResponse<BatchDTO>> UpdateBatch(UserScope?scope,int batchId, UpdateBatchDTO updatedBatch, int currentUserId)
         {
             var validationResult = await _updateValidator.ValidateAsync(updatedBatch);
 
@@ -132,6 +125,17 @@ namespace Application.Services.AcademicServices
             {
                 return AddUpdateServiceResponse<BatchDTO>.Failure(validationResult.Errors
                     .Select(x => $"{x.PropertyName} : {x.ErrorMessage}").ToList(), EnErrorTypes.InvalidData);
+            }
+
+            var batchInfo = await GetBatchAuthorizationInfoAsync(batchId);
+            if(batchInfo == null)
+            {
+                return AddUpdateServiceResponse<BatchDTO>.ResourceDoesntExist<Batch>();
+            }
+
+            if(!scope.IsWithinScope(batchInfo.UniverseId,batchInfo.CollegeId,batchInfo.DepartmentId,batchInfo.BatchId))
+            {
+                return AddUpdateServiceResponse<BatchDTO>.ResourceDoesntExist<Batch>();
             }
 
             var batch = await GetEntityById(batchId);
