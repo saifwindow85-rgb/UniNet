@@ -30,7 +30,7 @@ namespace UniNet.Controllers.AcademicControllers
             _authorizationService = authorizationService;
         }
 
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin")]
+        [Authorize(Roles = "Super Admin")]
         [HttpGet(Name ="GetAllDepartments")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -42,7 +42,7 @@ namespace UniNet.Controllers.AcademicControllers
             return departments.ToPagedActioneResult();
         }
 
-        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin")]
         [HttpGet("collegeId",Name = "GetDepartmentsPerCollege")]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
