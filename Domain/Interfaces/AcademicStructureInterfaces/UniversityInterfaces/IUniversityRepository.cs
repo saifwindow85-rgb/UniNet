@@ -1,4 +1,5 @@
 ﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
+using Contracts.Requests.AcademicRequests.CommonAcademicRequests;
 using Contracts.Requests.AcademicRequests.UniversityRequests;
 using Contracts.Responses;
 using Contracts.Responses.AcademicResponses.UniversityResponses;
@@ -14,7 +15,7 @@ namespace Domain.Interfaces.AcademicStructureInterfaces.UniversityInterfaces
 {
     public interface IUniversityRepository
     {
-        public Task<PagedResult<UniversityDTO>> GetAllUniversities(int pageNumber, int pageSize);
+        public Task<PagedResult<UniversityDTO>> GetAllUniversities(AcademicFilter?filter,int pageNumber, int pageSize);
         public void Add(University university);
         public Task<bool> Delete(int universityId);
         public Task<UniversityDTO?>GetUniversityDTOById(int universityId);

@@ -1,4 +1,5 @@
 ﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
+using Contracts.Requests.AcademicRequests.CommonAcademicRequests;
 using Contracts.Responses.AcademicResponses.UniversityResponses;
 using Contracts.Results;
 using DataAccessLayer.Dbcontext;
@@ -55,9 +56,28 @@ namespace DataAccessLayer.Repos.AcademicRepositories
             return true;
         }
 
-        public async Task<PagedResult<UniversityDTO>> GetAllUniversities(int pageNumber, int pageSize)
+        public async Task<PagedResult<UniversityDTO>> GetAllUniversities(AcademicFilter?filter,int pageNumber, int pageSize)
         {
-            return await _context.Universities.Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
+            if(filter == null)
+                filter = new AcademicFilter();
+            var query = _context.Universities.AsNoTracking().OrderBy(u => u.UniversityId).ThenBy(u => u.Name).AsQueryable();
+
+            if(!string.IsNullOrEmpty(filter.Search))
+            {
+                query = query.Where(u => EF.Functions.Like(u.Name, $"%{filter.Search}%"));
+            }
+
+            if(filter.StartDate.HasValue)
+            {
+                query = query.Where(u => u.CreatedAt >= filter.StartDate);
+            }
+
+            if(filter.EndDate.HasValue)
+            {
+                query = query.Where(u=>u.CreatedAt <= filter.EndDate);
+            }
+
+            return await query.Select(ToDTO).ToPagedResultAsync(pageNumber, pageSize);
         }
 
         public async Task<UniversityAuthorizationInfo?> GetUniversityAuthorizationInfoAsync(int universityId)

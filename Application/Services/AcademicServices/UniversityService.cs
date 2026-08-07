@@ -1,5 +1,6 @@
 ﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
 using Contracts.Enums;
+using Contracts.Requests.AcademicRequests.CommonAcademicRequests;
 using Contracts.Requests.AcademicRequests.UniversityRequests;
 using Contracts.Responses;
 using Contracts.Responses.AcademicResponses.UniversityResponses;
@@ -76,9 +77,9 @@ namespace Application.Services.AcademicServices
             return await _unitOfWorkRepository.UniversityRepository.GetUniversityEntityById(universityId);
         }
 
-        public async Task<PagedResult<UniversityDTO>> GetAllUniversities(int pageNumber, int pageSize)
+        public async Task<PagedResult<UniversityDTO>> GetAllUniversities(AcademicFilter?filter,int pageNumber, int pageSize)
         {
-            return await _unitOfWorkRepository.UniversityRepository.GetAllUniversities(pageNumber, pageSize);
+            return await _unitOfWorkRepository.UniversityRepository.GetAllUniversities(filter,pageNumber, pageSize);
         }
 
         public Task<UniversityAuthorizationInfo?> GetUniversityAuthorizationInfoAsync(int universityId)

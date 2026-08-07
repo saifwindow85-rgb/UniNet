@@ -1,4 +1,5 @@
 ﻿using Contracts.Common.Messages;
+using Contracts.Requests.AcademicRequests.CommonAcademicRequests;
 using Contracts.Requests.AcademicRequests.UniversityRequests;
 using Contracts.Requests.RequestParameters;
 using Contracts.Responses;
@@ -35,9 +36,9 @@ namespace UniNet.Controllers.AcademicControllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<PagedResult<UniversityDTO>>> GetAllUniversities([FromQuery]PagedResultParameters @parameters)
+        public async Task<ActionResult<PagedResult<UniversityDTO>>> GetAllUniversities([FromQuery]AcademicFilter?filter,[FromQuery]PagedResultParameters @parameters)
         {
-            var universities = await _uinversityService.GetAllUniversities(parameters.PageNumber, parameters.PageSize);
+            var universities = await _uinversityService.GetAllUniversities(filter,parameters.PageNumber, parameters.PageSize);
             return universities.ToPagedActioneResult();
         }
 
