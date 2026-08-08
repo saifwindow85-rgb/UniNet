@@ -58,7 +58,7 @@ namespace Application.Services.EmployeeService
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.InvalidRelatedData();
             }
-            if(!scope.IsWithinScope(collegeInfo.UniversityId,collegeInfo.CollegeId))
+            if(!scope.IsWithinScope(collegeInfo.UniversityId,collegeInfo.CollegeId,null,null))
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.ResourceDoesntExist<College>();
                 // not returning 403 because we dont want the end user to know that resource exists even
@@ -92,7 +92,7 @@ namespace Application.Services.EmployeeService
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.InvalidRelatedData();
             }
-            if(!scope.IsWithinScope(departmentInfo.UniversityId,departmentInfo.CollegeId,departmentInfo.DepartmentId))
+            if(!scope.IsWithinScope(departmentInfo.UniversityId,departmentInfo.CollegeId,departmentInfo.DepartmentId,null))
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.ResourceDoesntExist<Department>();
                 // not returning 403 because we dont want the end user to know that resource exists even
@@ -183,7 +183,7 @@ namespace Application.Services.EmployeeService
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.InvalidRelatedData();
             }
-            if(!scope.IsWithinScope(collegeInfo.UniversityId,collegeInfo.CollegeId))
+            if(!scope.IsWithinScope(collegeInfo.UniversityId,collegeInfo.CollegeId,null,null))
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.ResourceDoesntExist<College>();
                 // not returning 403 because we dont want the end user to know that resource exists even
@@ -225,7 +225,7 @@ namespace Application.Services.EmployeeService
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.InvalidRelatedData();
             }
-            if(!scope.IsWithinScope(departmentInfo.UniversityId,departmentInfo.CollegeId,departmentInfo.DepartmentId))
+            if(!scope.IsWithinScope(departmentInfo.UniversityId,departmentInfo.CollegeId,departmentInfo.DepartmentId,null))
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.ResourceDoesntExist<Department>();
                 // not returning 403 because we dont want the end user to know that resource exists even

@@ -9,10 +9,11 @@ namespace Contracts.Common.Extensions
 {
     public static class EmployeeScopeExtension
     {
-        public static bool IsWithinScope(this UserScope?scope,int universityId,int?collegeId = null,int?departmentId =null,int?batchId = null)
+        public static bool IsWithinScope(this UserScope?scope,int universityId,int?collegeId,int?departmentId,int?batchId)
         {
-            if (scope == null||(scope.UniversityId == null&&scope.CollegeId == null&&scope.DepartmentId ==null))
+            if (scope == null|| scope.IsGlobal)
                 return true;
+
             if(scope.BatchId.HasValue)
                 return batchId == scope.BatchId;
 

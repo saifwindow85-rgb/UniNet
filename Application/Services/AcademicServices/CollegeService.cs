@@ -46,7 +46,7 @@ namespace Application.Services.AcademicServices
                 return AddUpdateServiceResponse<CollegeDTO>.ResourceDoesntExist<University>();
             }
 
-            if(!scope.IsWithinScope(UniversityInfo.UniversityId))
+            if(!scope.IsWithinScope(UniversityInfo.UniversityId,null,null,null))
             {
                 return AddUpdateServiceResponse<CollegeDTO>.ResourceDoesntExist<University>();
             }
@@ -132,7 +132,7 @@ namespace Application.Services.AcademicServices
 
             }
 
-            if(!scope.IsWithinScope(collegeInfo.UniversityId,collegeInfo.CollegeId))
+            if(!scope.IsWithinScope(collegeInfo.UniversityId,collegeInfo.CollegeId,null,null))
             {
                 return AddUpdateServiceResponse<CollegeDTO>.ResourceDoesntExist<College>();
 
