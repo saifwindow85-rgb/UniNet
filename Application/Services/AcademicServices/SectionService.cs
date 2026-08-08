@@ -47,7 +47,7 @@ namespace Application.Services.AcademicServices
 
             }
 
-            if(!scope.IsWithinScope(batchInfo.UniverseId,batchInfo.CollegeId,batchInfo.DepartmentId))
+            if(!scope.IsWithinScope(batchInfo.UniverseId,batchInfo.CollegeId,batchInfo.DepartmentId,batchInfo.BatchId))
             {
                 return AddUpdateServiceResponse<SectionDTO>.ResourceDoesntExist<Batch>();
             }

@@ -47,7 +47,7 @@ namespace Application.Services.AcademicServices
                 return AddUpdateServiceResponse<DepartmentDTO>.ResourceDoesntExist<Department>();
             }
             
-            if(!scope.IsWithinScope(collegeInfo.UniversityId,collegeInfo.CollegeId))
+            if(!scope.IsWithinScope(collegeInfo.UniversityId,collegeInfo.CollegeId,null,null))
             {
                 return AddUpdateServiceResponse<DepartmentDTO>.ResourceDoesntExist<Department>();
             }
@@ -134,7 +134,7 @@ namespace Application.Services.AcademicServices
                 return AddUpdateServiceResponse<DepartmentDTO>.ResourceDoesntExist<Department>();
             }
 
-            if(!scope.IsWithinScope(departmentInfo.UniversityId,departmentInfo.CollegeId,departmentInfo.DepartmentId))
+            if(!scope.IsWithinScope(departmentInfo.UniversityId,departmentInfo.CollegeId,departmentInfo.DepartmentId,null))
             {
                 return AddUpdateServiceResponse<DepartmentDTO>.ResourceDoesntExist<Department>();
             }

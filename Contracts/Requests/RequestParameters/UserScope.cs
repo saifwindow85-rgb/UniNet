@@ -14,5 +14,7 @@ namespace Contracts.Requests.RequestParameters
 
         public int? DepartmentId { get; set; }
         public int? BatchId { get; set; }
+
+        public bool IsGlobal => UniversityId is null && CollegeId is null && DepartmentId is null && BatchId is null;
     }
 }
