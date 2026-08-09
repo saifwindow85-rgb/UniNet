@@ -331,7 +331,7 @@ namespace Application.Services.EmployeeService
                 await _unitOfWorkRepository.CommitTransactionAsync();
                 return employeeEntity;
             }
-            catch(Exception ex)
+            catch(Exception)
             {
                 await _unitOfWorkRepository.RollbackTransactionAsync();
                 throw;

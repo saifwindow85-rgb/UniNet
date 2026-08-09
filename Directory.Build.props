@@ -1,0 +1,25 @@
+<Project>
+
+  <!--
+    خصائص مشتركة لكل مشاريع الحل.
+    MSBuild يستورد هذا الملف تلقائيًا في كل مشروع تحت هذا المجلد، قبل قراءة الـ .csproj —
+    فأي مشروع يستطيع تجاوز أي قيمة هنا بإعادة تعريفها في ملفه الخاص.
+    مصدر واحد للحقيقة: ترقية إطار العمل تتم من هنا فقط، لا في خمسة ملفات.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <!--
+    أي تحذير يوقف البناء. الهدف ليس الكمال الشكلي — بل أن يمسك المُصرِّف الأخطاء
+    نيابةً عن المراجعة اليدوية (تحذيرا CS8602 كانا يشيران لعطل تسجيل دخول الموظفين
+    في كل بناء لجولتين كاملتين قبل أن يُلاحَظا).
+    لاستثناء تحذير بعينه عند الحاجة: <NoWarn>$(NoWarn);CS1591</NoWarn>
+  -->
+  <PropertyGroup>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+</Project>

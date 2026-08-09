@@ -1,0 +1,33 @@
+# يبني الحل كاملًا على خادم نظيف عند كل دفع أو Pull Request.
+# مع TreatWarningsAsErrors في Directory.Build.props، أي تحذير جديد يوقف البناء هنا أيضًا —
+# فلا يمر إلى master كود لا يُصرَّف، كما حدث في d9feabd.
+name: build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1) جلب الكود إلى الخادم
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2) تثبيت .NET SDK
+      #    لا بد من 9 أو أحدث: صيغة الحل UniNet.slnx غير مدعومة في SDK 8.
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      # 3) استرجاع الحزم (خطوة منفصلة ليظهر فشل الحزم مميّزًا عن فشل التصريف)
+      - name: Restore
+        run: dotnet restore UniNet.slnx
+
+      # 4) البناء. --no-restore لأن الاسترجاع تم أعلاه.
+      #    لا اتصال بقاعدة البيانات هنا — البناء لا يحتاج SQL Server ولا أي أسرار.
+      - name: Build
+        run: dotnet build UniNet.slnx --configuration Release --no-restore

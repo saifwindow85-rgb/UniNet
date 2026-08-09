@@ -21,7 +21,7 @@ namespace UniNet.Authorization.AuthorizationHandlers.AcademicAuthorizationHandle
         {
 
             var scope = _currentUserService.ToUserScope();
-            if(scope.IsWithinScope(college.UniversityId,college.CollegeId))
+            if(scope.IsWithinScope(college.UniversityId,college.CollegeId,null,null))
             {
                 context.Succeed(requirement);
             }
