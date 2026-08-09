@@ -13,7 +13,7 @@ namespace Contracts.Responses
         public bool IsSuccess { get; private set; }
         public List<string>? Errors { get; private set; }
         public EnErrorTypes? ErrorType { get; private set; }
-        public string ErrorMessage { get; private set; }
+        public string? ErrorMessage { get; private set; }
 
         public static AddUpdateServiceResponse<T> Success(T data) => new AddUpdateServiceResponse<T>
         {

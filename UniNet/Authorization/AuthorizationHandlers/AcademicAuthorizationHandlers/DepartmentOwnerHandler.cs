@@ -19,7 +19,7 @@ namespace UniNet.Authorization.AuthorizationHandlers.AcademicAuthorizationHandle
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, OwnershipRequirement requirement, DepartmentAuthorizationInfo department    )
         {
             var scope = _currentUserService.ToUserScope();
-            if(scope.IsWithinScope(department.UniversityId,department.CollegeId,department.DepartmentId))
+            if(scope.IsWithinScope(department.UniversityId,department.CollegeId,department.DepartmentId,null))
             {
                 context.Succeed(requirement);
             }
