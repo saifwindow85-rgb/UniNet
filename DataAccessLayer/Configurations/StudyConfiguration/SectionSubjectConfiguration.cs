@@ -17,6 +17,8 @@ namespace DataAccessLayer.Configurations.Study_Configuration
             builder.HasKey(s => s.SectionSubjectId);
             builder.Property(s => s.SectionSubjectId).ValueGeneratedOnAdd();
 
+
+            builder.HasIndex(s => new { s.SectionId, s.SubjectId, s.SemesterId }).IsUnique();
             //Releation : Section(1) => SectionSubjects(*)
             builder.HasOne(s => s.Section).WithMany(s => s.SectionSubjects)
                 .HasForeignKey(s => s.SectionId).IsRequired().OnDelete(DeleteBehavior.Restrict);

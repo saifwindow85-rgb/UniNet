@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Common;
+﻿using Domain.Entities.Academic_Structure;
+using Domain.Entities.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,8 @@ namespace Domain.Entities.Study
 
         public string Name { get; set; } = null!;
 
+        public int UniversityId { get; set; }
+        public University University { get; set; } = null!;
         public DateTime StartDate { get; set; }
 
         public DateTime EndDate { get; set; }

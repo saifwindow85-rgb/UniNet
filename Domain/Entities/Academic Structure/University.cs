@@ -1,6 +1,7 @@
 ﻿using Domain.Entities.Common;
 using Domain.Entities.Employees;
 using Domain.Entities.Identity;
+using Domain.Entities.Study;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +21,7 @@ namespace Domain.Entities.Academic_Structure
           = new List<College>();
         public ICollection <User> Users { get; set; } = new List<User>();
         public ICollection<Employee> Employees { get; set; } = new List<Employee>();
+        public ICollection<Semester> Semesters { get; set; } = new List<Semester>();
 
     }
 }

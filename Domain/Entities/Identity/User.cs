@@ -57,7 +57,6 @@ namespace Domain.Entities.Identity
             = new List<Announcement>();
         public ICollection<Image> UploadedImages { get; set; } = new List<Image>();
         public ICollection<Image> UpdatedImages { get; set; } = new List<Image>();
-        public ICollection<StudentResult> EnteredByStudentResults { get; set; } = new List<StudentResult>();
-        public ICollection<StudentResult> UpdatedStudentResults { get; set; } = new List<StudentResult>();
+
     }
 }

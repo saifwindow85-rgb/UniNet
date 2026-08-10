@@ -235,7 +235,7 @@ namespace DataAccessLayer.Seeds
 
         private static async Task<Dictionary<string, int>> EnsureRolesAsync(AppDbcontext db)
         {
-            var names = new[] { "Super Admin", "UniversityAdmin", "CollegeAdmin", "DepartmentAdmin", "Lecturer", "Student" };
+            var names = new[] { "Super Admin", "UniversityAdmin", "CollegeAdmin", "DepartmentAdmin", "Lecturer", "Student","BatchAdmin" };
             foreach (var name in names)
             {
                 if (!await db.Roles.AnyAsync(r => r.Name == name))

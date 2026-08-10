@@ -24,6 +24,12 @@ namespace DataAccessLayer.Configurations.Study_Configuration
 
             builder.Property(s => s.IsCurrent).IsRequired();
 
+            builder.HasIndex(s => new { s.UniversityId, s.Name }).IsUnique();
+            builder.HasIndex(s => s.UniversityId).HasFilter("[IsCurrent] = 1").IsUnique();
+
+            builder.HasOne(s => s.University).WithMany(u => u.Semesters)
+                .HasForeignKey(s => s.UniversityId).IsRequired().OnDelete(DeleteBehavior.Restrict);
+
             builder.ToTable("Semesters");
             builder.HasData(SeedData.GetSemesters());
         }

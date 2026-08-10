@@ -297,7 +297,7 @@ namespace DataAccessLayer.Seeds
                 Practical = 10,  // من 10
                 Final = 40,      // من 40
                 // Total هو عمود محسوب في قاعدة البيانات، لا نحتاج لتعيينه هنا.
-                EnteredByUserId = 1,
+                CreatedByUserId =1,
                 CreatedAt = new DateTime(2025, 12, 25, 0, 0, 0, DateTimeKind.Utc)
             }
         };
