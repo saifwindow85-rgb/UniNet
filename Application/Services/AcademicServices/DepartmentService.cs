@@ -1,5 +1,6 @@
 ﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
 using Contracts.Common.Extensions;
+using Contracts.Common.Mappers;
 using Contracts.Enums;
 using Contracts.Requests.AcademicRequests.CommonAcademicRequests;
 using Contracts.Requests.AcademicRequests.DepartmentRequests;
@@ -47,7 +48,7 @@ namespace Application.Services.AcademicServices
                 return AddUpdateServiceResponse<DepartmentDTO>.ResourceDoesntExist<Department>();
             }
             
-            if(!scope.IsWithinScope(collegeInfo.UniversityId,collegeInfo.CollegeId,null,null))
+            if(!scope.IsWithinScope(collegeInfo.ToCollegeInfo()))
             {
                 return AddUpdateServiceResponse<DepartmentDTO>.ResourceDoesntExist<Department>();
             }
@@ -134,7 +135,7 @@ namespace Application.Services.AcademicServices
                 return AddUpdateServiceResponse<DepartmentDTO>.ResourceDoesntExist<Department>();
             }
 
-            if(!scope.IsWithinScope(departmentInfo.UniversityId,departmentInfo.CollegeId,departmentInfo.DepartmentId,null))
+            if(!scope.IsWithinScope(departmentInfo.ToDepartmentInfo()))
             {
                 return AddUpdateServiceResponse<DepartmentDTO>.ResourceDoesntExist<Department>();
             }

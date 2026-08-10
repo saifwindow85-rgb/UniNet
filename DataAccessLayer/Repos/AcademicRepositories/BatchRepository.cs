@@ -37,7 +37,7 @@ namespace DataAccessLayer.Repos.AcademicRepositories
         };
         private readonly Expression<Func<Batch, BatchAuthorizationInfo>> ToInfo = b => new BatchAuthorizationInfo
         {
-            UniverseId = b.Department.College.UniversityId,
+            UniversityId = b.Department.College.UniversityId,
             CollegeId = b.Department.CollegeId,
             DepartmentId = b.DepartmentId,
             BatchId = b.BatchId,

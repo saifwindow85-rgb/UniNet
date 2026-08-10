@@ -1,5 +1,6 @@
 ﻿using Contracts.Common.AuthorizationInfos.EmployeeAuthorizationInfo;
 using Contracts.Common.Extensions;
+using Contracts.Common.Mappers;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
 using Microsoft.AspNetCore.Authorization;
 using UniNet.Authorization.AuthorizationRequirements;
@@ -19,7 +20,7 @@ namespace UniNet.Authorization.AuthorizationHandlers.EmployeeHandlers
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, OwnershipRequirement requirement, EmployeeAuthorizationInfo resource)
         {
             var scope = _currentUserService.ToUserScope();
-            if (scope.IsWithinScope(resource.UniversityId, resource.CollegeId, resource.DepartmentId, null))
+            if (scope.IsWithinScope(resource.ToEmployeeInfo()))
                 context.Succeed(requirement);
 
             return Task.CompletedTask;

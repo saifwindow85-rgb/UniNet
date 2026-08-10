@@ -1,5 +1,6 @@
 ﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
 using Contracts.Common.Extensions;
+using Contracts.Common.Mappers;
 using Contracts.Enums;
 using Contracts.Requests.AcademicRequests.CommonAcademicRequests;
 using Contracts.Requests.AcademicRequests.SectionRequests;
@@ -47,7 +48,7 @@ namespace Application.Services.AcademicServices
 
             }
 
-            if(!scope.IsWithinScope(batchInfo.UniverseId,batchInfo.CollegeId,batchInfo.DepartmentId,batchInfo.BatchId))
+            if(!scope.IsWithinScope(batchInfo.ToBatchInfo()))
             {
                 return AddUpdateServiceResponse<SectionDTO>.ResourceDoesntExist<Batch>();
             }
@@ -131,7 +132,7 @@ namespace Application.Services.AcademicServices
                 return AddUpdateServiceResponse<SectionDTO>.ResourceDoesntExist<Section>();
             }
 
-            if(!scope.IsWithinScope(sectionInfo.UniversityId,sectionInfo.CollegeId,sectionInfo.DepartmentId,sectionInfo.BatchId))
+            if(!scope.IsWithinScope(sectionInfo.ToSectionInfo()))
             {
                 return AddUpdateServiceResponse<SectionDTO>.ResourceDoesntExist<Section>();
             }

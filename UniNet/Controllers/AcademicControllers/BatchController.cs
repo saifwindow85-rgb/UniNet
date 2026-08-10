@@ -13,6 +13,7 @@ using Contracts.Responses;
 using Contracts.Requests.AcademicRequests.BatchRequests;
 using Contracts.Common.Extensions;
 using Contracts.Requests.AcademicRequests.CommonAcademicRequests;
+using Contracts.Common.Mappers;
 
 namespace UniNet.Controllers.AcademicControllers
 {
@@ -96,7 +97,7 @@ namespace UniNet.Controllers.AcademicControllers
                 return NotFound(ErrorMessages.NotFound<Batch>(batchIdParameter.BatchId));
             }
             var scope = _currentUserService.ToUserScope();
-            if(!scope.IsWithinScope(batchInfo.UniverseId,batchInfo.CollegeId,batchInfo.DepartmentId,batchInfo.BatchId))
+            if(!scope.IsWithinScope(batchInfo.ToBatchInfo()))
             {
                 return NotFound(ErrorMessages.NotFound<Batch>(batchIdParameter.BatchId));
             }

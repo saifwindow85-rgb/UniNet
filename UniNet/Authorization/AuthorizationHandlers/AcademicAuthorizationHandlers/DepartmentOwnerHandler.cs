@@ -1,5 +1,6 @@
 ﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
 using Contracts.Common.Extensions;
+using Contracts.Common.Mappers;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
 using Microsoft.AspNetCore.Authorization;
 using UniNet.Authorization.AuthorizationRequirements;
@@ -19,7 +20,7 @@ namespace UniNet.Authorization.AuthorizationHandlers.AcademicAuthorizationHandle
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, OwnershipRequirement requirement, DepartmentAuthorizationInfo department    )
         {
             var scope = _currentUserService.ToUserScope();
-            if(scope.IsWithinScope(department.UniversityId,department.CollegeId,department.DepartmentId,null))
+            if(scope.IsWithinScope(department.ToDepartmentInfo()))
             {
                 context.Succeed(requirement);
             }

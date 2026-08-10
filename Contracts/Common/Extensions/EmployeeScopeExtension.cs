@@ -1,4 +1,5 @@
-﻿using Contracts.Requests.RequestParameters;
+﻿using Contracts.Common.AuthorizationInfos;
+using Contracts.Requests.RequestParameters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,21 +10,21 @@ namespace Contracts.Common.Extensions
 {
     public static class EmployeeScopeExtension
     {
-        public static bool IsWithinScope(this UserScope?scope,int universityId,int?collegeId,int?departmentId,int?batchId)
+        public static bool IsWithinScope(this UserScope?scope,GeneralAuthorizationInfo info)
         {
             if (scope == null|| scope.IsGlobal)
                 return true;
 
             if(scope.BatchId.HasValue)
-                return batchId == scope.BatchId;
+                return info.BatchId == scope.BatchId;
 
             if (scope.DepartmentId.HasValue)
-                return departmentId == scope.DepartmentId;
+                return info.DepartmentId == scope.DepartmentId;
 
             if(scope.CollegeId.HasValue)
-                return collegeId == scope.CollegeId;
+                return info.CollegeId == scope.CollegeId;
 
-            return universityId == scope.UniversityId;
+            return info.UniversityId == scope.UniversityId;
         }
     }
 }
