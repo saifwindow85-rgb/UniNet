@@ -1,5 +1,6 @@
 ﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
 using Contracts.Common.Extensions;
+using Contracts.Common.Mappers;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
 using Microsoft.AspNetCore.Authorization;
 using UniNet.Authorization.AuthorizationRequirements;
@@ -18,7 +19,7 @@ namespace UniNet.Authorization.AuthorizationHandlers.AcademicAuthorizationHandle
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, OwnershipRequirement requirement, BatchAuthorizationInfo resource)
         {
             var scope = _currentUserService.ToUserScope();
-            if(scope.IsWithinScope(resource.UniverseId, resource.CollegeId, resource.DepartmentId, resource.BatchId))
+            if(scope.IsWithinScope(resource.ToBatchInfo()))
             {
                 context.Succeed(requirement);
             }

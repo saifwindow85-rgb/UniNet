@@ -1,5 +1,6 @@
 ﻿using Contracts.Common.AuthorizationInfos.StudentAuthorizationInfo;
 using Contracts.Common.Extensions;
+using Contracts.Common.Mappers;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -26,7 +27,7 @@ namespace UniNet.Authorization.AuthorizationHandlers.StudentHandler
                 return Task.CompletedTask;
             }
 
-            if (scope.IsWithinScope(resource.UniversityId, resource.CollegeId, resource.DepartmentId, resource.BatchId))
+            if (scope.IsWithinScope(resource.ToStudentInfo()))
             {
                 context.Succeed(requirement);
             }

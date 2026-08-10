@@ -16,6 +16,7 @@ using Contracts.Responses.AcademicResponses.CollegeResponses;
 using Contracts.Requests.RequestParameters;
 using Contracts.Common.Extensions;
 using Contracts.Requests.AcademicRequests.CommonAcademicRequests;
+using Contracts.Common.Mappers;
 
 namespace Application.Services.AcademicServices
 {
@@ -46,7 +47,7 @@ namespace Application.Services.AcademicServices
                 return AddUpdateServiceResponse<CollegeDTO>.ResourceDoesntExist<University>();
             }
 
-            if(!scope.IsWithinScope(UniversityInfo.UniversityId,null,null,null))
+            if(!scope.IsWithinScope(UniversityInfo.ToUniversityInfo()))
             {
                 return AddUpdateServiceResponse<CollegeDTO>.ResourceDoesntExist<University>();
             }
@@ -132,7 +133,7 @@ namespace Application.Services.AcademicServices
 
             }
 
-            if(!scope.IsWithinScope(collegeInfo.UniversityId,collegeInfo.CollegeId,null,null))
+            if(!scope.IsWithinScope(collegeInfo.ToCollegeInfo()))
             {
                 return AddUpdateServiceResponse<CollegeDTO>.ResourceDoesntExist<College>();
 

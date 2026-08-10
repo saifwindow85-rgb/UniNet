@@ -1,5 +1,6 @@
 ﻿using Contracts.Common.AuthorizationInfos.StudentAuthorizationInfo;
 using Contracts.Common.Extensions;
+using Contracts.Common.Mappers;
 using Contracts.Enums;
 using Contracts.Requests.RequestParameters;
 using Contracts.Requests.StudentRequests;
@@ -150,7 +151,7 @@ namespace Application.Services
             {
                 return AddUpdateServiceResponse<StudentDTO>.ResourceDoesntExist<Batch>();
             }
-            if (!scope.IsWithinScope(batchInfo.UniverseId, batchInfo.CollegeId, batchInfo.DepartmentId, batchInfo.BatchId))
+            if (!scope.IsWithinScope(batchInfo.ToBatchInfo()))
             {
                 return AddUpdateServiceResponse<StudentDTO>.ResourceDoesntExist<Batch>();
             }
@@ -176,7 +177,7 @@ namespace Application.Services
                     CreatedAt = DateTime.UtcNow,
                     CreatedByUserId = currentUser,
                     Type = UserType.Student,
-                    UniversityId = batchInfo.UniverseId,
+                    UniversityId = batchInfo.UniversityId,
                 };
                 await _unitOfWork.UserRepository.Add(userEntity);
                 await _unitOfWork.CompleteAsync();
@@ -224,7 +225,7 @@ namespace Application.Services
             {
                 return AddUpdateServiceResponse<StudentDTO>.ResourceDoesntExist<Batch>();
             }
-            if (!scope.IsWithinScope(batchInfo.UniverseId, batchInfo.CollegeId, batchInfo.DepartmentId, batchInfo.BatchId))
+            if (!scope.IsWithinScope(batchInfo.ToBatchInfo()))
             {
                 return AddUpdateServiceResponse<StudentDTO>.ResourceDoesntExist<Batch>();
             }

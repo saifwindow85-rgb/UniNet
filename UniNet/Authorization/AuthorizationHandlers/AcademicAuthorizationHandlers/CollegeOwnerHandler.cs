@@ -1,5 +1,6 @@
 ﻿using Contracts.Common.AuthorizationInfos.AcademicInfos;
 using Contracts.Common.Extensions;
+using Contracts.Common.Mappers;
 using Domain.Entities.Academic_Structure;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -21,7 +22,7 @@ namespace UniNet.Authorization.AuthorizationHandlers.AcademicAuthorizationHandle
         {
 
             var scope = _currentUserService.ToUserScope();
-            if(scope.IsWithinScope(college.UniversityId,college.CollegeId,null,null))
+            if(scope.IsWithinScope(college.ToCollegeInfo()))
             {
                 context.Succeed(requirement);
             }
