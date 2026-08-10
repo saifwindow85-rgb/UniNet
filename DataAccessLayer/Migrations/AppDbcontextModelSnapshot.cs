@@ -781,13 +781,14 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("CreatedByUserId");
 
-                    b.HasIndex("SectionId");
-
                     b.HasIndex("SemesterId");
 
                     b.HasIndex("SubjectId");
 
                     b.HasIndex("UpdatedByUserId");
+
+                    b.HasIndex("SectionId", "SubjectId", "SemesterId")
+                        .IsUnique();
 
                     b.ToTable("SectionSubjects", (string)null);
 
@@ -833,6 +834,9 @@ namespace DataAccessLayer.Migrations
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("UniversityId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -843,7 +847,14 @@ namespace DataAccessLayer.Migrations
 
                     b.HasIndex("CreatedByUserId");
 
+                    b.HasIndex("UniversityId")
+                        .IsUnique()
+                        .HasFilter("[IsCurrent] = 1");
+
                     b.HasIndex("UpdatedByUserId");
+
+                    b.HasIndex("UniversityId", "Name")
+                        .IsUnique();
 
                     b.ToTable("Semesters", (string)null);
 
@@ -856,7 +867,8 @@ namespace DataAccessLayer.Migrations
                             EndDate = new DateTime(2025, 12, 20, 0, 0, 0, 0, DateTimeKind.Utc),
                             IsCurrent = true,
                             Name = "Fall 2025",
-                            StartDate = new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                            StartDate = new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            UniversityId = 0
                         });
                 });
 
@@ -873,7 +885,7 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
 
-                    b.Property<int>("EnteredByUserId")
+                    b.Property<int>("CreatedByUserId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Final")
@@ -908,13 +920,14 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("StudentResultId");
 
-                    b.HasIndex("EnteredByUserId");
+                    b.HasIndex("CreatedByUserId");
 
                     b.HasIndex("SectionSubjectId");
 
-                    b.HasIndex("StudentId");
-
                     b.HasIndex("UpdatedByUserId");
+
+                    b.HasIndex("StudentId", "SectionSubjectId")
+                        .IsUnique();
 
                     b.ToTable("StudentResults", (string)null);
 
@@ -923,7 +936,7 @@ namespace DataAccessLayer.Migrations
                         {
                             StudentResultId = 1,
                             CreatedAt = new DateTime(2025, 12, 25, 0, 0, 0, 0, DateTimeKind.Utc),
-                            EnteredByUserId = 1,
+                            CreatedByUserId = 1,
                             Final = 40m,
                             Midterm = 45m,
                             Practical = 10m,
@@ -1404,6 +1417,12 @@ namespace DataAccessLayer.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Domain.Entities.Academic_Structure.University", "University")
+                        .WithMany("Semesters")
+                        .HasForeignKey("UniversityId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Domain.Entities.Identity.User", "UpdatedByUser")
                         .WithMany()
                         .HasForeignKey("UpdatedByUserId")
@@ -1411,14 +1430,16 @@ namespace DataAccessLayer.Migrations
 
                     b.Navigation("CreatedByUser");
 
+                    b.Navigation("University");
+
                     b.Navigation("UpdatedByUser");
                 });
 
             modelBuilder.Entity("Domain.Entities.Study.StudentResult", b =>
                 {
-                    b.HasOne("Domain.Entities.Identity.User", "EnterdByUser")
-                        .WithMany("EnteredByStudentResults")
-                        .HasForeignKey("EnteredByUserId")
+                    b.HasOne("Domain.Entities.Identity.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -1435,11 +1456,11 @@ namespace DataAccessLayer.Migrations
                         .IsRequired();
 
                     b.HasOne("Domain.Entities.Identity.User", "UpdatedByUser")
-                        .WithMany("UpdatedStudentResults")
+                        .WithMany()
                         .HasForeignKey("UpdatedByUserId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.Navigation("EnterdByUser");
+                    b.Navigation("CreatedByUser");
 
                     b.Navigation("SectionSubject");
 
@@ -1521,6 +1542,8 @@ namespace DataAccessLayer.Migrations
 
                     b.Navigation("Employees");
 
+                    b.Navigation("Semesters");
+
                     b.Navigation("Users");
                 });
 
@@ -1537,8 +1560,6 @@ namespace DataAccessLayer.Migrations
 
                     b.Navigation("Employee");
 
-                    b.Navigation("EnteredByStudentResults");
-
                     b.Navigation("Posts");
 
                     b.Navigation("RefreshTokens");
@@ -1546,8 +1567,6 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("Student");
 
                     b.Navigation("UpdatedImages");
-
-                    b.Navigation("UpdatedStudentResults");
 
                     b.Navigation("UpdatedUsers");
 

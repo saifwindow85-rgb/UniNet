@@ -24,6 +24,8 @@ namespace DataAccessLayer.Configurations.Study_Configuration
             builder.Property(s => s.Final).HasPrecision(5, 2);
             builder.Property(s => s.Total).HasPrecision(5, 2).HasComputedColumnSql("[Midterm] + [Practical] + [Final]", stored: true);
 
+            builder.HasIndex(s => new { s.StudentId, s.SectionSubjectId }).IsUnique();
+
             // Releation : Student(1) => StudentResults(*)
             builder.HasOne(s => s.Student).WithMany(s => s.StudentResults)
                 .HasForeignKey(s => s.StudentId).IsRequired().OnDelete(DeleteBehavior.Restrict);
@@ -32,12 +34,7 @@ namespace DataAccessLayer.Configurations.Study_Configuration
             builder.HasOne(s => s.SectionSubject).WithMany(s => s.StudentResults)
                 .HasForeignKey(s => s.SectionSubjectId).IsRequired().OnDelete(DeleteBehavior.Restrict);
 
-            // EnterdByUser(1) => StudentResults(*)
-            builder.HasOne(s => s.EnterdByUser).WithMany(e => e.EnteredByStudentResults)
-                .HasForeignKey(s => s.EnteredByUserId).IsRequired().OnDelete(DeleteBehavior.Restrict);
-
-            builder.HasOne(s => s.UpdatedByUser).WithMany(e => e.UpdatedStudentResults)
-                .HasForeignKey(s => s.UpdatedByUserId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
+      
             builder.ToTable("StudentResults");
 
             builder.HasData(SeedData.GetStudentResults());
