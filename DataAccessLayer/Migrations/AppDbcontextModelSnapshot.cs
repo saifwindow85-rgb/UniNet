@@ -293,15 +293,15 @@ namespace DataAccessLayer.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Domain.Entities.Content.Announcement", b =>
+            modelBuilder.Entity("Domain.Entities.Content.ContentItem", b =>
                 {
-                    b.Property<int>("AnnouncementId")
+                    b.Property<int>("ContentItemId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AnnouncementId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ContentItemId"));
 
-                    b.Property<string>("Content")
+                    b.Property<string>("Body")
                         .IsRequired()
                         .HasColumnType("NVARCHAR(MAX)");
 
@@ -313,15 +313,15 @@ namespace DataAccessLayer.Migrations
                     b.Property<int>("CreatedByUserId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("ImageId")
-                        .HasColumnType("int");
+                    b.Property<byte>("Scope")
+                        .HasColumnType("TINYINT");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("NVARCHAR(500)");
 
-                    b.Property<byte>("Type")
-                        .HasColumnType("TINYINT");
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -329,76 +329,17 @@ namespace DataAccessLayer.Migrations
                     b.Property<int?>("UpdatedByUserId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("AnnouncementId");
+                    b.HasKey("ContentItemId");
 
                     b.HasIndex("CreatedByUserId");
 
-                    b.HasIndex("ImageId")
-                        .IsUnique()
-                        .HasFilter("[ImageId] IS NOT NULL");
-
                     b.HasIndex("UpdatedByUserId");
 
-                    b.HasIndex("UserId");
+                    b.ToTable("ContentItems", (string)null);
 
-                    b.ToTable("Announcements", (string)null);
-                });
+                    b.HasDiscriminator<int>("Type");
 
-            modelBuilder.Entity("Domain.Entities.Content.Post", b =>
-                {
-                    b.Property<int>("PostId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PostId"));
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("NVARCHAR(MAX)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<int>("CreatedByUserId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("ImageId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasColumnType("NVARCHAR(500)");
-
-                    b.Property<byte>("Type")
-                        .HasColumnType("TINYINT");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int?>("UpdatedByUserId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("PostId");
-
-                    b.HasIndex("CreatedByUserId");
-
-                    b.HasIndex("ImageId")
-                        .IsUnique()
-                        .HasFilter("[ImageId] IS NOT NULL");
-
-                    b.HasIndex("UpdatedByUserId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Posts", (string)null);
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("Domain.Entities.Employees.Employee", b =>
@@ -613,6 +554,9 @@ namespace DataAccessLayer.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ImageId"));
 
+                    b.Property<int?>("ContentItemId")
+                        .HasColumnType("int");
+
                     b.Property<string>("FileName")
                         .IsRequired()
                         .HasColumnType("NVARCHAR(250)");
@@ -639,6 +583,10 @@ namespace DataAccessLayer.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("ImageId");
+
+                    b.HasIndex("ContentItemId")
+                        .IsUnique()
+                        .HasFilter("[ContentItemId] IS NOT NULL");
 
                     b.HasIndex("UpdatedByUserId");
 
@@ -868,7 +816,7 @@ namespace DataAccessLayer.Migrations
                             IsCurrent = true,
                             Name = "Fall 2025",
                             StartDate = new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UniversityId = 0
+                            UniversityId = 1
                         });
                 });
 
@@ -1059,6 +1007,36 @@ namespace DataAccessLayer.Migrations
                     b.ToTable("RefreshTokens", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.Entities.Content.Announcement", b =>
+                {
+                    b.HasBaseType("Domain.Entities.Content.ContentItem");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasIndex("UserId");
+
+                    b.HasDiscriminator().HasValue(2);
+                });
+
+            modelBuilder.Entity("Domain.Entities.Content.Post", b =>
+                {
+                    b.HasBaseType("Domain.Entities.Content.ContentItem");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("ContentItems", t =>
+                        {
+                            t.Property("UserId")
+                                .HasColumnName("Post_UserId");
+                        });
+
+                    b.HasDiscriminator().HasValue(1);
+                });
+
             modelBuilder.Entity("Domain.Entities.Academic_Structure.Batch", b =>
                 {
                     b.HasOne("Domain.Entities.Identity.User", "CreatedByUser")
@@ -1181,7 +1159,7 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("UpdatedByUser");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Content.Announcement", b =>
+            modelBuilder.Entity("Domain.Entities.Content.ContentItem", b =>
                 {
                     b.HasOne("Domain.Entities.Identity.User", "CreatedByUser")
                         .WithMany()
@@ -1189,52 +1167,12 @@ namespace DataAccessLayer.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Domain.Entities.Images.Image", "Image")
-                        .WithOne("Announcement")
-                        .HasForeignKey("Domain.Entities.Content.Announcement", "ImageId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("Domain.Entities.Identity.User", "UpdatedByUser")
                         .WithMany()
                         .HasForeignKey("UpdatedByUserId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("Domain.Entities.Identity.User", null)
-                        .WithMany("Announcements")
-                        .HasForeignKey("UserId");
-
                     b.Navigation("CreatedByUser");
-
-                    b.Navigation("Image");
-
-                    b.Navigation("UpdatedByUser");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Content.Post", b =>
-                {
-                    b.HasOne("Domain.Entities.Identity.User", "CreatedByUser")
-                        .WithMany()
-                        .HasForeignKey("CreatedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Entities.Images.Image", "Image")
-                        .WithOne("Post")
-                        .HasForeignKey("Domain.Entities.Content.Post", "ImageId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Domain.Entities.Identity.User", "UpdatedByUser")
-                        .WithMany()
-                        .HasForeignKey("UpdatedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Domain.Entities.Identity.User", null)
-                        .WithMany("Posts")
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("CreatedByUser");
-
-                    b.Navigation("Image");
 
                     b.Navigation("UpdatedByUser");
                 });
@@ -1317,6 +1255,11 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("Domain.Entities.Images.Image", b =>
                 {
+                    b.HasOne("Domain.Entities.Content.ContentItem", "ContentItem")
+                        .WithOne("Image")
+                        .HasForeignKey("Domain.Entities.Images.Image", "ContentItemId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Domain.Entities.Identity.User", "UpdatedByUser")
                         .WithMany("UpdatedImages")
                         .HasForeignKey("UpdatedByUserId")
@@ -1327,6 +1270,8 @@ namespace DataAccessLayer.Migrations
                         .HasForeignKey("UploadedByUserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("ContentItem");
 
                     b.Navigation("UpdatedByUser");
 
@@ -1506,6 +1451,20 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Content.Announcement", b =>
+                {
+                    b.HasOne("Domain.Entities.Identity.User", null)
+                        .WithMany("Announcements")
+                        .HasForeignKey("UserId");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Content.Post", b =>
+                {
+                    b.HasOne("Domain.Entities.Identity.User", null)
+                        .WithMany("Posts")
+                        .HasForeignKey("UserId");
+                });
+
             modelBuilder.Entity("Domain.Entities.Academic_Structure.Batch", b =>
                 {
                     b.Navigation("Sections");
@@ -1547,6 +1506,11 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("Users");
                 });
 
+            modelBuilder.Entity("Domain.Entities.Content.ContentItem", b =>
+                {
+                    b.Navigation("Image");
+                });
+
             modelBuilder.Entity("Domain.Entities.Identity.Role", b =>
                 {
                     b.Navigation("UserRoles");
@@ -1573,13 +1537,6 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("UploadedImages");
 
                     b.Navigation("UserRoles");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Images.Image", b =>
-                {
-                    b.Navigation("Announcement");
-
-                    b.Navigation("Post");
                 });
 
             modelBuilder.Entity("Domain.Entities.Students.Student", b =>

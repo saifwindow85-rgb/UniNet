@@ -30,6 +30,7 @@ namespace DataAccessLayer.Dbcontext
         public DbSet<Batch> Batches { get; set; }
         public DbSet<Section>Sections { get; set; }
         //Content
+        public DbSet<ContentItem>ContentItems { get; set; }
         public DbSet<Post>Posts { get; set; }
         public DbSet<Announcement> Announcements { get; set; }
         //Employees

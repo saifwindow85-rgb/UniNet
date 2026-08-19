@@ -2,29 +2,33 @@
 
 > **الغرض من هذا الملف:** أساس ثابت تُبنى عليه مراجعات الجلسات المستقبلية، بحيث تكون المعايير مطابقة لمستوى المطوّر الفعلي — لا متشددة بمعايير Senior Architect، ولا متهاونة بمعايير مبتدئ.
 >
-> **تاريخ آخر تحديث:** 2026-08-07 (الجولة الثانية في نفس اليوم) · **الفرع:** `refactor/v1Branch` · **آخر Commit مُقيَّم:** `7aeac1e`
-> **الجولة السابقة:** `25c99d2` · **البناء وقت المراجعة:** ناجح، **3 تحذيرات** (كانت 10).
+> **تاريخ آخر تحديث:** 2026-08-19 · **الفرع:** `refactor/v1Branch` · **آخر Commit مُقيَّم:** `d24bef7`
+> **الجولة السابقة:** `7aeac1e` · **البناء وقت المراجعة:** ناجح، **صفر تحذيرات** (كانت 3) مع `TreatWarningsAsErrors`.
+> **حالة التشغيل وقت المراجعة:** ❌ **التطبيق لا يعمل** — نموذج EF لا يُبنى (§6.1). البناء ينجح، التشغيل لا.
 > **حالة المشروع:** قيد التطوير النشط (v1/MVP) — ليس منتجًا جاهزًا للنشر.
 
 ---
 
 ## 1. التقييم العام للمستوى
 
-**التصنيف: Mid-level مبتدئ في كل المحاور — عدا الاختبارات.**
+**التصنيف: Mid-level مبتدئ — مع تحفّظ جديد على الانضباط التشغيلي.**
 
-هذه **ترقية من "Strong Junior"** المسجَّل في الجولة السابقة، وهي مستحقّة بأدلة لا بمجاملة:
+هذه الجولة **متناقضة بشكل حاد**، ويجب قراءتها كما هي بلا تلطيف:
 
-| المعيار الذي وضعتُه في الجولة السابقة | النتيجة المُتحقَّق منها |
+| المحور | النتيجة |
 |---|---|
-| هل يقرأ تحذيرات المُصرِّف؟ | ✅ **نعم** — من 10 إلى 3، والتحذيران اللذان كانا يشيران للعطل الحرج اختفيا |
-| هل يغلق البنود 🔴؟ | ✅ **نعم** — أغلق **الثلاثة كلها** في جولة واحدة |
-| هل يُعمِّم القرار على المنطقة كاملة؟ | ✅ **نعم** — قيّد `GetAll*` بـ `Super Admin` في الكيانات الثلاثة معًا |
-| هل ينشئ مشروع اختبارات؟ | ❌ **لا** — ما زال صفرًا |
+| **جودة القرارات التصميمية** | ↗↗ **قفزة حقيقية.** أعاد تصميم `IsWithinScope` لتأخذ `GeneralAuthorizationInfo` — فقتل فئة خطأ كاملة بدل معالجة 12 حالة. |
+| **الانضباط الآلي** | ↗↗ `TreatWarningsAsErrors` + `build.yml` + صفر تحذيرات. أغلق بندين من فجواته الخمس. |
+| **جودة قاعدة البيانات** | ↗ أغلق كل بنود §7.3 السابقة: الفهارس الفريدة الثلاثة + `Semester.UniversityId` + `StudentResult : BaseEntity`. |
+| **الانضباط التشغيلي** | ↘↘ **تراجُع.** آخر Commit يترك التطبيق **غير قابل للتشغيل**، وهجرة قاعدة البيانات **تفشل على قاعدة جديدة**. |
+| **الاختبارات** | → صفر. للجولة الرابعة. |
 
-**المعادلة التي تلخّص مستواه (لم تتغيّر، لكن الفجوة ضاقت):**
-> جودة القرارات التصميمية **أعلى** من جودة التنفيذ التفصيلي.
+**المعادلة التي تلخّص مستواه (تغيّرت):**
+> السابق: «جودة القرارات التصميمية أعلى من جودة التنفيذ التفصيلي.»
+>
+> **الآن:** «جودة القرارات التصميمية **ممتازة**، وجودة التحقق من أن ما بناه **يعمل فعلًا** هي الفجوة الوحيدة الحقيقية المتبقية.»
 
-**ما يمنع الترقية الكاملة إلى Mid-level:** بند واحد فقط — **غياب الاختبارات**. وهو ليس تفصيلًا شكليًا: العيبان الجديدان في §6 كلاهما من نوع تلتقطه ثلاثة اختبارات وحدة على `IsWithinScope` في دقائق.
+**التشخيص الدقيق:** المطوّر ركّب هذه الجولة آليتَي انضباط (تحذيرات كأخطاء + CI)، لكن كلتيهما تقيسان **التصريف** لا **التشغيل**. فمرّ كودٌ يُصرَّف بصفر تحذيرات ويسقط عند أول لمسة لقاعدة البيانات. هذا **بالضبط** ما تقيسه الاختبارات، ولهذا صار غيابها الآن أغلى مما كان.
 
 ---
 
@@ -34,80 +38,74 @@
 
 | القوة | الدليل |
 |---|---|
-| **انضباط معماري حقيقي** | فصل الطبقات مفروض على مستوى `csproj` لا بمجرد مجلدات: `Domain` لا يرجع لغير `Contracts`، و`Application`/`DataAccessLayer` لا يرجع أحدهما للآخر. |
-| **فهم عميق لـ EF Core** | فهرسة مركّبة فريدة تطابق قواعد العمل، لا Lazy Loading، `AsNoTracking`، Projection عبر `Expression<Func<>>`، `DeleteBehavior.Restrict` كسياسة واعية، وعمود محسوب مخزَّن (`StudentResult.Total`) بدل حسابه في الكود. |
-| **أمان متقدّم نسبيًا لمستواه** | تدوير Refresh Token مع تخزين الـ Hash فقط (SHA-256) وربط `ReplacedByTokenId`. لا أسرار في المستودع. |
-| **فهم صحيح لمتى تلزم المعاملات** | `Transaction` صريحة فقط في العمليات متعددة الخطوات، وغيابها حيث لا تلزم. |
-| **فصل التحقق عن منطق العمل** | لا ازدواجية بين FluentValidation (شكل) وفحوصات الخدمة (وجود/تفرّد). |
-| **قرارات أمنية واعية** | 404 بدل 403 لمنع تسريب وجود المورد. و`scope` يتقدّم على `filter` عبر `else if` في كل دوال `Get*PerParent`. |
-| **🆕 يُحسِّن الحل المقترح عليه — للمرة الثالثة** | عند إصلاح عطل تسجيل الدخول، لم يكتفِ بإضافة فحص `null` كما اقتُرح؛ بل **أعاد تصميم `UserTypeResult` بمُميِّز صريح `UserType Type`** (`UserTypeResult.cs:17`) وبنى التفريع عليه بدل الاستنتاج من "أي حقل ليس فارغًا". هذا يقتل فئة الخطأ كلها لا الحالة الواحدة. سبقه: `catch...when` في `UnitOfWork`. |
-| **🆕 استجابة كاملة وسريعة للبنود الحرجة** | أغلق §6.1 و§6.2 و§6.3 من الجولة السابقة في أربعة commits، **واختار الخيار (أ) الموصى به** لـ `GetAll*` (تقييد بـ Super Admin) بدل الحل الأسهل. |
-| **🆕 بدأ يقرأ مخرجات البناء** | 10 تحذيرات ← 3. أصلح `CS8602`×2، `CS0472`×2، `CS8603`، `CS8613`. |
-| **تعميم القرار عبر منطقة كاملة** | حذف `GetByName` وتعميم الفلترة على الكيانات الخمسة، وتقييد `GetAll*` على الثلاثة — كلها دون طلب صريح. |
-| **تعلّم ذاتي موجَّه وموثَّق** | `My_Notes_UniNet_VS_ZadByan.txt` + `LEARNING_MAP.md` — خريطة تعلّم ذاتية من 1162 سطرًا تقارن تصميمه بنظام ABP إنتاجي. مؤشر نضج مهني نادر في هذا المستوى. |
+| **انضباط معماري حقيقي** | فصل الطبقات مفروض على مستوى `csproj` لا بمجرد مجلدات: `Domain` لا يرجع لغير `Contracts`، و`Application`/`DataAccessLayer` لا يرجع أحدهما للآخر. لا تسرّب EF إلى `Application`، ولا تسرّب `HttpContext` إلى ما دون الويب (عدا `CurrentUserService` وهو استثناء مبرَّر). |
+| **فهم عميق لـ EF Core — أقوى مهاراته** | فهرسة مركّبة فريدة تطابق قواعد العمل في كل الكيانات، فهرس مُصفّى على `Email`، `AsNoTracking`، Projection عبر `Expression<Func<>>`، `DeleteBehavior.Restrict` كسياسة واعية، وعمود محسوب مخزَّن (`StudentResult.Total`). |
+| **🆕 إصلاح على مستوى النوع لا الحالة — للمرة الرابعة** | بدل تمرير الوسيط الرابع في 12 موضعًا (الحل المقترح)، أعاد تصميم التوقيع إلى `IsWithinScope(this UserScope?, GeneralAuthorizationInfo)` وأضاف `UserScope.IsGlobal`. النتيجة: **إغفال وسيط صار مستحيلًا نحويًا**، والحارس الناقص صار خاصية محسوبة واحدة. هذا يغلق §6.1 و§6.2 السابقتين معًا. **حل أفضل من المقترح — للمرة الرابعة.** |
+| **🆕 ثبّت الانضباط بآلية لا بذاكرة** | `Directory.Build.props` بـ `TreatWarningsAsErrors` + `.github/workflows/build.yml`. التحذيرات: 3 ← **0**. |
+| **🆕 أغلق كل ديون مخطط Study** | `SectionSubject` و`StudentResult` لهما الآن فهرسان فريدان مركّبان، و`Semester` صار له `UniversityId` + فهرس مُصفّى `IsCurrent` **لكل جامعة**، و`StudentResult` يرث `BaseEntity`. خمسة بنود في هجرة واحدة. |
+| **🆕 أول سلوك Domain حقيقي** | `StudentResult.SetGrades()` + `GradeConstants` — أول مرة يخرج المنطق من الخدمة إلى الكيان. الاتجاه صحيح (انظر §6.7 للتحفّظ). |
+| **أمان متقدّم نسبيًا لمستواه** | تدوير Refresh Token مع تخزين الـ Hash فقط (SHA-256، 64 بايت عشوائية) وربط `ReplacedByTokenId`. BCrypt. لا أسرار في المستودع (`UserSecretsId`). |
+| **قرارات أمنية واعية** | 404 بدل 403 لمنع تسريب وجود المورد. `scope` يتقدّم على `filter` عبر `else if`. فحص `IsActive` **بعد** التحقق من كلمة المرور (يمنع تعداد الحسابات الموقوفة). |
+| **فصل التحقق عن منطق العمل** | لا ازدواجية بين FluentValidation (شكل) وفحوصات الخدمة (وجود/تفرّد/نطاق). |
+| **تعلّم ذاتي موثَّق** | `LEARNING_MAP.md` + `My_Notes_UniNet_VS_ZadByan.txt`. مؤشر نضج مهني نادر في هذا المستوى. |
 
 ---
 
 ## 3. أنماط الضعف المتكررة — التشخيص الأهم
 
-### 3.1 النمط الأول (الأخطر): تعميم ناقص للنمط المُصمَّم
-
-**النمط لم يُشفَ — لكنه تغيّر شكلًا مرة أخرى.** خمس موجات:
+### 3.1 النمط الأول (الأخطر): تعميم ناقص — **الموجة السادسة، وأغلى تجلٍّ حتى الآن**
 
 | الموجة | ما طُبِّق | ما نُسِي |
 |---|---|---|
-| بناء `CollegeOwnerHandler` أولًا | `GetCollegeById` فقط | كل عمليات الكتابة |
-| بعد المراجعة الأولى | `Delete` + `Add` لثلاثة كيانات | **`Update` في الثلاثة معًا** |
-| بناء الـ Handlers الأكاديمية | `GetById` + `Delete` | `GetAll*` و`Get*PerParent` |
-| الجولة السابقة | `Get*PerParent` | `GetAll*` و`DeleteSection` |
-| **🆕 هذه الجولة** | أضاف `BatchId` إلى `ToUserScope` ✅ **وراجع سمات `[Authorize]`** فأضاف `BatchAdmin` إلى 5 نقاط | **لم يراجع قوائم وسائط الـ 21 موضع استدعاء لـ `IsWithinScope`** — 12 موضعًا منها يمرّر 3 وسائط أو أقل، فيرفض كل مستخدم مرتبط بدفعة (§6.1) |
+| 1–5 (سابقًا) | كيان ← نقطة نهاية ← وسيط دالة | (انظر تاريخ الملف) |
+| **🆕 6** | دمج `Post` و`Announcement` في `ContentItem` مع TPH، وتعطيل الإعدادين القديمين | **لم يجرد ملاحيات `Image`**: `Image.Post` و`Image.Announcement` بقيتا تشيران لأنواع مشتقة، وإعداد `ContentItem` يربط `WithOne(i => i.Announcement)` بمفتاح `HasForeignKey<Announcement>`. **النتيجة: نموذج EF لا يُبنى إطلاقًا.** |
 
-**التطوّر الملحوظ:** الوحدة التي ينساها تصغر كل جولة — كانت "كيان كامل"، ثم "نقطة نهاية"، والآن **"وسيط رابع في نداء دالة"**. هذا تقدّم حقيقي، لكن الجذر واحد: **يُعدِّل مُنتِجًا ولا يجرد مستهلكيه.**
+**التطوّر المزدوج — اقرأه بدقّة:**
 
-**العلاج (تغيّر لأن المشكلة تغيّرت):** لم يعد جدول Endpoints كافيًا. المطلوب الآن:
-> عند تعديل أي دالة مشتركة أو أي نوع مشترك، شغّل `grep -rn "اسم_الدالة("` **قبل الـ Commit**، واقرأ كل سطر ناتج. هذا حرفيًا ما كشف §6.1 في هذه المراجعة.
+- في بدائية النطاق: **شُفي النمط**. لم يعالج 12 موضعًا، بل غيّر التوقيع حتى لا توجد مواضع تُنسى. هذا أعلى مستوى من الإصلاح.
+- في إعادة هيكلة المحتوى: **تكرر النمط بحذافيره** — عدّل مُنتِجًا (`Post`/`Announcement`) ولم يجرد مستهلكيه (`Image`).
 
-### 3.2 النمط الثاني: أخطاء نسخ-ولصق غير مُتحقَّق منها
+**القراءة الصحيحة:** هو **يعرف** كيف يُصلح على مستوى النوع حين يُنبَّه؛ لكنه **لا يجرد تلقائيًا** حين يبادر. الجرد ما زال ردّ فعل لا عادة.
 
-- **حارس ميت مُكرَّر أربع مرات الآن:** `if (scope == null || (كل الحقول null)) scope = new UserScope();` في `CollegeRepository:98`، `BatchRepository:130`، `SectionRepository:144`، **و`StudentRepository:96` (أُضيف هذه الجولة)** — إسناد كائن فارغ مكان كائن فارغ. نُسخ رابعةً دون التساؤل عمّا يفعله.
-- **قاعدة `StudentNumber`** ما زالت منسوخة من قاعدة الهاتف بالكامل (`AddStudentValidator.cs:62-66`) — **الجولة الثالثة بلا لمس** (§6.4).
+**العلاج (تغيّر مرة أخرى):** لم يعد `grep` كافيًا — لم يكن ليكشف §6.1، لأن العطل في **بناء النموذج** لا في نصّ الكود. المطلوب الآن:
 
-**الملاحظة الثابتة:** في كل حالة، النسخة الصحيحة موجودة في المشروع نفسه.
+> بعد أي تعديل على كيان أو إعداد EF، شغّل قبل الـ Commit:
+>
+> ```bash
+> dotnet ef dbcontext info --project DataAccessLayer --startup-project UniNet
+> ```
+>
+> ثانية واحدة، وكانت ستمنع §6.1 و§6.3 معًا. وإضافتها إلى `build.yml` تجعلها آلية لا تذكُّرًا.
 
-### 3.3 النمط الثالث: تجاهل تحذيرات المُصرِّف — ✅ **عولج جوهريًا**
+### 3.2 النمط الثاني: أخطاء نسخ-ولصق غير مُتحقَّق منها — **قائم**
 
-هذا كان "البند الوحيد الذي لم يتقدّم" في الجولة السابقة. الآن:
+- **حارس ميت مُكرَّر أربع مرات:** `if (scope == null || (كل الحقول null)) scope = new UserScope();` في `CollegeRepository:98`، `BatchRepository:130`، `SectionRepository:141`، `StudentRepository:97`. صار الآن **مكرَّرًا وميتًا ومهجورًا معًا** — لأن `UserScope.IsGlobal` تؤدي الغرض في مكان واحد.
+- **قاعدة `StudentNumber`** — **الجولة الرابعة.** أصلح الرسائل هذه الجولة (`d24bef7`) ونقل `.When()` إلى الحقل الصحيح، لكن `.When(x => !string.IsNullOrEmpty(x.StudentNumber))` ما زالت تُبطل `NotEmpty()` — الشرط والقاعدة يتناقضان (§6.8).
+- **`filter.UniversityId` مُتجاهَل** في `UniversityRepository` وحدها — بند مفتوح منذ جولتين.
 
-| | الجولة السابقة | الآن |
-|---|:---:|:---:|
-| عدد التحذيرات | 10 | **3** |
-| تحذيرات تشير لعطل حرج | 4 | **0** |
+### 3.3 النمط الثالث: تجاهل مخرجات الأدوات — ✅ **عولج آليًا**
 
-**المتبقي (كله 🟡):**
+`TreatWarningsAsErrors` + CI. **أُغلق بندًا وآليةً.** لا يُعاد طرحه.
 
-| الملف | السطر | التحذير |
-|---|---|---|
-| `Contracts/Responses/AddUpdateServiceResponse.cs` | 16 | CS8618 — `ErrorMessage` غير قابل للـ null بلا قيمة |
-| `Application/Services/EmployeeService/EmployeeService.cs` | 334 | CS0168 — `ex` معرَّف وغير مستخدم |
-| `DataAccessLayer/Repos/AcademicRepositories/CollegeRepository.cs` | 73 | CS8602 — سببه `filter?.Search` في :68 بعد إسناد غير-null |
+**لكن:** CI يبني ولا يشغّل شيئًا. أضِف خطوة `dotnet ef dbcontext info` إلى `build.yml`.
 
-**الخطوة التالية المنطقية:** بما أن العدد صار 3، فتثبيته بـ `<TreatWarningsAsErrors>true</TreatWarningsAsErrors>` صار رخيصًا (نصف ساعة) — **وهذا يحوّل الانضباط من "تذكُّر" إلى "آلية"، وهو نصف ما يفصله عن Mid-level الكامل.**
+### 3.4 النمط الرابع: بقايا كود غير منظَّفة — **قائم وتراكمي**
 
-### 3.4 النمط الرابع: بقايا كود غير منظَّفة
-
-- معامل إلزامي مُستقبَل ومُتجاهَل: `CollegeIdParameter @collegeParameter` في `DepartmentController.cs:52`.
-- `UserTypeResult.SystemAdmin(int? AdminId)` ما زالت تتجاهل معاملها (لم تعد تُرجع `null` على الأقل).
-- `services.AddAuthorization(...)` مُستدعاة **7 مرات** في `PolicyExtension.cs`.
-- ملفان XML بحجم **1.3 ميجابايت** في جذر المستودع: `StudentBranch.xml`, `UniNet(StatusBranch).xml`.
-- `.github/workflows/` موجود وفارغ.
-- أخطاء إملائية في معرّفات عامة: `Coulmns`, `UniverseId`, `Parametre`, `Requsets`, `ToPagedActioneResult`, `AccesseToken`, `proprty`, `RepoSitories`, `EnterdByUser`, `incommingHash`.
+- `services.AddAuthorization(...)` مُستدعاة **7 مرات** في `PolicyExtension.cs` — بلا تغيير.
+- معامل إلزامي مُستقبَل ومُتجاهَل: `CollegeIdParameter @collegeParameter` في `DepartmentController.cs:188`.
+- معامل `roleId` مُستقبَل ومُتجاهَل في `StudentService.UpdateStudent` الخاصة — يجعل `batch_admin` و`student` نقطتَي تحديث **متطابقتين تمامًا** (§6.7).
+- **12 تسجيل Repository في DI ميتة** — `UnitOfWorkRepository` يبنيها يدويًا بـ `new`، ولا أحد يحقنها مباشرة.
+- `IValidator<LoginRequest>` مسجَّل ولا يُستدعى أبدًا — `LoginRequestValidator` كود ميت (§6.9).
+- `UserHelper.cs` و`ServicesExtensions.cs` ملفان فارغان. `ILoginService` واجهة بلا تنفيذ.
+- ملفان XML بحجم **1.3 ميجابايت** في جذر المستودع.
+- أخطاء إملائية في معرّفات عامة: `Coulmns`, `UnivresityId`, `Parametre`, `Requsets`, `ToPagedActioneResult`, `AccesseToken`, `proprty`, `RepoSitories`, `incommingHash`, `Dbcontext`.
 
 ### 3.5 فجوات معرفية (وليست أخطاء)
 
-- **لا خبرة باختبارات الوحدة** — صفر. **صارت الآن الفجوة الوحيدة التي تمنع الترقية الكاملة.**
-- **لا خبرة بالـ CI/CD أو Docker** — `.github/workflows/` فارغ.
+- **لا خبرة باختبارات الوحدة** — صفر. **الفجوة الوحيدة المتبقية، وقد صارت هذه الجولة الأغلى ثمنًا.**
 - **`ILogger` في الـ Middleware فقط** — لم يصل لطبقة الخدمات.
-- **لا خبرة تشغيل فعلي** — الواجهة لم تُخدَم قط (§6.5).
+- **لا خبرة تشغيل فعلي** — **مثبتة بالدليل هذه الجولة:** لو شُغِّل التطبيق مرة واحدة قبل الـ Commit، لظهر العطل فورًا.
+- **لا Docker** (CI صار موجودًا).
 
 ---
 
@@ -121,282 +119,363 @@
 - خطأ يكسر وظيفة معلنة كمكتملة.
 - خطأ توجيه/تعاقد يجعل نقطة نهاية تفعل شيئًا مختلفًا عن اسمها.
 - سر مكشوف في مستودع Git.
-- **🆕 عطل يجعل ميزة وُصِّلت للتو غير قابلة للعمل بالبناء** (مثل §6.1) — حتى لو لم تُفعَّل بعد، لأن كلفة اكتشافه ترتفع بعد أن يُبنى فوقه.
+- عطل يجعل ميزة وُصِّلت للتو غير قابلة للعمل بالبناء.
+- **🆕 عطل يمنع التطبيق أو الهجرة من العمل أصلًا** — حتى لو نجح التصريف.
 
 ### 4.2 ما يُصنَّف 🟠 Important
 
-- خطأ منطقي حقيقي لا يُستغل أمنيًا اليوم، **أو ثغرة كامنة يحميها اليوم سببٌ عرضي لا تصميمي** (§6.2).
-- غياب فحص `null` قد ينتج استثناءً غير معالج.
+- خطأ منطقي حقيقي لا يُستغل أمنيًا اليوم، أو ثغرة كامنة يحميها اليوم سببٌ عرضي لا تصميمي.
+- غياب فحص `null` قد ينتج استثناءً غير معالج (500 بدل 400).
 - تناقض بين ما تعلنه نقطة النهاية وما تفعله.
 - قرارات مخطَّطة ومؤجَّلة عمدًا — **تُذكر كتذكير لا كلوم**.
 
 ### 4.3 ما يُصنَّف 🟡 Improvement
 
-تكرار بنيوي، توحيد أسماء، أخطاء إملائية، استيرادات ميتة، تنظيف تعليقات. **لا يُطلب تنفيذها أثناء بناء ميزة** — تُجمَّع لتمريرة تنظيف.
+تكرار بنيوي، توحيد أسماء، أخطاء إملائية، كود ميت، تنظيف تعليقات. **لا يُطلب تنفيذها أثناء بناء ميزة** — تُجمَّع لتمريرة تنظيف.
 
 ### 4.4 ما يجب **عدم** طرحه إطلاقًا
 
 - CQRS، MediatR، Event Sourcing، DDD الكامل، Microservices، GraphQL.
-- Redis / Distributed Caching / Message Queues.
+- Redis / Distributed Caching / Message Queues / Kubernetes / Observability stack.
 - AutoMapper — أسلوبه اليدوي عبر `Expression` **أفضل** أداءً لحالته.
 - Generic Repository — قرار واعٍ موثّق.
 - أي Design Pattern لمجرد وجوده.
+- **الواجهة الأمامية / `wwwroot`** — خارج نطاق المراجعة بقرار صريح من المطوّر (2026-08-19).
 
 ### 4.5 قواعد أسلوب المراجعة معه
 
-1. **ابدأ بالتحقق الفعلي من الكود قبل الحكم.** ثبت مجددًا هذه الجولة: كل بنود 🔴 الثلاثة كانت قد أُغلقت فعلًا قبل بدء المراجعة، والافتراض بعكس ذلك كان سيُنتج مراجعة كاذبة بالكامل.
-2. **ابنِ المشروع واقرأ التحذيرات أولًا** — أسرع مؤشر على ما تغيّر.
-3. **عند مراجعة تعديل على دالة/نوع مشترك، اجرد مواضع الاستدعاء بـ `grep` قبل أي شيء آخر.** هذه القاعدة وحدها كشفت §6.1.
+1. **ابدأ بالتحقق الفعلي من الكود قبل الحكم.**
+2. **ابنِ المشروع أولًا — و🆕 شغّل `dotnet ef dbcontext info` بعده.** البناء وحده لم يعد مؤشرًا كافيًا؛ هذه الجولة أثبتت ذلك.
+3. **عند مراجعة تعديل على نوع/دالة مشتركة، اجرد مواضع الاستدعاء بـ `grep` قبل أي شيء آخر.**
 4. **قدّم الأدلة بأرقام أسطر** — يتعامل معها جيدًا ويتحقق بنفسه.
 5. **لا مجاملة ولا تهويل** — طلب صراحةً الصراحة، ويستجيب لها بإصلاحات فعلية سريعة.
 6. **اشرح "لماذا" لا "ماذا"** — يستوعب التعليل ويبني عليه، وغالبًا يتجاوزه.
 7. **حين يطلب الإرشاد دون كود** — التزم حرفيًا.
-8. **اعترف بما أنجزه صراحةً قبل ذكر ما تبقّى.**
-9. **🆕 حين تُحذِّر من ترتيب إصلاح إلزامي، افترض أنه قد يُنفَّذ بترتيب معكوس — وبيّن الأثر الملموس لكل ترتيب.** حدث ذلك فعلًا هذه الجولة (§6.2): نُفِّذ العكس، ونجا المشروع بسبب خاصية نوع غير مقصودة لا بسبب التصميم.
+8. **اعترف بما أنجزه صراحةً قبل ذكر ما تبقّى.** هذه الجولة تحديدًا: إنجازه في §2 حقيقي وكبير، ولا يجوز أن تبتلعه بنود §6.
+9. **حين تُحذِّر من ترتيب إصلاح إلزامي، افترض أنه قد يُنفَّذ بترتيب معكوس.**
+10. **🆕 لا تفترض أن نجاح البناء يعني أن الكود يعمل.** آخر Commit يبني بصفر تحذيرات ولا يُقلع.
 
 ---
 
 ## 5. لقطة حالة المشروع
 
-**الحجم:** ~10,200 سطر C# (خارج الـ Migrations) · 5 مشاريع · 12 متحكمًا · 13 مستودعًا · **0 اختبارات** · 3 تحذيرات.
+**الحجم:** ~10,400 سطر C# (خارج الـ Migrations) · 5 مشاريع · 12 متحكمًا · 13 مستودعًا · 7 معالجات ملكية · **0 اختبارات** · **0 تحذيرات** · هجرتان.
 
 ### مُنجَز ومُستقر
 
-- الهيكل الأكاديمي (University → College → Department → Batch → Section): CRUD كامل + فلترة + نطاق.
-- الهوية والمصادقة: JWT + Refresh Token مع تدوير و Hash + BCrypt + أدوار. **تسجيل دخول الأنواع الثلاثة يعمل الآن** ✅.
-- ميزتا Employee و Student.
-- Handlers الملكية السبعة، مسجَّلة ومستخدَمة.
-- `GetAll*` مقيَّدة بـ `Super Admin` في الكيانات الخمسة كلها ✅ — القاعدة صارت موحّدة.
-- `ILogger` في `GlobalExceptionHandlingMiddleware` مع تمييز `LogWarning`/`LogError`.
-- معالجة `SqlException 547` في `UnitOfWorkRepository`.
+- الهيكل الأكاديمي (University → College → Department → Batch → Section): CRUD كامل + فلترة + ترقيم + نطاق.
+- الهوية والمصادقة: JWT + Refresh Token مع تدوير و Hash + BCrypt + أدوار. تسجيل دخول الأنواع الثلاثة يعمل.
+- ميزتا Employee و Student، ودور `BatchAdmin` صار له معنًى محدَّد: **طالب** يدير دفعته (`StudentService.AddBatchAdmin`).
+- بدائية النطاق موحّدة عبر `GeneralAuthorizationInfo` + `UserScope.IsGlobal` — 21 موضع استدعاء متّسق.
+- `GetAll*` مقيَّدة بـ `Super Admin` في الكيانات الخمسة.
+- `ILogger` في `GlobalExceptionHandlingMiddleware` مع تمييز `LogWarning`/`LogError`، ومعالجة `SqlException 547`.
 - `TestDataSeeder` للتطوير (idempotent, BCrypt).
+- **مخطط Study كامل ومُفهرَس بشكل صحيح** (Semester / Subject / SectionSubject / StudentResult).
+- `TreatWarningsAsErrors` + GitHub Actions.
 
-### لم يبدأ بعد
+### لم يبدأ بعد (ليس عيبًا — خارج النطاق الحالي)
 
-- **`Semester` / `Subject` / `SectionSubject` / `StudentResult`** — كيانات + إعدادات EF + بيانات Seed، وصفر Repository/Service/Controller. **أهم قيمة وظيفية متبقية.** (انظر §7 لتقييم الجاهزية).
-- `Post` / `Announcement` / `Image` — مُهيكَلة بلا تنفيذ (قرار منتج مطلوب).
-- مشروع اختبارات، CI، `ILogger` في الخدمات، تدوير مفتاح JWT.
+- **طبقة تطبيق Study**: صفر Repository/Service/Controller لـ `Semester`/`Subject`/`SectionSubject`/`StudentResult`. **أهم قيمة وظيفية متبقية.**
+- `ContentItem` (Post/Announcement/Image): مُهيكَل بلا تنفيذ — وهو الآن **مكسور** (§6.1).
+- مشروع اختبارات، `ILogger` في الخدمات، تدوير مفتاح JWT، Rate limiting.
 
 ---
 
 ## 6. البنود المفتوحة — مرتبة حسب الأولوية
 
-كلها **مُتحقَّق منها في الكود** عند Commit `7aeac1e`.
+كلها **مُتحقَّق منها في الكود** عند Commit `d24bef7`.
 
 ### ✅ أُغلقت هذه الجولة (تحقّقتُ منها بنفسي — لا تُعِد فتحها)
 
 | البند السابق | كيف أُغلق |
 |---|---|
-| 🔴 عطل تسجيل دخول الموظفين (`TokenUserInfoMapper:29,70`) | أُعيد تصميم `UserTypeResult` بمُميِّز `UserType Type`، والتفريع صار عليه. **حل أفضل من المقترح.** |
-| 🔴 `DeleteSection` بلا فحص ملكية | صارت تستخدم `SectionOwnerPolicy` + `AuthorizeAsync` (`SectionController.cs:91-97`) |
-| 🔴 `GetAll*` مفتوحة لأدوار مُقيَّدة | Department/Batch/Section كلها الآن `[Authorize(Roles = "Super Admin")]` — **اختار الخيار (أ) الموصى به** |
-| 🟠 `ToUserScope` يُسقِط `BatchId` | أُضيف (`ControllersExtensions.cs:109`) — **لكن انظر §6.1 و§6.2** |
-| 🟡 `UserTypeResult.SystemAdmin` تُرجع `null` | صارت تُرجع كائنًا صحيحًا |
-| 🟡 عدم تطابق nullability في `IRefreshTokenService` | صُحِّح |
-| 🟡 سبعة تحذيرات مُصرِّف | أُغلقت |
+| 🔴 §6.1 — 12 موضع استدعاء ثلاثي الوسائط لـ `IsWithinScope` | **أُلغيت المشكلة من جذرها**: التوقيع صار `(UserScope?, GeneralAuthorizationInfo)`، و21 موضعًا كلها متّسقة الآن |
+| 🔴 §6.2 — الحارس يفحص 3 حقول من 4 | صار `scope.IsGlobal` خاصية محسوبة على `UserScope` تشمل `BatchId` |
+| 🟠 §6.3 — `BatchAdmin` بلا معنى | حُسِم: `BatchAdmin` = **طالب** يدير دفعته. يحمل `BatchId` عبر `StudentAuthorizationInfo`. (يبقى عيب البذر — §6.5) |
+| 🟠 §7.2-2 — `Semester` بلا `UniversityId` | أُضيف + فهرس فريد `(UniversityId, Name)` + فهرس مُصفّى `IsCurrent` لكل جامعة |
+| 🟠 §7.3-1,2 — لا فهارس فريدة على `SectionSubject`/`StudentResult` | أُضيفت كلتاهما |
+| 🟠 §7.3-4 — `StudentResult` لا يرث `BaseEntity` | يرثه الآن، و`EnteredByUserId` صار `CreatedByUserId` بهجرة نظيفة |
+| 🟠 §7.3-5 — لا حدود على الدرجات | `SetGrades()` + `GradeConstants` (جزئيًا — §6.7) |
+| 🟡 §3.3 — الانضباط يدوي | `TreatWarningsAsErrors` + `build.yml`. 3 تحذيرات ← 0 |
+| 🟡 الفجوة #2 — لا CI | `.github/workflows/build.yml` يعمل |
+| — §6.5 السابق (`wwwroot`) | **خارج النطاق بقرار المطوّر** — لا يُذكر مجددًا |
 
 ---
 
-### 🔴 6.1 — إضافة `BatchId` عطّلت كل مواضع الاستدعاء ثلاثية الوسائط
+### 🔴 6.1 — نموذج EF لا يُبنى: التطبيق لا يعمل
 
-**هذا عيب جديد أنتجه الإصلاح نفسه.**
+**الموقع:** `DataAccessLayer/Configurations/ContentConfigurations/ContentItemConfiguration.cs:20-21` + `Domain/Entities/Images/Image.cs:16-17`
 
-`IsWithinScope` تفحص `BatchId` **أولًا** (`EmployeeScopeExtension.cs:16-17`):
-
-```csharp
-if (scope.BatchId.HasValue)
-    return batchId == scope.BatchId;     // batchId هو الوسيط الرابع، افتراضه null
+```text
+dotnet ef dbcontext info --project DataAccessLayer --startup-project UniNet
+→ The navigation 'Announcement' cannot be added to the entity type 'Image'
+  because its CLR type 'Announcement' does not match the expected CLR type 'ContentItem'.
 ```
 
-والتوقيع: `IsWithinScope(this UserScope? scope, int universityId, int? collegeId = null, int? departmentId = null, int? batchId = null)`.
-
-**النتيجة:** أي موضع استدعاء يُغفل الوسيط الرابع يُمرِّر `batchId = null`، فتُرجع الدالة `null == scope.BatchId` = **`false`** لكل مستخدم مرتبط بدفعة — **بصرف النظر عن صحة نطاقه فعليًا**.
-
-**جرد الـ 21 موضعًا:** 9 مواضع تمرّر 4 وسائط ✅ · **12 موضعًا تمرّر 3 أو أقل** ❌:
-
-| الموضع | الوسائط | مَن يتأثر |
-|---|:---:|---|
-| **`SectionService.cs:50` (`AddSection`)** | **3** | **`BatchAdmin` — وهو مُصرَّح له على `CreateSection` منذ هذه الجولة (`SectionController.cs:103`)** |
-| `BatchService.cs:49` (`AddBatch`) | 3 | أي مستخدم مرتبط بدفعة |
-| `DepartmentService.cs:50, 137` | 2, 3 | ″ |
-| `CollegeService.cs:49, 135` | 1, 2 | ″ |
-| `EmployeeService.cs:61, 95, 186, 228` | 2–3 | ″ |
-| `CollegeOwnerHandler:24`, `DepartmentOwnerHandler:22`, `EmployeeOwnerHandler:22` | 2–3 | ″ |
-
-**الأثر الملموس اليوم:** محدود — لأن دور `BatchAdmin` **ما زال غير مزروع** (§6.3)، والطلاب (وهم الفئة الوحيدة التي تحمل `BatchId` فعليًا) لا يصلون إلا إلى `StudentOwnerHandler` الذي يمرّر 4 وسائط ✅.
-
-**لماذا هو 🔴 رغم ذلك:** لأنه أضاف `BatchAdmin` إلى **5 نقاط نهاية في `SectionController`** في نفس الـ Commit — أي أنه **وصّل ميزةً معطوبة بالبناء**. لحظة زرع الدور، `BatchAdmin` لن يستطيع إنشاء شعبة في دفعته هو. والعطل صامت: لا استثناء، لا سجل، فقط 404.
-
-**الإصلاح المقترح (قرار له):** إمّا تمرير الوسيط الرابع في المواضع الـ 12، أو — الأنظف — **قلب ترتيب الفحص في `IsWithinScope` ليمشي من الأعمّ إلى الأخصّ**، فلا يُعاقَب المستدعي على إغفال وسيط اختياري.
-
----
-
-### 🔴 6.2 — الحارس ما زال يفحص 3 حقول من 4 (والترتيب نُفِّذ معكوسًا)
-
-**الموقع:** `Contracts/Common/Extensions/EmployeeScopeExtension.cs:14`
+**السبب:** بعد دمج `Post` و`Announcement` في `ContentItem` (TPH)، بقيت في `Image` ملاحيتان منفصلتان:
 
 ```csharp
-if (scope == null || (scope.UniversityId == null && scope.CollegeId == null && scope.DepartmentId == null))
-    return true;   // "هذا Super Admin، اسمح بكل شيء"  ← BatchId غير مذكور
+public Post? Post { get; set; }
+public Announcement? Announcement { get; set; }
 ```
 
-في الجولة السابقة كُتب حرفيًا: *«الترتيب إلزامي: أصلح الحارس أولًا، ثم `ToUserScope`»*. **نُفِّذ العكس:** أُضيف `BatchId` إلى `ToUserScope` وبقي الحارس كما هو.
-
-**لماذا لم تنفجر الثغرة:** لأن `StudentAuthorizationInfo` يستخدم `int` غير قابل للـ null في `CollegeId` و`DepartmentId` (`StudentAuthorizationInfo.cs:12-13`)، و`StudentRepository.ToInfo` يملأ السلسلة كاملة دائمًا — فلا يوجد اليوم أي مُوكَّل يحمل `BatchId` وحده.
-
-> **هذه حماية عرضية من خيار نوع، لا حماية تصميمية.** أي مصدر مستقبلي لـ `BatchId` (دور `BatchAdmin` كموظف، أو مطالبة تُضاف يدويًا، أو جعل تلك الحقول nullable) يفتح **تصعيد صلاحيات كامل**: مستخدم بمطالبة `BatchId` فقط يُعامَل كـ Super Admin في كل `IsWithinScope` في المشروع.
-
-**الإصلاح:** إضافة `&& scope.BatchId == null` إلى الحارس. سطر واحد.
-
----
-
-### 🟠 6.3 — دور `BatchAdmin` مرجعيّ في 15 موضعًا وغير مزروع
-
-الأدوار المزروعة (`SeedData.cs:25-30`): `Super Admin`, `UniversityAdmin`, `CollegeAdmin`, `DepartmentAdmin`, `Lecturer`, `Student`.
-
-`BatchAdmin` مذكور في `[Authorize]` على **10 نقاط نهاية** (5 في `SectionController` أُضيفت هذه الجولة، و5 في `StudentController`)، وله نقطتا نهاية مخصصتان (`AddBatchAdmin`/`UpdateBatchAdmin`). **لا مستخدم يمكنه امتلاكه** → الميزة غير قابلة للتشغيل.
-
-بالمقابل: `Lecturer` مزروع ولا يظهر في أي `[Authorize]` — بينما `SectionSubject.LecturerName` حقل نصّي حر لا مفتاح أجنبي. **قرار منتج مطلوب:** هل المحاضر مستخدم في النظام أم مجرد اسم؟ الإجابة تحدد تصميم وحدة Study كلها.
-
----
-
-### 🟠 6.4 — قاعدة `StudentNumber` معطَّلة (الجولة الثالثة)
-
-**الموقع:** `Application/Validators/StudentValidator/AddStudentValidator.cs:62-66`
+وإعداد الأساس يربطهما هكذا:
 
 ```csharp
-RuleFor(x => x.StudentNumber)
-    .NotEmpty().WithMessage("Student number is required.")
-    .Matches(@"^\+?[1-9]\d{1,14}$").WithMessage("Invalid phone number format...")  // regex ورسالة الهاتف
-    .When(x => !string.IsNullOrEmpty(x.PhoneNumber));                              // الشرط على PhoneNumber!
+builder.HasOne(c => c.Image).WithOne(i => i.Announcement)
+       .HasForeignKey<Announcement>(p => p.ImageId);   // ImageId مُعرَّف على ContentItem لا Announcement
 ```
 
-`.When()` تنطبق على **كل** القواعد السابقة في السلسلة — بما فيها `NotEmpty()`. فإن لم يُرسل العميل هاتفًا، **لا يُتحقَّق من رقم الطالب إطلاقًا**، ورقم الطالب حقل مطلوب وفريد في القاعدة.
+في TPH لا يمكن إعلان مفتاح أجنبي على نوع مشتق لخاصية معرَّفة على الأساس، ولا يمكن لملاحية عكسية أن تشير لنوع مشتق في علاقة معرَّفة على الأساس. و`Image.Post` لم تُعرَّف أصلًا بعد تعطيل `PostConfiguration`.
 
-**بند مُبلَّغ عنه في مراجعتين سابقتين ولم يُلمَس.** هذا أطول بند مفتوح في المشروع.
+**الأثر:** في التطوير، `Program.cs:184` يستدعي `GetRequiredService<AppDbcontext>()` → **استثناء عند الإقلاع**. في الإنتاج، أول طلب يلمس قاعدة البيانات → 500. **كل نقاط النهاية معطّلة.**
+
+**لماذا لم يمسكه أي شيء:** التصريف ينجح، والتحذيرات صفر، وCI يبني فقط. `PostConfiguration` و`AnnouncementConfiguration` مُعطَّلان بالتعليق فلا يُصرَّفان.
+
+**الإصلاح:** استبدل ملاحيتَي `Image` بواحدة `public ContentItem? ContentItem { get; set; }`، واربط الطرف على الأساس:
+
+```csharp
+builder.HasOne(c => c.Image).WithOne(i => i.ContentItem)
+       .HasForeignKey<ContentItem>(c => c.ImageId)
+       .IsRequired(false).OnDelete(DeleteBehavior.Restrict);
+```
+
+ثم ولّد هجرة — لا توجد هجرة للدمج أصلًا.
 
 ---
 
-### 🟠 6.5 — الواجهة الأمامية غير مخدومة إطلاقًا
+### 🔴 6.2 — `refresh` يُسقِط `UniversityId` فيمنح `UniversityAdmin` صلاحيات عالمية
 
-`Program.cs:196-197` يستدعي `UseDefaultFiles()` + `UseStaticFiles()` — وكلاهما يخدم من `{ContentRoot}/wwwroot` أي `UniNet/wwwroot/`.
+**الموقع:** `DataAccessLayer/Repos/RefreshTokenRepository.cs:18-29`
 
-**التحقق:** `UniNet/wwwroot/` **غير موجود**. الملفات الثمانية متتبَّعة في **جذر المستودع** تحت `wwwroot/`. طلب `GET /` يُرجع 404.
+`ToDetaieldTokenDTO` تُسقِط كل حقل عدا `UniversityId`:
 
-`CLAUDE.md` و`README.md` كلاهما يقول عكس ذلك. **الإصلاح:** `git mv wwwroot UniNet/wwwroot` + تصحيح الملفين.
+```csharp
+t => new UserToken { RefreshTokenId = …, Type = t.User.Type, TokenHash = …,
+                     UserId = …, UserName = t.User.UserName, … }
+                     //  UniversityId ← غير مُسنَد، يبقى null
+```
+
+**السلسلة الكاملة:**
+
+`POST /api/Login/refresh`
+
+→ `UserToken.UniversityId = null`
+
+→ `TokenUserInfoMapper.ToInfoDTO(UserToken…):103` يمرّر `UniversityId = token.UniversityId` = `null`
+
+→ `JwtTokenFactory:24` لا يُصدر مطالبة `UniversityId`
+
+→ `UniversityAdmin` ليس له `CollegeId` ولا `DepartmentId` (`CreateEmployee` يمرّرهما `null`)
+
+→ الرمز الجديد **بلا أي مطالبة نطاق**
+
+→ `ToUserScope()` → `UserScope.IsGlobal == true`
+
+→ `IsWithinScope` تُرجع `true` لكل مورد في النظام
+
+**سيناريو الاستغلال (خطوتان، بلا أدوات):**
+
+1. `UniversityAdmin` لجامعة A يسجّل الدخول ثم يستدعي `/api/Login/refresh` مرة واحدة.
+2. بالرمز الجديد: `DELETE /api/College?CollegeId=<كلية في جامعة B>` → **ينجح**. و`GET /api/College/by-universityId` يُرجع **كليات كل الجامعات**. و`GET /api/Employee` يُرجع **كل الموظفين**. و`POST /api/Employee/college_admin` ينشئ مسؤولًا في جامعة أخرى.
+
+**لماذا لم تنكشف:** فحوص `[Authorize(Roles=…)]` ما زالت تمرّ (الدور لم يتغيّر)، والعطل صامت تمامًا. و`UniversityOwnerHandler` وحده ينجو لأنه **لا يستخدم** `IsWithinScope` بل يقارن مباشرة.
+
+**الإصلاح:** أضف `UniversityId = t.User.UniversityId` إلى `ToDetaieldTokenDTO`. سطر واحد.
+
+**الدرس البنيوي (الأهم):** `IsGlobal` تعني «بلا نطاق ⇒ صلاحية كاملة». هذا **fail-open**. أي مسار يفقد المطالبات يتحوّل تلقائيًا إلى Super Admin. الأمتن: أن يكون العالمي **دورًا صريحًا** (`context.User.IsInRole("Super Admin")`) لا **غياب بيانات**.
 
 ---
 
-### 🟠 6.6 — تناقضات في العقد
+### 🔴 6.3 — الهجرة الثانية تفشل على أي قاعدة بيانات
+
+**الموقع:** `DataAccessLayer/Migrations/20260810081206_Update-StudyConfigurations.cs`
+
+```csharp
+migrationBuilder.AddColumn<int>("UniversityId", "Semesters", nullable: false, defaultValue: 0);
+migrationBuilder.UpdateData("Semesters", "SemesterId", 1, "UniversityId", value: 0);
+// …
+migrationBuilder.AddForeignKey("FK_Semesters_Universities_UniversityId",
+    "Semesters", "UniversityId", "Universities", "UniversityId", ReferentialAction.Restrict);
+```
+
+`SeedData.GetSemesters():210-222` لا تُسنِد `UniversityId` → القيمة 0 → لا توجد جامعة بمعرّف 0 → **إنشاء المفتاح الأجنبي يفشل بخطأ 547**.
+
+**الأثر:** `dotnet ef database update` يفشل على قاعدة جديدة وعلى قاعدة قائمة معًا. مع §6.1، **لا توجد اليوم طريقة لتشغيل المشروع من الصفر.**
+
+**الإصلاح:** أسنِد `UniversityId = 1` في `SeedData.GetSemesters()`، وأعد توليد الهجرة.
+
+---
+
+### 🔴 6.4 — `UpdateCollegeAdmin` / `UpdateDepartmentAdmin`: اختطاف موظف عبر المستأجرين
+
+**الموقع:** `Application/Services/EmployeeService/EmployeeService.cs:182-212` و`224-257`
+
+الفحص يتم على **الكلية/القسم القادم في جسم الطلب**، لا على **الموظف المستهدَف**:
+
+```csharp
+var collegeInfo = await …GetCollegeAuthorizationInfo(updatedCollegeAdmin.CollegeId);
+if (!scope.IsWithinScope(collegeInfo.ToCollegeInfo())) return …;   // يفحص الوجهة
+
+var employee = await GetEntityById(employeeId);                     // ← بلا أي فحص نطاق
+employee.CollegeId    = collegeInfo.CollegeId;
+employee.UniversityId = collegeInfo.UniversityId;
+await UpdateEmployee(user, updatedCollegeAdmin, currentUserId);     // يكتب فوق بيانات المستخدم
+```
+
+**سيناريو:** `UniversityAdmin` لجامعة A يرسل:
+
+`PUT /api/Employee/college_admin?EmployeeId=<موظف في جامعة B>`
+
+مع `CollegeId` = كلية داخل جامعة A.
+
+→ فحص النطاق يمرّ (الوجهة داخل نطاقه)
+
+→ الموظف الأجنبي **يُنقل إلى جامعة A**
+
+→ `UpdateEmployee` يكتب فوق `FullName` و`UserName` و`Email` و`PhoneNumber` و`IsActive`
+
+→ بإرسال `IsActive = false` يُعطَّل حساب مسؤول في جامعة أخرى.
+
+**عيب سلامة إضافي:** `UpdateCollegeAdmin` يغيّر `CollegeId` ولا يمسّ `DepartmentId` → يمكن أن يصبح للموظف قسمٌ لا ينتمي لكليته. لا قيد في قاعدة البيانات يمنع ذلك (لا مفتاح أجنبي مركّب).
+
+**النسخة الصحيحة موجودة في المشروع نفسه:** `StudentService.UpdateStudent:218-231` يجلب الكيان أولًا ثم يشتق `batchInfo` **منه** ثم يفحص النطاق. **هذا هو الترتيب الصحيح.**
+
+**الإصلاح:** اجلب `employee` أولًا، اشتق `EmployeeAuthorizationInfo` منه، افحص `IsWithinScope` عليه، **ثم** افحص الوجهة.
+
+---
+
+### 🟠 6.5 — `BatchAdmin` غير مزروع في هجرة الإنتاج
+
+`SeedData.GetRoles():24-31` تزرع ستة أدوار — **بلا `BatchAdmin`**. و`TestDataSeeder:238` تزرعه، لكنها تعمل في التطوير فقط.
+
+**الأثر:** على قاعدة إنتاج، `POST /api/Student/batch_admin` يُرجع 404 `Role Doesnt Exists`، ودور مذكور في **10 سمات `[Authorize]`** لا يمكن لأحد امتلاكه.
+
+**الإصلاح:** `new Role { RoleId = 7, Name = "BatchAdmin" }` + هجرة.
+
+---
+
+### 🟠 6.6 — `GetSectionsPerBatch` لا تُصفّي بـ `scope.BatchId`
+
+**الموقع:** `DataAccessLayer/Repos/AcademicRepositories/SectionRepository.cs:336-393`
+
+الدالة تُصفّي بـ `UniversityId` و`CollegeId` و`DepartmentId` — و`BatchId` **غائبة**. و`BatchAdmin` **مصرَّح له** على هذه النقطة (`SectionController.cs:313`)، وهو يحمل `BatchId` فعلًا لأنه طالب.
+
+**الأثر:** `BatchAdmin` يرى **كل شُعَب قسمه**، لا شُعَب دفعته فقط. تسريب معلومات عبر الدفعات.
+
+**النسخة الصحيحة موجودة في المشروع:** `StudentRepository.GetStudents:100-125` تتعامل مع `scope.BatchId` بفرع `else` صريح.
+
+**ملاحظة:** `BatchRepository.GetBatchesPerDepartment` بها الإغفال نفسه، لكنها غير مستغَلّة اليوم لأن `BatchAdmin` غير مصرَّح له عليها. **أصلحهما معًا** — هذا حرفيًا نمط §3.1.
+
+---
+
+### 🟠 6.7 — بنود منطق ودقّة متفرقة
 
 | # | البند | الموقع | التفصيل |
 |---|---|---|---|
-| 1 | **409 يُرجَع كـ 400** | `ControllersExtensions.cs:53-57` | حالة HTTP الفعلية **400** والجسم يدّعي `StatusCode = 409`. كل المتحكمات تعلن `[ProducesResponseType(409)]`. |
-| 2 | **`Add*` تُرجع 200 لا 201** | `ControllersExtensions.cs:19-22` | لا `201 Created` ولا رأس `Location`، رغم `[ProducesResponseType(201)]` على 9 نقاط إنشاء. |
-| 3 | **معامل إلزامي مُتجاهَل** | `DepartmentController.cs:52` | `CollegeIdParameter` مربوط بـ `[Range(1,...)]` — يُجبر العميل على إرساله ثم لا يُستخدم. |
-| 4 | **`filter.UniversityId` مُتجاهَل** | `UniversityRepository.cs:59-81` | كل الأشقاء يطبّقون فلتر معرّفهم؛ University وحدها لا. |
-| 5 | **`filter.DepartmentId` مُتجاهَل** | `DepartmentRepository.GetDepartmentsPerCollege` | موجود في `GetAllDepartments:87` ومفقود في النسخة المُنطَّقة. |
+| 1 | **`UpdateStudent` يُعيد تعيين الحالة قسرًا** | `StudentService.cs:258` | `studentEntity.StatusId = statusId;` حيث `statusId` هو دائمًا "Enrolled". تحديث بيانات طالب **متخرّج أو موقوف** يُعيده إلى "مُقيَّد" صامتًا. |
+| 2 | **`batch_admin` و`student` نقطتا تحديث متطابقتان** | `StudentService.cs:211` | المعامل `roleId` مُستقبَل وغير مستخدم. `UpdateBatchAdmin` لا يمنح ولا يتحقق من دور `BatchAdmin`. |
+| 3 | **`sectionInfo!` → 500 بدل 400** | `StudentService.cs:161, 245` | `SectionId` غير موجود ⇒ `GetSectionAuthorizationInfoAsync` تُرجع `null` ⇒ `NullReferenceException`. |
+| 4 | **`UpdateUser` يُرجع بيانات قديمة** | `UserService.cs:141-142` | `FindById(...)` تُستدعى **قبل** `CompleteAsync()`. استعلامات EF لا تُفرِّغ التغييرات المعلّقة ⇒ الاستجابة تحمل القيم السابقة. كل الخدمات الأخرى تعكس الترتيب. |
+| 5 | **`AddUser` لا يُسنِد `Type`** | `UserService.cs:46-57` | مستخدم بـ `Type == null` ⇒ `GetAuthorizationInfoResult` تُرجع `null!` ⇒ `ToInfoDTO` تسقط إلى `new TokenUserInfoDTO()` ⇒ `UserName == null` ⇒ **`ArgumentNullException` في `JwtTokenFactory` ⇒ 500 عند تسجيل الدخول.** ينطبق أيضًا على المستخدم المزروع في `SeedData.GetUsers()`. |
+| 6 | **`refresh` لا يفحص `IsActive`** | `LoginController.cs:75-107` | حساب مُعطَّل يظل يُصدر رموز وصول حتى 7 أيام. `Login` يفحص، `Refresh` لا. |
+| 7 | **`SetGrades` قابل للتجاوز** | `StudentResult.cs:14-16, 26` | `Midterm`/`Practical`/`Final` لها `set` عام، فالحارس اختياري لا إلزامي. كما أن `ArgumentException(nameof(practical))` تمرّر اسم المعامل مكان الرسالة. لا قيد `CHECK` في قاعدة البيانات كشبكة أمان. |
+| 8 | **هاش كلمة مرور تالف في البذور** | `SeedData.cs:41` | `"AQAAAAEAACcQ…"` صيغة ASP.NET Identity لا BCrypt ⇒ `BCrypt.Verify` يرمي `SaltParseException` ⇒ **500 بدل 401**. |
 
 ---
 
-### 🟡 6.7 — تنظيف (تُجمَّع لتمريرة واحدة)
+### 🟠 6.8 — تناقضات في العقد (بنود قائمة من الجولة السابقة)
+
+| # | البند | الموقع | الحالة |
+|---|---|---|---|
+| 1 | **409 يُرجَع كـ 400** | `ControllersExtensions.cs:53-57` | ما زال. الجسم يقول `StatusCode = 409` والحالة الفعلية 400. |
+| 2 | **`Add*` تُرجع 200 لا 201** | `ControllersExtensions.cs:21` | ما زال. لا `201 Created` ولا رأس `Location` رغم `[ProducesResponseType(201)]` على 9 نقاط. |
+| 3 | **معامل إلزامي مُتجاهَل** | `DepartmentController.cs:188` | ما زال. |
+| 4 | **`filter.UniversityId` مُتجاهَل** | `UniversityRepository.cs:59-81` | ما زال. |
+| 5 | **`filter.DepartmentId` مُتجاهَل** | `DepartmentRepository.GetDepartmentsPerCollege` | ما زال. |
+| 6 | **`StudentNumber`: `.When` تُبطل `NotEmpty`** | `AddStudentValidator.cs:62-67` | **الجولة الرابعة.** الرسائل صُحِّحت والشرط نُقل للحقل الصحيح — لكن `.When(!IsNullOrEmpty(StudentNumber))` تجعل `NotEmpty()` بلا معنى. `StudentNumber = ""` يمرّ. |
+| 7 | **`PageSize` بلا حدّ أعلى** | `PagedResultParameters.cs:12` | `[Range(1, int.MaxValue)]` يسمح بـ `PageSize = 2147483647` ⇒ مسح كامل للجدول. |
+
+---
+
+### 🟡 6.9 — تنظيف (تُجمَّع لتمريرة واحدة)
 
 | البند | الموقع |
 |---|---|
-| حارس ميت مُكرَّر **4 مرات** | `CollegeRepository:98`, `BatchRepository:130`, `SectionRepository:144`, `StudentRepository:96` |
+| حارس ميت مُكرَّر 4 مرات (أُغني عنه بـ `IsGlobal`) | `CollegeRepository:98`, `BatchRepository:130`, `SectionRepository:141`, `StudentRepository:97` |
 | `services.AddAuthorization()` ×7 بدل مرة واحدة | `PolicyExtension.cs` |
-| `UserTypeResult.SystemAdmin` تتجاهل معاملها | `UserTypeResult.cs:29` |
-| `// Not completed yet` فوق دالة مكتملة | `UserService.cs:81` |
-| `catch (Exception ex)` و`ex` غير مستخدم | `EmployeeService.cs:334` |
-| `filter?.Search` بعد إسناد غير-null (سبب CS8602) | `CollegeRepository.cs:68` |
+| 7 سياسات متطابقة بلا مُميِّز — نوع المورد هو الفارق الفعلي لا اسم السياسة | `PolicyExtension.cs` + المعالجات |
+| 12 تسجيل Repository ميت في DI | `RepositoriesToDIContainer.cs` |
+| `IValidator<LoginRequest>` مسجَّل ولا يُستدعى؛ وقاعدة كلمة المرور فيه (`^[a-zA-Z0-9_]+$`) **تناقض** قاعدة الإنشاء (تُلزم برمز خاص) | `AddServicesToDIContainer.cs:79` + `LoginRequestValidator.cs` |
+| `AddSwaggerGen()` مُستدعاة مرتين | `Program.cs:122-123` |
 | Middleware الاستثناءات مسجَّل بعد CORS/StaticFiles | `Program.cs:199` |
+| فهرس فريد مُكرِّر للمفتاح الأساسي | `UserRoleConfigurations.cs` |
+| ملفان فارغان + واجهة بلا تنفيذ | `UserHelper.cs`, `ServicesExtensions.cs`, `ILoginService` |
+| `IUnitOfWorkRepository : IDisposable` يتخلّص من `DbContext` تملكه الحاوية | `UnitOfWorkRepository.cs:94` |
+| تناقض `AsNoTracking`: موجود في `CollegeRepository.GetCollegeDTOById` ومفقود في `DepartmentRepository.GetDTOById` و`BatchRepository.GetDTOById` | — |
+| `GradeConstants` في مجلد `DomainConstant` بينما مساحة الاسم `StudyConstants` | `GradeConstants.cs` |
 | ملفان XML بحجم 1.3MB في جذر المستودع | `StudentBranch.xml`, `UniNet(StatusBranch).xml` |
-| `.github/workflows/` فارغ | — |
-| أخطاء إملائية في معرّفات عامة | `Coulmns`, `UniverseId`, `Parametre`, `Requsets`, `EnterdByUser`, `AccesseToken` |
+| أخطاء إملائية في معرّفات عامة | `Coulmns`, `UnivresityId`, `Parametre`, `Requsets`, `AccesseToken`, `proprty`, `RepoSitories`, `Dbcontext` |
 
 ---
 
-## 7. هل الأجزاء المبنية مستقرة بما يكفي للانتقال إلى Study؟
+## 7. الترتيب الموصى به للعمل القادم
 
-> **هذا هو السؤال العملي الأهم في هذه الجولة. الإجابة القصيرة: نعم — بشرط إغلاق بندين فقط أولًا.**
+> **القاعدة:** لا سطر جديد في وحدة Study قبل أن يُقلع التطبيق ويُثبَّت النطاق.
 
-### 7.1 تقييم استقرار الأساس
+### المرحلة صفر — استعادة القابلية للتشغيل (ساعة واحدة، إلزامية)
 
-| المحور | الحالة | يمنع الانتقال؟ |
-|---|---|:---:|
-| **المصادقة** | تسجيل دخول الأنواع الثلاثة يعمل. Refresh Token سليم. | ❌ لا |
-| **الهيكل الأكاديمي (CRUD)** | كامل ومتّسق عبر الكيانات الخمسة | ❌ لا |
-| **الفلترة والترقيم** | مُعمَّمة ومتّسقة | ❌ لا |
-| **قاعدة البيانات والهجرات** | مستقرة، هجرة واحدة نظيفة | ❌ لا |
-| **بدائية النطاق (`IsWithinScope`)** | **معطوبة في 12 موضعًا + حارس ناقص** | ✅ **نعم** |
-| **بذور الأدوار** | `BatchAdmin` غير مزروع، `Lecturer` بلا معنى محدَّد | ✅ **نعم (جزئيًا)** |
-| **العقود (409/201)** | غير مطابقة للمعلَن | ❌ لا — مزعج لا مانع |
-| **الواجهة الأمامية** | غير مخدومة | ❌ لا — مستقلة تمامًا |
-| **الاختبارات** | صفر | ❌ لا يمنع تقنيًا، لكنه يضاعف كلفة كل ما بعده |
+1. **§6.1** — أصلح ملاحيات `Image` وإعداد `ContentItem`، ثم `dotnet ef dbcontext info` حتى ينجح.
+2. **§6.3** — `UniversityId = 1` في بذور `Semester`، وأعد توليد الهجرة.
+3. **ولّد هجرة للدمج** (`ContentItems`) — لا توجد واحدة اليوم.
+4. **أضف إلى `build.yml`** خطوةً تشغّل `dotnet ef dbcontext info`. هذا يحوّل §6.1 من عطل يمرّ إلى عطل يُوقف الدمج.
 
-### 7.2 ما **يجب** إغلاقه قبل كتابة أول سطر في Study
+### المرحلة الأولى — إغلاق الأمن (ساعتان)
 
-**١) بدائية النطاق (§6.1 + §6.2) — إلزامي.**
-وحدة Study ستضيف `SubjectOwnerHandler` و`SemesterOwnerHandler` و`StudentResultOwnerHandler`، وكلها **ستنسخ نفس نمط الاستدعاء**. البناء فوق بدائية معطوبة يعني نسخ العطل ثلاث مرات جديدة — وهذا حرفيًا نمط §3.1 الذي يتكرر منذ خمس موجات.
-> **الكلفة الآن:** سطر في الحارس + جرد 12 موضعًا (ساعة). **الكلفة بعد Study:** ثلاثة أضعاف، مع اختبار يدوي أصعب.
+5. **§6.2** — سطر واحد في `ToDetaieldTokenDTO`. **ثم فكّر جديًا في جعل «العالمي» دورًا صريحًا بدل غياب نطاق.**
+6. **§6.4** — اقلب ترتيب الفحص في دالتَي تحديث الموظف لتطابق `StudentService.UpdateStudent`.
+7. **§6.6** — أضف فرع `scope.BatchId` في `SectionRepository` **و**`BatchRepository` معًا.
+8. **§6.7-6** — فحص `IsActive` في `refresh`.
 
-**٢) قرار انتماء `Semester` للمستأجر — إلزامي، وهو قرار تصميمي لا إصلاح.**
-`Semester` **ليس فيه `UniversityId`** (`Domain/Entities/Study/Semester.cs`). أي أن الفصول الدراسية **عالمية عبر كل الجامعات**. هذا يكسر سلسلة النطاق: لا يمكن بناء `SemesterOwnerHandler` لأن الفصل لا ينتمي لأحد.
-> **ثلاثة خيارات، احسمها الآن:** (أ) إضافة `UniversityId` للفصل — الأصح لنظام متعدد المستأجرين. (ب) إبقاؤه عالميًا وقصر إدارته على `Super Admin`. (ج) ربطه بـ `College`.
-> **لماذا الآن:** لا يوجد سطر كود واحد يعتمد على `Semester` بعد — تغيير المخطط اليوم مجاني، وبعد بناء الخدمات يصبح هجرة مؤلمة.
+### المرحلة الثانية — الاختبارات (نصف يوم، وهي أعلى عائد في المشروع كله)
 
-### 7.3 ثغرات تصميمية في كيانات Study — أصلحها وأنت تبني (لا تؤجّلها)
+9. مشروع xUnit + خمسة اختبارات فقط:
+   - اختبار واحد يبني `AppDbcontext` (`OnModelCreating`) → **كان سيمنع §6.1**.
+   - ثلاثة على `IsWithinScope` (عالمي / نطاق مطابق / نطاق مخالف).
+   - واحد على `EmployeeService.UpdateCollegeAdmin` بموظف خارج النطاق → **كان سيمنع §6.4**.
 
-| # | الثغرة | الموقع | لماذا تهم |
-|---|---|---|---|
-| 1 | **لا فهرس فريد على `SectionSubject`** | `SectionSubjectConfiguration.cs` | يمكن إسناد نفس المادة لنفس الشعبة في نفس الفصل **مرتين**. المطلوب: `HasIndex(s => new { s.SectionId, s.SubjectId, s.SemesterId }).IsUnique()` |
-| 2 | **لا فهرس فريد على `StudentResult`** | `StudentResultConfiguration.cs` | يمكن تسجيل **درجتين** لنفس الطالب في نفس المادة. المطلوب: `HasIndex(s => new { s.StudentId, s.SectionSubjectId }).IsUnique()` |
-| 3 | **`Semester.IsCurrent` بلا قيد** | `SemesterConfiguration.cs` | لا شيء يمنع خمسة فصول "حالية" معًا. المطلوب: فهرس مُصفّى `.HasFilter("[IsCurrent] = 1").IsUnique()` |
-| 4 | **`StudentResult` لا يرث `BaseEntity`** | `Domain/Entities/Study/StudentResult.cs` | يستخدم `EnteredByUserId`/`EnterdByUser` بدل `CreatedByUserId`/`CreatedByUser` — الكيان الوحيد الشاذ عن اتفاقية المشروع |
-| 5 | **لا حدود على نطاق الدرجات** | `StudentResultConfiguration.cs` | `HasPrecision(5,2)` يسمح بـ `Midterm = 999.99`. المطلوب: `CHECK` constraint أو تحقق في الخدمة |
+> **الربط الذي ينبغي أن يقتنع به:** في الجولة السابقة قيل إن الاختبارات «الآلية الوحيدة التي تجرد المستهلكين نيابةً عنه». هذه الجولة قدّمت الدليل: بنى آليتَي انضباط (تحذيرات + CI)، وكلتاهما تقيسان التصريف، فمرّ عطلٌ لا علاقة له بالتصريف. **الاختبار الأول أعلاه سطرٌ واحد ويغطي فئة العطل كلها.**
 
-**الملاحظة المهمة على البنود 1–3:** المشروع **مُفهرَس بامتياز في كل مكان آخر** — `Subject` وحده فيه فهرسان فريدان مركّبان (`SubjectConfiguration.cs:14-15`). أي أن الفجوة ليست جهلًا بالفهرسة، بل **نفس نمط §3.1: طبّق القاعدة على الكيان الذي فكّر فيه، ونسي جيرانه.** كشفُها الآن — قبل وجود أي بيانات إنتاجية — هو أرخص لحظة ممكنة.
+### المرحلة الثالثة — ثم Study
 
-**وما هو صحيح فعلًا في Study (لا تلمسه):**
+10. `SubjectRepository` → `SemesterService` → … بعد أن يصبح الأساس قابلًا للتشغيل ومختبَرًا.
 
-- `StudentResult.Total` **عمود محسوب مخزَّن** (`HasComputedColumnSql("[Midterm] + [Practical] + [Final]", stored: true)`) — قرار أفضل من حسابه في الكود: يستحيل أن يفتقد الاتساق، ويمكن الفهرسة عليه.
-- `Subject` مفهرس فريدًا على `(DepartmentId, Code)` و`(DepartmentId, Name)`.
-- `DeleteBehavior.Restrict` مطبَّق على كل علاقات Study.
-
-### 7.4 الحكم النهائي
-
-> **نعم، انتقل إلى Study — بعد نصف يوم عمل، لا قبله.**
->
-> **الترتيب:**
-> 1. أصلح حارس `IsWithinScope` (سطر واحد) — **أولًا، قبل أي شيء**.
-> 2. اجرد الـ 12 موضعًا واحسم: تمرير الوسيط الرابع أم قلب ترتيب الفحص.
-> 3. احسم انتماء `Semester` للمستأجر، ونفّذ الهجرة.
-> 4. أضف الفهارس الفريدة الثلاثة **في نفس الهجرة**.
-> 5. ثم ابنِ `SubjectRepository` وما بعده.
->
-> **البنود 🟠 المتبقية (StudentNumber، wwwroot، 409/201) لا تمنع الانتقال** — لكن `BatchAdmin` و`Lecturer` تحديدًا ينبغي حسمهما قبل بناء `StudentResult`، لأن السؤال «مَن يُدخِل الدرجات؟» لا جواب له اليوم: `Lecturer` مزروع بلا صلاحيات، و`SectionSubject.LecturerName` نصّ حر.
+**قبل `StudentResult` تحديدًا، احسم:** مَن يُدخِل الدرجات؟ `Lecturer` مزروع بلا صلاحيات، و`SectionSubject.LecturerName` نصّ حرّ بلا مفتاح أجنبي. السؤال بلا جواب منذ ثلاث جولات.
 
 ---
 
 ## 8. مؤشرات التقدّم المرصودة
 
-| المؤشر | جولة `25c99d2` | جولة `7aeac1e` | الاتجاه |
+| المؤشر | جولة `7aeac1e` | جولة `d24bef7` | الاتجاه |
 |---|:---:|:---:|:---:|
-| **تحذيرات البناء** | 10 | **3** | ↗↗ **أكبر تحسّن** |
-| **بنود 🔴 مفتوحة** | 3 | 2 (**كلاهما جديد** — الثلاثة القديمة أُغلقت) | ↗ |
-| **سرعة الاستجابة** | عالية | عالية جدًا — 3 بنود حرجة في 4 commits | ↗ |
-| **جودة الإصلاح** | جيدة | **ممتازة** — مُميِّز `UserType` أفضل من المقترح | ↗ |
-| **تعميم على الـ Endpoints** | ضعيف | **جيد** — `GetAll*` عُمِّمت على الثلاثة | ↗ |
-| **جرد مستهلكي التعديل** | لم يُقَس | **ضعيف** — 12 موضعًا لم تُراجَع (§6.1) | 🆕 النمط انتقل هنا |
-| **بنود قديمة عالقة** | `StudentNumber` | `StudentNumber` (جولة ثالثة) | → |
+| **تحذيرات البناء** | 3 | **0** + `TreatWarningsAsErrors` | ↗↗ **مثبَّت آليًا** |
+| **CI** | لا يوجد | `build.yml` يعمل | ↗↗ 🆕 |
+| **جودة الإصلاح** | ممتازة | **ممتازة** — `GeneralAuthorizationInfo` أفضل من كل الخيارات المقترحة | ↗ |
+| **ديون مخطط قاعدة البيانات** | 5 بنود مفتوحة | **0** | ↗↗ |
+| **جرد مستهلكي التعديل** | ضعيف (12 موضعًا) | **مزدوج**: مثالي في النطاق، غائب تمامًا في `Image` | ↔ |
+| **التطبيق يعمل** | ✅ نعم | ❌ **لا** | ↘↘ 🆕 **أخطر تراجُع** |
+| **الهجرة تعمل** | ✅ نعم | ❌ **لا** | ↘↘ 🆕 |
+| **بنود 🔴 مفتوحة** | 2 | **4** (كلها جديدة — القديمة أُغلقت) | ↘ |
+| **بنود قديمة عالقة** | `StudentNumber` (3) | `StudentNumber` (**4**)، 409/201، معاملات مُتجاهَلة | → |
 | **الاختبارات** | 0 | 0 | → |
 
-**القراءة الدقيقة:** الجولة السابقة قالت إن تقدّمه يحدث في «البُعد الذي يستمتع به» لا «البُعد الممل». **هذه الجولة تنقض ذلك جزئيًا** — قراءة التحذيرات وإغلاق البنود الحرجة عملٌ ممل بحت، وقد أنجزه بالكامل. المتبقي من النمط القديم شيء واحد: **الجرد المنهجي لمستهلكي أي تعديل**، وقد انتقل من مستوى "نقطة النهاية" إلى مستوى "وسيط الدالة".
+**القراءة الدقيقة:** الجولة السابقة أثبتت أنه ينجز «العمل الممل» حين يُطلَب منه صراحةً. هذه الجولة تضيف تمييزًا أدقّ: **ينجز الممل المُوجَّه، ولا ينجز الممل غير المطلوب** — أي التحقق من أن ما بناه يعمل. البنود الأربعة 🔴 كلها من نوع «كان سيظهر عند أول تشغيل».
 
 **السؤال للمراجعة القادمة:**
-> هل أنشأ مشروع اختبارات؟ ثلاثة اختبارات على `IsWithinScope` كانت ستلتقط §6.1 و§6.2 **معًا** قبل الـ Commit.
+
+> هل أصبح `dotnet ef dbcontext info` (أو أول اختبار وحدة) جزءًا من `build.yml`؟
 >
-> **الاختبارات لم تعد "فجوة مهارية للسوق" — صارت الأداة المحددة التي تعالج نمط ضعفه الجذري.** هذا هو الربط الذي ينبغي أن يقتنع به: لا يُطلب منه كتابة اختبارات لأنها "ممارسة جيدة"، بل لأنها **الآلية الوحيدة التي تجرد المستهلكين نيابةً عنه**.
+> إن نعم، فقد أُغلق نمط §3.1 آليًا لا سلوكيًا، وهذه هي الترقية الكاملة إلى Mid-level.
 
 ---
 
@@ -406,89 +485,86 @@ RuleFor(x => x.StudentNumber)
 
 ### الملف المهني في سطرين
 
-مطوّر **.NET Backend** يبني — منفردًا — نظام إدارة جامعية متعدد المستأجرين (Multi-Tenant) بمعمارية طبقية مفروضة على مستوى المشاريع، مع نظام مصادقة وتفويض مخصّص من الصفر. **يفكّر كمعماري، ويُنفِّذ كمطوّر متوسط مبتدئ، ويصحّح كمحترف** — أغلق ثلاثة عيوب حرجة في جولة واحدة، وأحدها بحلٍّ أفضل من المقترح عليه.
+مطوّر **.NET Backend** يبني — منفردًا — نظام إدارة جامعية متعدد المستأجرين (Multi-Tenant) بمعمارية طبقية مفروضة على مستوى المشاريع، مع نظام مصادقة وتفويض مخصّص من الصفر. **يفكّر كمعماري، ويُصلح كمهندس، ويتحقق كمبتدئ** — أعاد تصميم بدائية التفويض بحلٍّ يقتل فئة الخطأ كلها، ثم دفع في اليوم نفسه Commit يترك التطبيق غير قابل للإقلاع.
 
 ### التقنيات المُثبَتة بالكود
 
 | المجال | التقنيات | مستوى الإتقان الظاهر |
 |---|---|---|
-| **اللغة والمنصّة** | C# 12, .NET 8, ASP.NET Core Web API | **جيد جدًا** — nullable reference types، pattern matching (`is SqlException { Number: 547 }`)، expression trees، أنواع نتائج مُميَّزة |
-| **قواعد البيانات** | EF Core 8, SQL Server, Migrations, Fluent API | **جيد جدًا — أقوى مهاراته.** Projection عبر `Expression<Func<>>`، `AsNoTracking`، فهارس مركّبة فريدة، أعمدة محسوبة مخزَّنة، `DeleteBehavior.Restrict` كسياسة |
+| **اللغة والمنصّة** | C# 12, .NET 8, ASP.NET Core Web API | **جيد جدًا** — nullable reference types، pattern matching (`is SqlException { Number: 547 }`)، expression trees، أنواع نتائج مُميَّزة، خصائص محسوبة كبدائل تفويض |
+| **قواعد البيانات** | EF Core 8, SQL Server, Migrations, Fluent API | **جيد جدًا — أقوى مهاراته.** Projection عبر `Expression<Func<>>`، `AsNoTracking`، فهارس مركّبة ومُصفّاة، أعمدة محسوبة مخزَّنة، TPH، `DeleteBehavior.Restrict` كسياسة. **التحفّظ الوحيد: لا يتحقق من أن النموذج يُبنى بعد التعديل.** |
 | **المعمارية** | Layered/Clean-ish, Repository + Unit of Work, Result Envelope | **جيد جدًا** — الفصل مفروض بمراجع المشاريع لا بالاتفاق |
-| **الأمن** | JWT Bearer, Refresh Token Rotation (SHA-256 at rest), BCrypt, Claims-Based Scope, Resource-Based Authorization | **جيد على التصميم، جيد-متوسط على التغطية** — الآليات محترفة، وتعميمها تحسّن كثيرًا هذه الجولة لكنه لم يكتمل |
+| **الأمن** | JWT Bearer, Refresh Token Rotation (SHA-256 at rest), BCrypt, Claims-Based Scope, Resource-Based Authorization | **جيد جدًا على التصميم، متوسط على التغطية** — الآليات محترفة والبدائية صارت موحّدة؛ الفجوة في مسارات لم تُراجَع (`refresh`، تحديث الموظف) |
 | **التحقق** | FluentValidation | **جيد** — فصل واعٍ بين تحقق الشكل ومنطق العمل |
-| **الأدوات** | Git (فرع لكل ميزة), Swagger/OpenAPI, .NET User Secrets, EF CLI | **متوسط إلى جيد** |
-| **الواجهة الأمامية** | HTML/CSS/Vanilla JS | **مبتدئ** — موجودة ولم تُشغَّل قط |
-| **التوثيق الذاتي** | `CLAUDE.md`, `LEARNING_MAP.md` (1162 سطرًا), `DEVELOPER_PROFILE.md` | **ممتاز — نادر في أي مستوى** |
+| **الأدوات** | Git (فرع لكل ميزة), GitHub Actions, Swagger, .NET User Secrets, EF CLI, MSBuild (`Directory.Build.props`) | **متوسط إلى جيد — تحسّن ملموس هذه الجولة** |
+| **التوثيق الذاتي** | `CLAUDE.md`, `LEARNING_MAP.md`, `DEVELOPER_PROFILE.md` | **ممتاز — نادر في أي مستوى** |
 
 ### المهارات غير التقنية (مُثبَتة بالسلوك)
 
-- **✅ يستقبل النقد الصريح ويحوّله إلى كود خلال دورة واحدة.** ثلاثة بنود 🔴 مغلقة في أربعة commits.
-- **✅ يُحسِّن الحل المقترح عليه بدل نسخه — ثلاث مرات موثَّقة.** آخرها إعادة تصميم `UserTypeResult` بمُميِّز صريح بدل فحص `null` المقترح.
-- **✅ يختار الخيار الأصعب حين يكون الأصحّ.** في `GetAll*` كان بإمكانه تمرير `scope` (أسهل)؛ اختار تقييد الدور (أوضح وأصعب على الكسر).
-- **✅ يتعلّم بالمقارنة النقدية ويوثّقها.** `LEARNING_MAP.md` خريطة تعلّم ذاتية تقارن تصميمه بنظام ABP إنتاجي، بنِسب تقدير صريحة لكل مفهوم.
-- **⚠️ لا يجرد مستهلكي ما يُعدِّله.** آخر تجلٍّ: 12 موضع استدعاء لم تُراجَع بعد تعديل بدائية مشتركة.
-- **⚠️ يترك بنودًا صغيرة معلَّقة لثلاث جولات** (`StudentNumber`) بينما يغلق البنود الكبيرة فورًا.
+- **✅ يستقبل النقد الصريح ويحوّله إلى كود خلال دورة واحدة.**
+- **✅ يُحسِّن الحل المقترح بدل نسخه — أربع مرات موثَّقة.** آخرها `GeneralAuthorizationInfo`: بدل إصلاح 12 موضعًا، غيّر التوقيع فصار الإغفال مستحيلًا.
+- **✅ يبني آليات لا يعتمد على الذاكرة.** `TreatWarningsAsErrors` + CI في جولة واحدة.
+- **⚠️ لا يشغّل ما يكتب.** أخطر فجوة حالية، ومثبتة بأربعة بنود 🔴 كلها كانت ستظهر عند أول إقلاع.
+- **⚠️ لا يجرد مستهلكي ما يُعدِّله — حين يبادر.** يجرد ممتازًا حين يُنبَّه.
+- **⚠️ يترك بنودًا صغيرة معلَّقة لأربع جولات** (`StudentNumber`) بينما يغلق البنود الكبيرة فورًا.
 
 ### الفجوات المهارية — مرتبة حسب أثرها على التوظيف
 
 | # | الفجوة | لماذا تهم | الجهد |
 |---|---|---|---|
-| 1 | **لا اختبارات وحدة إطلاقًا** | أول سؤال في أي مقابلة Backend جادّة. **والأهم: هي الأداة التي تعالج نمط ضعفه الجذري** — ثلاثة اختبارات على `IsWithinScope` كانت ستمنع عيبَي هذه الجولة | أسبوع لمشروع xUnit + 20 اختبارًا |
-| 2 | **لا CI/CD ولا Docker** | معيار حدّ أدنى في كل فريق حديث؛ `.github/workflows/` فارغ | يوم واحد |
-| 3 | **الانضباط الآلي غير مُثبَّت** | نزل من 10 تحذيرات إلى 3 **يدويًا** — بلا `TreatWarningsAsErrors` سيعود العدد للارتفاع | نصف ساعة |
-| 4 | **Logging سطحي** | `ILogger` في الـ Middleware فقط | يومان |
-| 5 | **لا خبرة تشغيل فعلي** | الواجهة لم تُخدَم قط | **شغّل ما تكتب** |
+| 1 | **لا اختبارات وحدة إطلاقًا** | أول سؤال في أي مقابلة Backend جادّة. **والأهم: خمسة اختبارات كانت ستمنع ثلاثة من بنود 🔴 الأربعة في هذه الجولة** | نصف يوم لأول خمسة، أسبوع لعشرين |
+| 2 | **لا تحقق من التشغيل قبل الدفع** | البناء الأخضر لا يعني تطبيقًا يعمل. هذا **سلوك** لا معرفة | خطوة واحدة في CI |
+| 3 | **Logging سطحي** | `ILogger` في الـ Middleware فقط | يومان |
+| 4 | **لا Docker** | معيار شائع؛ CI صار موجودًا فبقي التغليف | يوم |
 
-> **الفجوات الخمس كلها إجرائية لا معرفية.** مجموع الجهد أقل من أسبوعين، وأثرها على جاهزيته أكبر من بناء وحدة Study كاملة.
+> **الفجوات كلها إجرائية لا معرفية.** مجموع الجهد أقل من أسبوع، وأثرها على جاهزيته أكبر من بناء وحدة Study كاملة.
 
 ### نسبة الاستعداد للوظيفة الأولى أو التدريب
 
 | المسار | النسبة | التغيّر | التبرير |
 |---|:---:|:---:|---|
-| **تدريب (Internship / Trainee)** | **97%** | ▲ 2 | **جاهز الآن بلا تحفّظ.** يتجاوز المتوقَّع من متدرّب بفارق واضح |
-| **وظيفة Junior .NET Backend أولى** | **85%** | ▲ 10 | جاهز تقنيًا، وأثبت أنه يغلق العيوب الحرجة بسرعة وجودة. الناقص: اختبارات + CI. **يصل إلى 95% بأسبوع عمل مركّز** |
-| **وظيفة Mid-level مباشرة** | **55%** | ▲ 15 | معماريًا يستحق النقاش بجدّية، وجودة إصلاحاته على مستوى Mid-level فعلًا. يمنعه: صفر اختبارات، وغياب الجرد المنهجي |
+| **تدريب (Internship / Trainee)** | **97%** | → | جاهز الآن بلا تحفّظ |
+| **وظيفة Junior .NET Backend أولى** | **85%** | → | جاهز تقنيًا. مكسب CI و`TreatWarningsAsErrors` (+5) عادله انكشاف فجوة «لا يشغّل ما يكتب» (−5). **يصل إلى 95% بنصف يوم: إصلاح §6.1–6.4 + خمسة اختبارات** |
+| **وظيفة Mid-level مباشرة** | **58%** | ▲ 3 | إعادة تصميم `IsWithinScope` وحدها عمل Mid-level حقيقي، ومخطط قاعدة البيانات فوق المستوى. يمنعه: صفر اختبارات، ودفع كود غير مُشغَّل |
 
-**تقدير صادق:** لو تقدّم غدًا لوظيفة Junior، سيتفوّق في الأسئلة المعمارية وأسئلة EF Core على أغلب المتقدّمين في مستواه، **وسيتعثّر** في: «أرِني اختباراتك» و«كيف تنشر؟». هذان السؤالان هما كل ما يفصله عن عرض عمل.
+**تقدير صادق:** لو تقدّم غدًا لوظيفة Junior، سيتفوّق بوضوح في أسئلة EF Core والمعمارية وتصميم التفويض. **وسيتعثّر** في سؤالين: «أرِني اختباراتك» و«كيف تتأكد أن ما دفعته يعمل؟». وهذه الجولة أعطت السؤال الثاني وزنًا لم يكن له من قبل.
 
-**نقطة قوة تفاوضية ينبغي أن يستخدمها صراحةً:** مشروع واقعي بـ ~10,000 سطر، متعدد المستأجرين، بمصادقة وتفويض مبنيين من الصفر — **أقوى بكثير** من محفظة مليئة بمشاريع تعليمية. وفي المقابلة، أقوى قصة يرويها ليست ميزة بناها، بل **عيبًا اكتشفه في تصميمه وأعاد هيكلة النوع لقتل فئة الخطأ كلها** (`UserTypeResult`) — هذه قصة مهندس، لا كاتب كود.
+**نقطة قوة تفاوضية ينبغي أن يستخدمها صراحةً:** أقوى قصة يرويها ليست ميزة بناها، بل **عيبٌ في التفويض أُبلِغ عنه في 12 موضعًا، فبدل إصلاح الاثني عشر أعاد تصميم التوقيع حتى صار العيب غير قابل للكتابة أصلًا** (`GeneralAuthorizationInfo` + `IsGlobal`). هذه قصة مهندس، لا كاتب كود. وأصدق ما يُتبعها به: «ثم اكتشفت في المراجعة التالية أنني دفعت كودًا لا يقلع، فأضفت التحقق من النموذج إلى CI.»
 
 ### الأقسام التي يمكنه المساهمة فيها بفاعلية في مشاريع Production
 
 **🟢 من اليوم الأول، بمراجعة كود عادية:**
 
-- **طبقة الوصول للبيانات (EF Core)**: Repositories، استعلامات Projection، تكوينات Fluent API، فهرسة، Migrations، أعمدة محسوبة. **أقوى مناطقه — يُعتمد عليه فيها بثقة.**
-- **بناء نقاط نهاية CRUD كاملة** ضمن نمط قائم — 12 متحكمًا متّسقًا يثبتون ذلك.
-- **تصميم عقود البيانات** (DTOs/Requests/Responses) وقواعد التحقق بـ FluentValidation.
-- **استعلامات الفلترة والترقيم** — بنى `AcademicFilter` مشتركًا وعمّمه على خمسة كيانات.
-- **قراءة قاعدة بيانات قائمة وبناء طبقة وصول فوقها.**
-- **🆕 إصلاح العيوب المُبلَّغ عنها** — أثبت سرعة وجودة استجابة عالية بشكل متكرر. مناسب جدًا لدور يبدأ بإغلاق دَين تقني.
+- **طبقة الوصول للبيانات (EF Core)**: Repositories، استعلامات Projection، تكوينات Fluent API، فهرسة، Migrations. **أقوى مناطقه.**
+- **بناء نقاط نهاية CRUD كاملة** ضمن نمط قائم — 12 متحكمًا متّسقًا.
+- **تصميم عقود البيانات** (DTOs/Requests/Responses) وقواعد FluentValidation.
+- **استعلامات الفلترة والترقيم.**
+- **إصلاح العيوب المُبلَّغ عنها** — سرعة وجودة استجابة عالية بشكل متكرر ومثبت.
 
 **🟡 بإشراف ومراجعة أدقّ:**
 
-- **ميزات المصادقة والتفويض** — يفهم الآليات جيدًا؛ يحتاج مراجعًا ثانيًا يجرد التغطية.
-- **إعادة هيكلة كود قائم** — قراراته جيدة، والجرد بعدها هو نقطة ضعفه.
-- **تصميم معماري لوحدة جديدة** — يستفيد من نقاش تصميمي قبل التنفيذ (مثال حيّ: قرار انتماء `Semester` للمستأجر).
+- **ميزات المصادقة والتفويض** — التصميم قوي؛ يحتاج مراجعًا ثانيًا يجرد المسارات الجانبية (`refresh` مثال حيّ).
+- **إعادة هيكلة كود قائم** — قراراته ممتازة، والتحقق بعدها هو نقطة الضعف (دمج `ContentItem` مثال حيّ).
+- **تصميم معماري لوحدة جديدة.**
 
 **🔴 لا يُسنَد إليه منفردًا حاليًا:**
 
-- **أي تعديل على بدائية أمنية مشتركة بلا مراجعة** — ليس لضعف الفهم، بل لأن جرد المستهلكين لم يصبح عادة بعد.
-- **البنية التحتية / DevOps / النشر** — لا خبرة مثبتة.
-- **كتابة اختبارات لنظام قائم** — لا خبرة (لكنها أول ما ينبغي تدريبه عليه، والعائد سيكون فوريًا).
-- **تطوير الواجهات الأمامية** — مبتدئ.
+- **أي دمج إلى `master` بلا بوابة تشغيل آلية** — ليس لضعف الفهم، بل لأن التحقق من التشغيل لم يصبح عادة بعد.
+- **البنية التحتية / DevOps / النشر** — بدأ (CI) ولم ينضج.
+- **كتابة اختبارات لنظام قائم** — لا خبرة (وهي أول ما ينبغي تدريبه عليه، والعائد فوري).
 
 ### التوصية الختامية
 
-> مطوّر **يستحق الاستثمار فيه**، لا مجرد التوظيف. وهذه الجولة قدّمت الدليل الحاسم: وُضِعت له معايير ترقية صريحة في الجولة السابقة، فحقّق ثلاثة من أربعة خلال يوم واحد.
+> مطوّر **يستحق الاستثمار فيه**، لا مجرد التوظيف. وهذه الجولة قدّمت الدليلين معًا في يوم واحد: أفضل إصلاح تصميمي في تاريخ المشروع، وأسوأ Commit من حيث القابلية للتشغيل.
 >
-> ما ينقصه **عادات** لا **مفاهيم** — وأسرع أنواع الفجوات في الإغلاق. في فريق لديه مراجعة كود جادّة و CI يمنع دمج كود بتحذيرات، سيصل إلى **Mid-level خلال 4–6 أشهر** (كان التقدير السابق 6–9، وقد قُصِّر بناءً على وتيرة هذه الجولة).
+> ما ينقصه **عادة واحدة** لا مفاهيم: **أن يشغّل ما يكتب قبل أن يدفعه** — وأرخص صورة لهذه العادة هي اختبار واحد وسطر في CI.
 >
 > **أقصر طريق أمامه — بهذا الترتيب:**
-> 1. حارس `IsWithinScope` (سطر واحد) + جرد الـ 12 موضعًا.
-> 2. مشروع xUnit بثلاثة اختبارات على `IsWithinScope` — **قبل أي ميزة جديدة**. ليس لأنها ممارسة جيدة، بل لأنها الآلية التي كانت ستمنع عيبَي هذه الجولة.
-> 3. `TreatWarningsAsErrors` لتثبيت مكسب الـ 10 ← 3.
-> 4. workflow في GitHub Actions يبني ويشغّل الاختبارات.
+>
+> 1. §6.1 + §6.3 — أعِد التطبيق للعمل (ساعة).
+> 2. §6.2 + §6.4 + §6.6 — أغلق الأمن (ساعتان).
+> 3. خمسة اختبارات xUnit، أولها يبني `AppDbcontext` (نصف يوم).
+> 4. خطوة `dotnet ef dbcontext info` + تشغيل الاختبارات في `build.yml` (نصف ساعة).
 > 5. **ثم** وحدة Study.
 >
-> أسبوع واحد يرفع جاهزيته من 85% إلى 95% — عائد لا تعطيه أي ميزة جديدة.
+> يومان يرفعان جاهزيته من 85% إلى 95% — عائد لا تعطيه أي ميزة جديدة.

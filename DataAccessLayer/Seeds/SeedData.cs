@@ -215,6 +215,7 @@ namespace DataAccessLayer.Seeds
                 Name = "Fall 2025",
                 StartDate = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
                 EndDate = new DateTime(2025, 12, 20, 0, 0, 0, DateTimeKind.Utc),
+                UniversityId = 1,
                 IsCurrent = true,
                 CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
                 CreatedByUserId = 1
@@ -263,7 +264,6 @@ namespace DataAccessLayer.Seeds
                 Body = "We are excited to announce the start of the Fall 2025 semester. All students are encouraged to check their schedules.",
                 Type = EncontentType.Post,
                 Scope = EnContentScope.Public,
-                ImageId = 1,
                 CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
                 CreatedByUserId = 1
             }
@@ -278,7 +278,6 @@ namespace DataAccessLayer.Seeds
                 Body = "Final exams for Fall 2025 will start on December 22nd. Please check the official schedule.",
                 Type = EncontentType.Announcement,
                 Scope = EnContentScope.Public,
-                ImageId = 1,
                 CreatedAt = new DateTime(2025, 11, 1, 0, 0, 0, DateTimeKind.Utc),
                 CreatedByUserId = 1
             }
