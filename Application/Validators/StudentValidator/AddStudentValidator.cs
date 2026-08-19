@@ -61,8 +61,10 @@ namespace Application.Validators.StudentValidator
             // 6. Student Number
             RuleFor(x => x.StudentNumber)
                 .NotEmpty().WithMessage("Student number is required.")
-                  .Matches(@"^\+?[1-9]\d{1,14}$").WithMessage("Invalid phone number format. Please use international format (e.g., +1234567890).")
-                  .When(x => !string.IsNullOrEmpty(x.PhoneNumber));
+                .MinimumLength(9).WithMessage("Student number must be at least 9 digits long!")
+                .MaximumLength(20).WithMessage("Student number cannot exceed 25 digits!")
+                  .Matches(@"^\+?[1-9]\d{1,14}$").WithMessage("Invalid student number format!")
+                  .When(x => !string.IsNullOrEmpty(x.StudentNumber));
 
         }
     }
