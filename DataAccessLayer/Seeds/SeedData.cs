@@ -9,6 +9,7 @@ using Domain.Entities.Study;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -257,10 +258,11 @@ namespace DataAccessLayer.Seeds
         {
             new Post
             {
-                PostId = 1,
+                ContentItemId = 1,
                 Title = "Welcome to the New Academic Year",
-                Content = "We are excited to announce the start of the Fall 2025 semester. All students are encouraged to check their schedules.",
-                Type = EnContentType.Public,
+                Body = "We are excited to announce the start of the Fall 2025 semester. All students are encouraged to check their schedules.",
+                Type = EncontentType.Post,
+                Scope = EnContentScope.Public,
                 ImageId = 1,
                 CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
                 CreatedByUserId = 1
@@ -271,10 +273,11 @@ namespace DataAccessLayer.Seeds
         {
             new Announcement
             {
-                AnnouncementId = 1,
+                ContentItemId = 2,
                 Title = "Important: Final Exam Schedule",
-                Content = "Final exams for Fall 2025 will start on December 22nd. Please check the official schedule.",
-                Type = EnContentType.University,
+                Body = "Final exams for Fall 2025 will start on December 22nd. Please check the official schedule.",
+                Type = EncontentType.Announcement,
+                Scope = EnContentScope.Public,
                 ImageId = 1,
                 CreatedAt = new DateTime(2025, 11, 1, 0, 0, 0, DateTimeKind.Utc),
                 CreatedByUserId = 1

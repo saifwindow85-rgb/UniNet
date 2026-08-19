@@ -9,18 +9,8 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities.Content
 {
-    public class Post : BaseEntity
+    public class Post : ContentItem
     {
-        public int PostId { get; set; }
 
-
-        public string Title { get; set; } = null!;
-
-        public string Content { get; set; } = null!;
-        public EnContentType Type {  get; set; }
-        public int ?ImageId { get; set; }
-        public Image?Image { get; set; }
     }
-
-
 }

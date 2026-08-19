@@ -221,12 +221,12 @@ namespace DataAccessLayer.Seeds
             await db.SaveChangesAsync();
 
             await db.Posts.AddRangeAsync(
-                new Post { Title = "Welcome to Fall 2025", Content = "We welcome all students to the new academic year.", Type = EnContentType.University, ImageId = img1.ImageId, CreatedAt = now, CreatedByUserId = creatorId },
-                new Post { Title = "Library Hours", Content = "The library is open 8 AM – 8 PM daily.", Type = EnContentType.College, ImageId = img2.ImageId, CreatedAt = now, CreatedByUserId = creatorId });
+                new Post { Title = "Welcome to Fall 2025", Body = "We welcome all students to the new academic year.", Type = EncontentType.Post,Scope = EnContentScope.Public,ImageId = img1.ImageId, CreatedAt = now, CreatedByUserId = creatorId },
+                new Post { Title = "Library Hours", Body = "The library is open 8 AM – 8 PM daily.", Type = EncontentType.Post,Scope = EnContentScope.Public, ImageId = img2.ImageId, CreatedAt = now, CreatedByUserId = creatorId });
 
             await db.Announcements.AddRangeAsync(
-                new Announcement { Title = "Midterm Schedule", Content = "Midterm exams begin December 1st.", Type = EnContentType.University, CreatedAt = now, CreatedByUserId = creatorId },
-                new Announcement { Title = "Holiday Notice", Content = "The university will be closed for the national holiday.", Type = EnContentType.College, CreatedAt = now, CreatedByUserId = creatorId });
+                new Announcement { Title = "Midterm Schedule", Body = "Midterm exams begin December 1st.", Type = EncontentType.Announcement,Scope = EnContentScope.Public, CreatedAt = now, CreatedByUserId = creatorId },
+                new Announcement { Title = "Holiday Notice", Body = "The university will be closed for the national holiday.", Type = EncontentType.Announcement,Scope = EnContentScope.Public, CreatedAt = now, CreatedByUserId = creatorId });
 
             await db.SaveChangesAsync();
         }
