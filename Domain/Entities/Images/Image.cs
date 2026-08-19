@@ -24,7 +24,8 @@ namespace Domain.Entities.Images
        public  DateTime UpdatedAt { get; set; }
         public int ?UpdatedByUserId { get; set; }
         public User ?UpdatedByUser { get; set; }
-        public Post? Post { get; set; }
-        public Announcement? Announcement { get; set; }
+
+        public int? ContentItemId { get; set; }
+        public ContentItem?ContentItem { get; set; }
     }
 }

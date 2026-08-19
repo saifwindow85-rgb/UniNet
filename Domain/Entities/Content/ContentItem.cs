@@ -16,7 +16,6 @@ namespace Domain.Entities.Content
         public string Body { get; set; } = null!;
         public EnContentScope Scope { get; set; }
         public EncontentType Type { get; set; }
-        public int? ImageId { get; set; }
         public Image? Image { get; set; }
     }
 }

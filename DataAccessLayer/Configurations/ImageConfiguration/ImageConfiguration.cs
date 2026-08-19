@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Images;
+﻿using Domain.Entities.Content;
+using Domain.Entities.Images;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;

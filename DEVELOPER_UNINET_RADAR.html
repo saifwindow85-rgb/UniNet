@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="تقييمان منفصلان برادار: مهارات المطوّر وجودة UniNet.">
+<meta name="color-scheme" content="light dark">
+<title>Developer &amp; UniNet Radar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Serif:wght@500;600&display=swap">
+
+<style>
+:root{
+  --paper:#F1F3F6;
+  --surface:#FFFFFF;
+  --surface-2:#F7F8FA;
+  --ink:#141A26;
+  --ink-2:#4A5568;
+  --ink-3:#7E8A9C;
+  --rule:#DBE0E8;
+  --rule-soft:#E8ECF1;
+  --dev:#A85410;
+  --sys:#4A4BC4;
+  --dev-wash:rgba(168,84,16,.10);
+  --sys-wash:rgba(74,75,196,.10);
+  --grid:#C9D1DB;
+  --shadow:0 1px 2px rgba(20,26,38,.05), 0 8px 24px -16px rgba(20,26,38,.22);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0F151B;
+    --surface:#151C24;
+    --surface-2:#1B242E;
+    --ink:#E8ECF3;
+    --ink-2:#A2ADBD;
+    --ink-3:#6C7889;
+    --rule:#28323F;
+    --rule-soft:#212B36;
+    --dev:#CE7D3A;
+    --sys:#7B7DE6;
+    --dev-wash:rgba(206,125,58,.14);
+    --sys-wash:rgba(123,125,230,.14);
+    --grid:#37434F;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0F151B;
+  --surface:#151C24;
+  --surface-2:#1B242E;
+  --ink:#E8ECF3;
+  --ink-2:#A2ADBD;
+  --ink-3:#6C7889;
+  --rule:#28323F;
+  --rule-soft:#212B36;
+  --dev:#CE7D3A;
+  --sys:#7B7DE6;
+  --dev-wash:rgba(206,125,58,.14);
+  --sys-wash:rgba(123,125,230,.14);
+  --grid:#37434F;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  direction:rtl;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"IBM Plex Sans Arabic","Segoe UI",system-ui,sans-serif;
+  font-size:16px;
+  line-height:1.75;
+  overflow-x:hidden;
+}
+.wrap{max-width:1120px;margin:0 auto;padding:0 22px 96px}
+
+/* ── masthead ─────────────────────────────── */
+.masthead{padding:60px 0 34px;border-bottom:2px solid var(--ink)}
+.kicker{
+  font-family:"IBM Plex Mono",ui-monospace,monospace;
+  font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3);direction:ltr;text-align:right;margin:0 0 16px;
+}
+h1{
+  font-family:"IBM Plex Serif",Georgia,serif;font-weight:600;
+  font-size:clamp(32px,5.4vw,50px);line-height:1.1;letter-spacing:-.018em;
+  margin:0;direction:ltr;text-align:right;text-wrap:balance;
+}
+h1 .amp{color:var(--ink-3);font-weight:500}
+.dek{
+  margin:16px 0 0;max-width:60ch;color:var(--ink-2);font-size:17px;
+}
+.meta{
+  margin-top:30px;display:grid;gap:1px;background:var(--rule);
+  border:1px solid var(--rule);
+  grid-template-columns:repeat(auto-fit,minmax(168px,1fr));
+}
+.meta div{background:var(--surface);padding:11px 14px}
+.meta dt{
+  font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink-3);margin:0 0 3px;direction:ltr;text-align:right;
+}
+.meta dd{margin:0;font-size:13.5px;font-weight:600;font-family:"IBM Plex Mono",monospace;direction:ltr;text-align:right}
+
+/* ── sections ─────────────────────────────── */
+section{padding-top:56px}
+.shead{display:flex;align-items:baseline;gap:14px;margin-bottom:8px;flex-wrap:wrap}
+.snum{
+  font-family:"IBM Plex Serif",Georgia,serif;font-size:13px;font-weight:600;
+  color:var(--ink-3);direction:ltr;font-variant-numeric:tabular-nums;
+  border:1px solid var(--rule);padding:1px 8px;
+}
+h2{
+  font-family:"IBM Plex Sans Arabic",sans-serif;font-weight:700;
+  font-size:clamp(21px,3.1vw,27px);line-height:1.3;margin:0;letter-spacing:-.01em;
+}
+h2 .en{font-family:"IBM Plex Serif",Georgia,serif;font-weight:600;direction:ltr;display:inline-block}
+.sintro{color:var(--ink-2);max-width:70ch;margin:6px 0 26px}
+h3{font-size:16px;font-weight:700;margin:34px 0 12px;letter-spacing:-.005em}
+h3::before{content:"";display:inline-block;width:14px;height:2px;background:var(--ink);vertical-align:middle;margin-left:9px}
+
+.rule{height:1px;background:var(--rule);margin:0}
+
+/* ── scale key ────────────────────────────── */
+.scale{
+  display:flex;flex-wrap:wrap;gap:0;border:1px solid var(--rule);
+  background:var(--rule);margin:0 0 26px;
+}
+.scale div{
+  background:var(--surface);flex:1 1 150px;padding:10px 13px;
+}
+.scale b{
+  display:block;font-family:"IBM Plex Mono",monospace;font-size:17px;
+  font-weight:600;line-height:1.2;direction:ltr;text-align:right;
+}
+.scale span{font-size:12.5px;color:var(--ink-2);line-height:1.45;display:block;margin-top:2px}
+.scale .zero b{color:var(--ink-3)}
+
+/* ── tables ───────────────────────────────── */
+.tscroll{overflow-x:auto;border:1px solid var(--rule);background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:660px;font-size:14px}
+th,td{padding:11px 14px;text-align:right;vertical-align:top;border-bottom:1px solid var(--rule-soft)}
+thead th{
+  background:var(--surface-2);position:sticky;top:0;
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-3);font-weight:500;
+  border-bottom:1px solid var(--rule);white-space:nowrap;direction:ltr;text-align:right;
+}
+tbody tr:last-child td{border-bottom:0}
+td.skill{
+  font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:500;
+  direction:ltr;text-align:right;white-space:nowrap;color:var(--ink);
+}
+td.sc{
+  font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
+  font-weight:600;font-size:15px;direction:ltr;text-align:right;white-space:nowrap;
+}
+td.ev{color:var(--ink-2);line-height:1.62;font-size:13.5px;min-width:300px}
+td.ev code,.ev code,p code,li code,dd code{
+  font-family:"IBM Plex Mono",monospace;font-size:.88em;
+  background:var(--surface-2);border:1px solid var(--rule-soft);
+  padding:.5px 4px;border-radius:2px;direction:ltr;display:inline-block;
+  color:var(--ink);
+}
+.conf{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.06em;
+  text-transform:uppercase;white-space:nowrap;direction:ltr;text-align:right;display:block;
+}
+.conf.hi{color:var(--ink)}
+.conf.hi::before{content:"███ ";letter-spacing:-.1em}
+.conf.md{color:var(--ink-2)}
+.conf.md::before{content:"██░ ";letter-spacing:-.1em}
+.conf.lo{color:var(--ink-3)}
+.conf.lo::before{content:"█░░ ";letter-spacing:-.1em}
+
+/* ── radar panel ──────────────────────────── */
+.panel{
+  border:1px solid var(--rule);background:var(--surface);box-shadow:var(--shadow);
+  display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);
+}
+@media (max-width:900px){.panel{grid-template-columns:1fr}}
+.panel-chart{padding:22px 20px 16px;position:relative;border-left:1px solid var(--rule)}
+@media (max-width:900px){.panel-chart{border-left:0;border-bottom:1px solid var(--rule)}}
+.panel-title{
+  font-family:"IBM Plex Serif",Georgia,serif;font-weight:600;font-size:18px;
+  direction:ltr;text-align:left;margin:0 0 2px;letter-spacing:-.01em;
+}
+.panel-sub{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-3);direction:ltr;text-align:left;margin:0 0 6px;
+}
+.panel svg{display:block;width:100%;height:auto;direction:ltr;overflow:visible}
+.ringkey{
+  display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:10px;padding-top:11px;
+  border-top:1px solid var(--rule-soft);direction:ltr;justify-content:flex-start;
+}
+.ringkey span{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-3);
+  white-space:nowrap;
+}
+.ringkey b{color:var(--ink-2);font-weight:600}
+
+/* readout */
+.readout{padding:22px 20px 18px;min-width:0}
+.readout h4{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--ink-3);font-weight:500;margin:0 0 14px;
+  direction:ltr;text-align:right;
+}
+.rrow{display:grid;grid-template-columns:1fr auto;gap:3px 10px;padding:6px 0;border-bottom:1px solid var(--rule-soft)}
+.rrow:last-of-type{border-bottom:0}
+.rname{
+  font-family:"IBM Plex Mono",monospace;font-size:12px;direction:ltr;text-align:right;
+  color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.rval{
+  font-family:"IBM Plex Mono",monospace;font-size:12.5px;font-weight:600;
+  font-variant-numeric:tabular-nums;direction:ltr;white-space:nowrap;
+}
+.pips{grid-column:1/-1;display:flex;gap:3px;direction:ltr}
+.pip{height:5px;flex:1;background:var(--rule)}
+.pip.on{background:var(--acc)}
+.mean{
+  margin-top:16px;padding-top:13px;border-top:1px solid var(--rule);
+  display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+}
+.mean span{font-size:12.5px;color:var(--ink-3)}
+.mean b{
+  font-family:"IBM Plex Mono",monospace;font-size:19px;font-weight:600;
+  font-variant-numeric:tabular-nums;direction:ltr;
+}
+
+/* tooltip */
+.tip{
+  position:absolute;pointer-events:none;opacity:0;transform:translate(-50%,-100%);
+  background:var(--ink);color:var(--paper);padding:7px 10px;
+  font-size:12px;line-height:1.5;max-width:250px;z-index:5;
+  transition:opacity .12s ease;border-radius:3px;
+}
+.tip .tn{font-family:"IBM Plex Mono",monospace;font-size:11.5px;font-weight:600;direction:ltr;display:block}
+.tip .tc{font-family:"IBM Plex Mono",monospace;font-size:10px;opacity:.72;letter-spacing:.07em;text-transform:uppercase;direction:ltr;display:block}
+.tip.show{opacity:1}
+
+/* ── lists ────────────────────────────────── */
+.cards{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.card{border:1px solid var(--rule);background:var(--surface);padding:16px 18px}
+.card h5{
+  margin:0 0 6px;font-size:14.5px;font-weight:700;line-height:1.4;
+}
+.card p{margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.65}
+.card .tag{
+  font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-3);display:block;margin-bottom:5px;direction:ltr;text-align:right;
+}
+.card.dev{border-top:3px solid var(--dev)}
+.card.sys{border-top:3px solid var(--sys)}
+
+ol.issues{list-style:none;margin:0;padding:0;counter-reset:iss}
+ol.issues li{
+  counter-increment:iss;display:grid;grid-template-columns:auto 1fr;
+  gap:4px 14px;padding:14px 0;border-bottom:1px solid var(--rule-soft);
+}
+ol.issues li:last-child{border-bottom:0}
+ol.issues li::before{
+  content:counter(iss,decimal-leading-zero);
+  font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-3);
+  font-variant-numeric:tabular-nums;padding-top:3px;
+}
+.sev{
+  font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.11em;
+  text-transform:uppercase;padding:1.5px 6px;direction:ltr;margin-left:8px;
+  vertical-align:2px;white-space:nowrap;font-weight:600;
+}
+.sev.crit{background:var(--ink);color:var(--paper)}
+.sev.high{border:1px solid var(--ink);color:var(--ink)}
+.sev.med{border:1px solid var(--rule);color:var(--ink-3)}
+ol.issues b{font-weight:700;font-size:14.5px;line-height:1.5;display:block}
+ol.issues p{margin:4px 0 0;font-size:13.5px;color:var(--ink-2);line-height:1.65}
+
+ul.plain{margin:0;padding:0;list-style:none;display:grid;gap:11px}
+ul.plain li{
+  padding-right:16px;position:relative;font-size:14px;color:var(--ink-2);line-height:1.68;
+}
+ul.plain li::before{
+  content:"";position:absolute;right:0;top:11px;width:6px;height:1.5px;background:var(--ink-3);
+}
+ul.plain li b{color:var(--ink);font-weight:600}
+
+.flow{
+  font-family:"IBM Plex Mono",monospace;font-size:12.5px;direction:ltr;text-align:left;
+  background:var(--surface-2);border:1px solid var(--rule);padding:13px 16px;
+  line-height:2;color:var(--ink-2);overflow-x:auto;
+}
+.flow b{color:var(--ink);font-weight:600}
+.flow b.done{color:var(--sys)}
+
+.note{
+  border-right:3px solid var(--ink);background:var(--surface-2);
+  padding:13px 16px;font-size:13.5px;color:var(--ink-2);line-height:1.7;
+}
+.note b{color:var(--ink)}
+
+/* comparison */
+td.cd{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:15px;color:var(--dev);direction:ltr;text-align:center;font-variant-numeric:tabular-nums}
+td.cs{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:15px;color:var(--sys);direction:ltr;text-align:center;font-variant-numeric:tabular-nums}
+th.ctr{text-align:center}
+.gapbar{display:block;height:3px;margin-top:5px;background:var(--rule)}
+.gapbar i{display:block;height:3px;background:var(--ink)}
+
+footer{
+  margin-top:70px;padding-top:22px;border-top:2px solid var(--ink);
+  font-size:12.5px;color:var(--ink-3);line-height:1.8;
+}
+footer code{font-family:"IBM Plex Mono",monospace;font-size:.9em}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.001ms !important;transition-duration:.001ms !important}
+}
+:focus-visible{outline:2px solid var(--sys);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- ══════════ MASTHEAD ══════════ -->
+<header class="masthead">
+  <p class="kicker">Dual Assessment · Evidence-Based · 2026-08-19</p>
+  <h1>Developer <span class="amp">&amp;</span> UniNet<br>Radar Assessment</h1>
+  <p class="dek">
+    تقييمان منفصلان تمامًا: الأول يقيس <b>ما يستطيع المطوّر إثباته عمليًا</b>،
+    والثاني يقيس <b>جودة التنفيذ الموجود فعلًا في UniNet</b>.
+    الرسمان لا يجيبان عن السؤال نفسه، ولا يشتركان في البيانات.
+  </p>
+
+  <dl class="meta">
+    <div><dt>Commit</dt><dd>d24bef7 + wt</dd></div>
+    <div><dt>Branch</dt><dd>refactor/v1Branch</dd></div>
+    <div><dt>C# LOC</dt><dd>~10,400</dd></div>
+    <div><dt>Build</dt><dd>0 warnings</dd></div>
+    <div><dt>EF Model</dt><dd>builds ✓</dd></div>
+    <div><dt>Tests</dt><dd>0 · out of scope</dd></div>
+  </dl>
+
+  <div class="note" style="margin-top:20px">
+    <b>تحديث أثناء المراجعة — 2026-08-19.</b>
+    أُغلق البند الحرج الأول قبل نشر هذا الملف: <code>Image</code> صار له ملاحية واحدة
+    <code>ContentItem</code>، والمفتاح الأجنبي أُعلن على النوع الأساس، ومعه هجرة TPH جديدة.
+    <code>dotnet ef dbcontext info</code> ينجح الآن و<b>التطبيق يُقلع</b>.
+    لذلك رُفع محور <code>Runtime Integrity</code> من <code>1</code> إلى <code>2</code> —
+    ولم يُرفع أكثر لأن هجرة <code>Semesters</code> ما زالت تفشل على قاعدة جديدة (البند 02 أدناه).
+    كل ما عدا ذلك مُتحقَّق منه على شجرة العمل الحالية.
+  </div>
+</header>
+
+<!-- ══════════ 1. CONTEXT ══════════ -->
+<section id="context">
+  <div class="shead"><span class="snum">01</span><h2>سياق التقييم — <span class="en">Assessment Context</span></h2></div>
+  <p class="sintro">
+    قبل قراءة أي درجة، هذه هي القواعد التي بُنيت عليها — وحدودها.
+  </p>
+
+  <div class="cards">
+    <div class="card">
+      <span class="tag">Sources</span>
+      <h5>المصدر الأساسي هو الكود</h5>
+      <p>
+        الملف المرجعي المطلوب <code>DEVELOPER_FILE.md</code> غير موجود في المستودع؛
+        الموجود هو <code>DEVELOPER_PROFILE.md</code> واعتُمد لتحديد النطاق والقرارات الهندسية.
+        كل درجة أدناه مسنودة بقراءة الكود الفعلي: 225 ملف <code>.cs</code>، بناء الحل،
+        وتشغيل <code>dotnet ef dbcontext info</code>.
+      </p>
+    </div>
+    <div class="card">
+      <span class="tag">Scope rule</span>
+      <h5>ما هو غير موجود لا يُحتسَب</h5>
+      <p>
+        غياب مشروع اختبارات أو Docker أو Redis أو أي بنية موزّعة <b>لا يخصم نقاطًا</b> —
+        فهي خارج نطاق المرحلة الحالية. الاستثناء الوحيد: مكوّن يذكره ملف المرجع
+        كجزء من المرحلة الحالية. وحدة Study مُهيكَلة على مستوى المخطط فقط،
+        وهذا مُعلَن كعمل قادم لا كعيب.
+      </p>
+    </div>
+    <div class="card">
+      <span class="tag">Background</span>
+      <h5>خبرة ذاتية لا مهنية</h5>
+      <p>
+        المطوّر لم يعمل داخل شركة برمجيات ولا ضمن فريق هندسي محترف.
+        كل الأدلة مصدرها التعلّم الذاتي والمشاريع الشخصية.
+        الدرجات تقيس <b>القدرة المُثبَتة بالكود</b>، ولا تُترجَم إلى ادعاء بخبرة مهنية.
+      </p>
+    </div>
+    <div class="card">
+      <span class="tag">AI usage</span>
+      <h5>استخدام AI ليس دليلًا ولا نفيًا</h5>
+      <p>
+        وجود كود متقدّم في المشروع لا يُحتسَب وحده إتقانًا.
+        ما احتُسِب هو ما يصعب على أداة إنتاجه نيابةً عن صاحبه:
+        <b>تحسين الحل المقترح</b>، رفض الأسهل لصالح الأصحّ، وتعميم القرار على منطقة كاملة —
+        وكلها موثّقة بأمثلة في جدول الأدلة.
+      </p>
+    </div>
+  </div>
+
+  <div class="note" style="margin-top:20px">
+    <b>لماذا رسمان منفصلان؟</b> لأن الفجوة بينهما هي أهم معلومة في هذا الملف.
+    مثال حيّ من هذا المشروع: تصميم التفويض يستحق <code>4/5</code> كمهارة،
+    بينما تنفيذه في UniNet يستحق <code>2/5</code> — لأن ثغرتين حرجتين تلتفّان حول بدائية سليمة.
+    دمج الرقمين في رسم واحد كان سيخفي هذه الحقيقة تحديدًا.
+  </div>
+</section>
+
+<!-- ══════════ 2. DEVELOPER ASSESSMENT ══════════ -->
+<section id="dev-assess">
+  <div class="shead"><span class="snum">02</span><h2>تقييم مهارات المطوّر — <span class="en">Developer Skills</span></h2></div>
+  <p class="sintro">
+    السؤال: <b>ما مستوى المهارات التي أثبت المطوّر امتلاكها عمليًا؟</b>
+    ليس ما التقنيات الموجودة في المشروع، بل ما العمق الظاهر في القرارات.
+  </p>
+
+  <div class="scale">
+    <div class="zero"><b>0</b><span>No Evidence — لا أدلة كافية</span></div>
+    <div><b>1</b><span>Awareness — معرفة بالمفهوم</span></div>
+    <div><b>2</b><span>Basic Practical — استخدام محدود</span></div>
+    <div><b>3</b><span>Working Proficiency — قدرة عملية جيدة</span></div>
+    <div><b>4</b><span>Strong Proficiency — تحليل واتخاذ قرار</span></div>
+    <div><b>5</b><span>Advanced — عمق وخبرة واسعة</span></div>
+  </div>
+
+  <div class="note">
+    <b>لا يوجد أي <code>5/5</code> في هذا التقييم.</b> المستوى الخامس يفترض خبرة عملية واسعة
+    عبر أنظمة متعددة وفرق متعددة — وهذا لا يمكن إثباته من مشروع واحد مهما كانت جودته.
+    وأعلى الدرجات هنا <code>4/5</code> في ستة محاور، وهي درجة قوية بمعايير الأدلة المتاحة.
+  </div>
+</section>
+
+<!-- ══════════ 3. DEVELOPER EVIDENCE TABLE ══════════ -->
+<section id="dev-evidence">
+  <div class="shead"><span class="snum">03</span><h2>جدول أدلة المطوّر — <span class="en">Evidence Table</span></h2></div>
+  <p class="sintro">لكل محور: أين ظهر، ما مستوى العمق، ولماذا لم يحصل على أعلى.</p>
+
+  <div class="tscroll">
+  <table>
+    <thead><tr><th>Skill</th><th>Level</th><th>Confidence</th><th>Evidence &amp; ceiling</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="skill">EF Core</td><td class="sc">4 / 5</td>
+        <td><span class="conf hi">High</span></td>
+        <td class="ev">
+          أعمق مهاراته. <code>Expression&lt;Func&lt;TEntity,TDto&gt;&gt;</code> كإسقاط مُعاد الاستخدام عبر 13 مستودعًا،
+          <code>AsNoTracking</code>، فهرس مُصفّى فريد <code>HasFilter("[IsCurrent] = 1")</code>،
+          عمود محسوب مخزَّن <code>HasComputedColumnSql(…, stored: true)</code>، وراثة TPH،
+          <code>DeleteBehavior.Restrict</code> كسياسة بلا استثناء. <b>السقف:</b> إعداد TPH الأخير
+          يكسر بناء النموذج، وهجرة لا تعمل — أي إتقان في الكتابة لا يقابله تحقق.
+        </td>
+      </tr>
+      <tr>
+        <td class="skill">Database Design</td><td class="sc">4 / 5</td>
+        <td><span class="conf hi">High</span></td>
+        <td class="ev">
+          المخطط يعكس قواعد العمل حرفيًا: أربعة فهارس مركّبة فريدة على مستويات الشجرة الأكاديمية،
+          فهرس مُصفّى على <code>Email</code>، وقيد «فصل حالي واحد لكل جامعة» مفروض على مستوى المحرّك.
+          <b>السقف:</b> لا مفتاح أجنبي مركّب يحمي تماسك <code>Employee</code>، ولا <code>CHECK</code> على الدرجات،
+          ولا Concurrency Token.
+        </td>
+      </tr>
+      <tr>
+        <td class="skill">Software Architecture</td><td class="sc">4 / 5</td>
+        <td><span class="conf hi">High</span></td>
+        <td class="ev">
+          فصل الطبقات <b>مفروض بمراجع المشاريع لا بالاتفاق</b> — <code>Application</code> لا يرى
+          <code>DataAccessLayer</code> إطلاقًا، فكتابة استعلام EF في خدمة يرفضها المُصرِّف.
+          ورفض واعٍ وموثَّق لـ AutoMapper و Generic Repository مع تعليل.
+          <b>السقف:</b> تجريدات ميتة (<code>ILoginService</code> بلا تنفيذ، 12 تسجيل DI لا يُستخدَم)،
+          وبدائية أمنية (<code>ToUserScope</code>) في الطبقة الخطأ.
+        </td>
+      </tr>
+      <tr>
+        <td class="skill">Authorization Design</td><td class="sc">4 / 5</td>
+        <td><span class="conf hi">High</span></td>
+        <td class="ev">
+          أقوى دليل على التفكير الهندسي: أُبلِغ بـ12 موضع استدعاء معطوب واقتُرح إصلاحها،
+          فغيّر التوقيع إلى <code>IsWithinScope(UserScope?, GeneralAuthorizationInfo)</code>
+          حتى صار الخطأ <b>غير قابل للكتابة</b>. ومعه: تفويض قائم على المورد بسبعة معالجات،
+          نطاق هرمي رباعي، و404 بدل 403 لمنع تسريب الوجود — مع تعليق يشرح السبب.
+          <b>السقف:</b> جعل «بلا نطاق ⇒ صلاحية كاملة» (<code>IsGlobal</code>) — وهو fail-open،
+          والقرار الأمني الوحيد الخاطئ على مستوى التصميم لا التحقق.
+        </td>
+      </tr>
+      <tr>
+        <td class="skill">Debugging &amp; Analysis</td><td class="sc">4 / 5</td>
+        <td><span class="conf hi">High</span></td>
+        <td class="ev">
+          يشخّص فئة الخطأ لا حالته. عند عطل تسجيل الدخول لم يضِف فحص <code>null</code> كما اقتُرح،
+          بل أعاد تصميم <code>UserTypeResult</code> بمُميِّز صريح <code>UserType Type</code>.
+          وأصلح ابتلاعًا صامتًا للاستثناءات بـ<code>catch (DbUpdateException ex) when (…)</code>
+          مع فهم دقيق: فشل الشرط يعني ألا يُنفَّذ <code>catch</code> أصلًا، فلا حاجة لـ<code>throw;</code>.
+          <b>السقف:</b> التشخيص ممتاز حين يُوجَّه إليه؛ الاكتشاف الذاتي أضعف.
+        </td>
+      </tr>
+      <tr>
+        <td class="skill">C# / .NET</td><td class="sc">4 / 5</td>
+        <td><span class="conf hi">High</span></td>
+        <td class="ev">
+          Nullable reference types مُفعَّلة على مستوى الحل ومُحترَمة، property patterns
+          (<code>is SqlException { Number: 547 }</code>)، expression trees، مصانع ساكنة مع
+          <code>private set</code>، قيود عامة (<code>where T : BaseAddEmployeeOrStudentDTO</code>)،
+          و<code>Directory.Build.props</code> لتوحيد إعدادات الحل.
+          <b>السقف:</b> إساءة استخدام <code>!</code> في مواضع تُنتج <code>NullReferenceException</code>
+          بدل استجابة 400، ولا أثر لعمل متقدّم على التزامن أو الأداء منخفض المستوى.
+        </td>
+      </tr>
+      <tr>
+        <td class="skill">ASP.NET Core</td><td class="sc">3 / 5</td>
+        <td><span class="conf hi">High</span></td>
+        <td class="ev">
+          JWT Bearer مع <code>OnChallenge</code>/<code>OnForbidden</code> مخصَّصين،
+          تفويض قائم على المورد عبر <code>AuthorizationHandler&lt;TRequirement, TResource&gt;</code>،
+          <code>[ApiController]</code> للتحقق التلقائي، وDI منظَّم في امتدادات.
+          <b>السقف:</b> <code>AddAuthorization()</code> مُستدعاة سبع مرات (لم يُدرَك أنها تراكمية)،
+          <code>AddSwaggerGen()</code> مرتين، وMiddleware الاستثناءات مسجَّل بعد CORS.
+        </td>
+      </tr>
+      <tr>
+        <td class="skill">REST API Design</td><td class="sc">3 / 5</td>
+        <td><span class="conf hi">High</span></td>
+        <td class="ev">
+          توجيه متّسق عبر 12 متحكمًا و61 نقطة نهاية، معاملات استعلام مُغلَّفة في كائنات مُتحقَّق منها،
+          ومغلّف نتائج يُترجَم مركزيًا إلى <code>ActionResult</code>.
+          <b>السقف:</b> فهم رموز الحالة ناقص عمليًا — 409 يُرسَل بحالة 400،
+          و<code>Add*</code> تُرجع 200 بلا <code>Location</code> رغم إعلان 201 في تسع نقاط.
+        </td>
+      </tr>
+      <tr>
+        <td class="skill">Code Quality</td><td class="sc">3 / 5</td>
+        <td><span class="conf hi">High</span></td>
+        <td class="ev">
+          اتساق عالٍ داخل المناطق: خمسة مستودعات أكاديمية متطابقة البنية، دوال قصيرة (أطولها ~45 سطرًا)،
+          تعقيد منخفض، وتسمية تصف النية.
+          <b>السقف:</b> كود ميت يتراكم بلا تمريرة تنظيف عبر أربع جولات،
+          حارس ميت منسوخ أربع مرات، وأخطاء إملائية في معرّفات عامة —
+          منها <code>AccesseToken</code> داخل عقد استجابة يراه العميل.
+        </td>
+      </tr>
+      <tr>
+        <td class="skill">Performance</td><td class="sc">3 / 5</td>
+        <td><span class="conf md">Medium</span></td>
+        <td class="ev">
+          اختار الإسقاط عبر Expression على AutoMapper بتعليل صريح (أعمدة محددة، بلا تحميل الكيان)،
+          و<code>AsNoTracking</code> مقصود، وصفر N+1 في 13 مستودعًا، و<code>async</code> متّسق بلا
+          <code>.Result</code> ولا <code>.Wait()</code>.
+          <b>السقف:</b> <code>PageSize</code> بلا حدّ أعلى، و<code>NVARCHAR(MAX)</code> لهاش طوله 60 حرفًا.
+          <b>الثقة متوسطة:</b> لا دليل على قياس أو تحليل خطة تنفيذ — القرارات الصحيحة قد تكون اتباع نمط.
+        </td>
+      </tr>
+      <tr>
+        <td class="skill">Domain Modeling</td><td class="sc">2 / 5</td>
+        <td><span class="conf md">Medium</span></td>
+        <td class="ev">
+          الكيانات بنيوية بالكامل تقريبًا. أول سلوك حقيقي هو <code>StudentResult.SetGrades()</code>
+          مع <code>GradeConstants</code> — اتجاه صحيح لكنه قابل للتجاوز لأن الحقول الثلاثة لها
+          <code>set</code> عام. <b>الثقة متوسطة:</b> النموذج الفقير قرار مناسب لمشكلة CRUD،
+          فغياب الأدلة هنا ليس دليلًا على غياب القدرة — بل على غياب الحاجة.
+        </td>
+      </tr>
+      <tr>
+        <td class="skill">Testing &amp; Verification</td><td class="sc">1 / 5</td>
+        <td><span class="conf hi">High</span></td>
+        <td class="ev">
+          <b>الوعي موجود، الممارسة صفر.</b> وثّق بنفسه أن الاختبارات فجوته الأولى، وركّب هذه الجولة
+          آليتَي انضباط حقيقيتين: <code>TreatWarningsAsErrors</code> (10 ← 0 تحذيرات)
+          و<code>build.yml</code>. <b>لكن كلتيهما تقيسان التصريف لا التشغيل</b> —
+          فمرّ Commit يبني بصفر تحذيرات ويسقط عند أول لمسة لقاعدة البيانات.
+          صفر اختبارات بعد أربع جولات.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ══════════ 4. DEVELOPER RADAR ══════════ -->
+<section id="dev-radar">
+  <div class="shead"><span class="snum">04</span><h2>رادار المطوّر — <span class="en">Developer Radar</span></h2></div>
+  <p class="sintro">مرّر المؤشر على أي رأس لقراءة الدرجة ومستوى الثقة.</p>
+
+  <div class="panel">
+    <div class="panel-chart" id="devChart">
+      <p class="panel-title">Developer Technical &amp; Engineering Skills</p>
+      <p class="panel-sub">12 axes · scale 0–5 · self-taught evidence base</p>
+      <div class="tip" id="devTip"></div>
+    </div>
+    <div class="readout" id="devReadout">
+      <h4>Ranked readout</h4>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 5. DEVELOPER STRENGTHS ══════════ -->
+<section id="dev-strengths">
+  <div class="shead"><span class="snum">05</span><h2>نقاط قوة المطوّر — <span class="en">Strengths</span></h2></div>
+  <div class="cards">
+    <div class="card dev">
+      <span class="tag">Signature strength</span>
+      <h5>يُصلح فئة الخطأ لا حالته</h5>
+      <p>
+        أربع مرات موثّقة رفض فيها الحل الأسهل المقترح عليه لصالح إعادة تصميم النوع:
+        <code>GeneralAuthorizationInfo</code> بدل تمرير وسيط في 12 موضعًا،
+        و<code>UserTypeResult</code> بمُميِّز صريح بدل فحص <code>null</code>.
+        هذا سلوك مهندس، وهو المهارة الأصعب تعليمًا في القائمة كلها.
+      </p>
+    </div>
+    <div class="card dev">
+      <span class="tag">Depth</span>
+      <h5>EF Core على مستوى المحرّك لا الـ API</h5>
+      <p>
+        الفهارس المُصفّاة والأعمدة المحسوبة المخزَّنة وقيود التفرّد المركّبة تعني أنه يفكّر
+        في <b>ما ينفّذه SQL Server</b>، لا في ما يكتبه C#. هذا يفصله عن معظم من في مستواه.
+      </p>
+    </div>
+    <div class="card dev">
+      <span class="tag">Judgment</span>
+      <h5>يعرف متى لا يضيف تعقيدًا</h5>
+      <p>
+        رفض AutoMapper و Generic Repository <b>بتعليل مكتوب</b>، وأبقى النموذج فقيرًا لأن المشكلة
+        لا تتطلب Domain غنيًا، ووضع معاملة صريحة في العمليتين متعددتَي الخطوات فقط.
+        معرفة متى تتوقف أندر من معرفة كيف تبدأ.
+      </p>
+    </div>
+    <div class="card dev">
+      <span class="tag">Response</span>
+      <h5>يحوّل النقد إلى كود في دورة واحدة</h5>
+      <p>
+        أغلق ثلاثة بنود حرجة في أربعة commits، وخمسة ديون في مخطط قاعدة البيانات في هجرة واحدة،
+        واختار في <code>GetAll*</code> الخيار الأصعب (تقييد الدور) بدل الأسهل (تمرير النطاق)
+        لأنه أوضح وأصعب على الكسر.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 6. DEVELOPER DEVELOPMENT AREAS ══════════ -->
+<section id="dev-gaps">
+  <div class="shead"><span class="snum">06</span><h2>مجالات تطوير المطوّر — <span class="en">Development Areas</span></h2></div>
+  <p class="sintro">مرتّبة بأثرها على الجاهزية، لا بصعوبتها. <b>الأربعة إجرائية لا معرفية.</b></p>
+
+  <ol class="issues">
+    <li>
+      <div>
+        <b>التحقق من التشغيل قبل الدفع</b>
+        <p>
+          أخطر فجوة، ومثبتة بأربعة عيوب حرجة في هذه الجولة كلها كانت ستظهر عند أول إقلاع.
+          الأداتان اللتان بناهما (تحذيرات كأخطاء + CI) تقيسان التصريف — والعطل الحالي لا علاقة له بالتصريف.
+          <b>العلاج أرخص من المشكلة:</b> سطر <code>dotnet ef dbcontext info</code> في <code>build.yml</code>.
+        </p>
+      </div>
+    </li>
+    <li>
+      <div>
+        <b>اختبارات الوحدة — صفر بعد أربع جولات</b>
+        <p>
+          ليست «ممارسة جيدة» في حالته، بل <b>الآلية الوحيدة التي تجرد مستهلكي أي تعديل نيابةً عنه</b> —
+          وهو نمط ضعفه الجذري. خمسة اختبارات (أحدها يبني <code>AppDbcontext</code> فقط)
+          كانت ستمنع ثلاثة من العيوب الأربعة الحرجة.
+        </p>
+      </div>
+    </li>
+    <li>
+      <div>
+        <b>جرد مستهلكي التعديل حين يبادر</b>
+        <p>
+          يجرد ممتازًا حين يُنبَّه، ولا يجرد تلقائيًا. آخر تجلٍّ: دمج <code>Post</code> و<code>Announcement</code>
+          في <code>ContentItem</code> — قرار صحيح تمامًا — دون مراجعة ملاحيات <code>Image</code> التي تشير إليهما.
+          الجرد ما زال ردّ فعل لا عادة.
+        </p>
+      </div>
+    </li>
+    <li>
+      <div>
+        <b>Domain Modeling وعمق رموز HTTP</b>
+        <p>
+          الأول قد لا يحتاجه في هذا النوع من الأنظمة، لكنه سيُسأل عنه.
+          والثاني فجوة صغيرة وملموسة: 409 يُرسَل بحالة 400 و201 معلَن وغير مُنفَّذ —
+          يومٌ واحد يغلقهما معًا.
+        </p>
+      </div>
+    </li>
+  </ol>
+</section>
+
+<div class="rule" style="margin-top:56px"></div>
+
+<!-- ══════════ 7. UNINET ASSESSMENT ══════════ -->
+<section id="sys-assess">
+  <div class="shead"><span class="snum">07</span><h2>تقييم UniNet الهندسي — <span class="en">UniNet Engineering</span></h2></div>
+  <p class="sintro">
+    السؤال مختلف تمامًا: <b>ما جودة التنفيذ الموجود فعلًا؟</b>
+    هذا الرسم لا يقيس مهارة أحد — يقيس حالة نظام.
+  </p>
+
+  <div class="scale">
+    <div class="zero"><b>0</b><span>N/A — غير مُنفَّذ / خارج النطاق</span></div>
+    <div><b>1</b><span>Poor — مشاكل جوهرية</span></div>
+    <div><b>2</b><span>Weak — يعمل مع مشاكل واضحة</span></div>
+    <div><b>3</b><span>Acceptable — مقبول مع دَين تقني</span></div>
+    <div><b>4</b><span>Strong — تنفيذ جيد ومنظَّم</span></div>
+    <div><b>5</b><span>Excellent — قوي ومتماسك</span></div>
+  </div>
+
+  <div class="note">
+    <b>لماذا لا يوجد محور <span style="font-family:'IBM Plex Mono',monospace">Security</span> منفصل؟</b>
+    لأن كلتا الثغرتين الحرجتين في هذا المشروع ثغرتا تفويض — فمحور مستقل للأمن كان سيحتسب
+    العقوبة نفسها مرتين ويشوّه شكل الرسم. محور <code>Authorization</code> يحملهما،
+    والحكم الأمني الكامل — بما فيه ما هو <b>سليم</b> (لا حقن SQL، لا أسرار في المستودع،
+    لا كشف بيانات، هاش مخزَّن للرموز) — في القسم الأخير.
+    <br><br>
+    <b>ولماذا لا يوجد محور Testing؟</b> لأن مشروع الاختبارات خارج نطاق المرحلة الحالية،
+    و<b>لا يُخصَم عليه</b>. لكن محور <code>Runtime Integrity</code> ليس بديلًا عنه —
+    هو يقيس حقيقة قابلة للفحص: هل يُقلع النظام المبني، وهل يمكن تجهيزه من الصفر؟
+  </div>
+</section>
+
+<!-- ══════════ 8. UNINET EVIDENCE TABLE ══════════ -->
+<section id="sys-evidence">
+  <div class="shead"><span class="snum">08</span><h2>جدول أدلة UniNet — <span class="en">Evidence Table</span></h2></div>
+  <p class="sintro">لكل محور: <span class="en" style="font-family:'IBM Plex Mono',monospace;font-size:13px">Evidence → Finding → Impact → Score</span></p>
+
+  <div class="tscroll">
+  <table>
+    <thead><tr><th>Area</th><th>Score</th><th>Confidence</th><th>Evidence &amp; assessment</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="skill">Architecture</td><td class="sc">4 / 5</td>
+        <td><span class="conf hi">High</span></td>
+        <td class="ev">
+          <b>Evidence:</b> خمسة مشاريع باتجاه اعتماد صحيح مفروض على مستوى <code>csproj</code>؛
+          <code>Domain</code> لا يرجع لغير <code>Contracts</code>، و<code>Application</code> لا يعرف EF.
+          <b>Finding:</b> تجريدات ميتة (<code>ILoginService</code>، 12 تسجيل مستودع، 7 سياسات بلا مُميِّز)،
+          و<code>ToUserScope</code> — بدائية أمنية — تعيش في طبقة الويب.
+          <b>Impact:</b> تشويش صيانة، لا خطر وظيفي. البنية مناسبة تمامًا لحجم المشروع ولا تحتاج تعقيدًا.
+        </td>
+      </tr>
+      <tr>
+        <td class="skill">Database Design</td><td class="sc">4 / 5</td>
+        <td><span class="conf hi">High</span></td>
+        <td class="ev">
+          <b>Evidence:</b> أربعة فهارس مركّبة فريدة تطابق قواعد العمل، فهرس مُصفّى على <code>Email</code>،
+          قيد «فصل حالي واحد لكل جامعة»، عمود <code>Total</code> محسوب مخزَّن،
+          و<code>Restrict</code> على كل علاقة.
+          <b>Finding:</b> الهجرة الثانية تُسنِد <code>UniversityId = 0</code> ثم تضيف مفتاحًا أجنبيًا —
+          فتفشل بخطأ 547 على أي قاعدة. ولا Concurrency Token، ولا مفتاح مركّب يحمي <code>Employee</code>.
+          <b>Impact:</b> التصميم يستحق 5؛ مخططٌ لا تعمل هجرته لا يمكن أن يتجاوز 4.
+        </td>
+      </tr>
+      <tr>
+        <td class="skill">Data Access</td><td class="sc">4 / 5</td>
+        <td><span class="conf hi">High</span></td>
+        <td class="ev">
+          <b>Evidence:</b> إسقاط عبر <code>Expression</code> في 13 مستودعًا يُترجَم إلى <code>JOIN</code> واحد،
+          <b>صفر N+1</b> في كل المسارات، <code>AsNoTracking</code> مقصود، ترقيم موحّد.
+          <b>Finding:</b> <code>AsNoTracking</code> مفقود في ثلاث دوال قراءة، وأسلوبان مختلفان
+          لقراءة DTO بالمعرّف، و4-5 رحلات لكل تحديث.
+          <b>Impact:</b> الرحلات مقايضة واعية مقبولة على جداول بهذا الحجم؛ عدم الاتساق دَين شكلي.
+        </td>
+      </tr>
+      <tr>
+        <td class="skill">Performance</td><td class="sc">4 / 5</td>
+        <td><span class="conf md">Medium</span></td>
+        <td class="ev">
+          <b>Evidence:</b> الإسقاط يجلب الأعمدة المطلوبة فقط، <code>async</code> متّسق بلا
+          <code>.Result</code>، عمود محسوب بدل حساب في الكود.
+          <b>Finding:</b> <code>PageSize</code> بلا حدّ أعلى — <code>Take(int.MaxValue)</code> متاح لأي مستخدم مصادَق.
+          و<code>PasswordHash</code> كـ<code>NVARCHAR(MAX)</code>، وفهرس يكرّر المفتاح الأساسي.
+          <b>Impact:</b> مشكلة فعلية واحدة (الترقيم)، والباقي Potential Concern.
+          <b>الثقة متوسطة:</b> لا قياس فعلي تحت حِمل.
+        </td>
+      </tr>
+      <tr>
+        <td class="skill">Application Layer</td><td class="sc">3 / 5</td>
+        <td><span class="conf hi">High</span></td>
+        <td class="ev">
+          <b>Evidence:</b> نمط موحّد عبر خمسة كيانات: تحقق ← نطاق ← تفرّد ← كتابة ← إعادة قراءة.
+          <b>Finding:</b> <code>EmployeeService</code> وحدها تستخدم Service Locator عبر
+          <code>IServiceProvider</code>، ومنطق تحديث الموظف مكرَّر ثلاث مرات،
+          ومعامل <code>roleId</code> مُستقبَل وغير مستخدم.
+          <b>Impact:</b> اعتماد مخفي يفشل وقت التشغيل، ونقطتا نهاية تدّعيان اختلافًا غير موجود.
+        </td>
+      </tr>
+      <tr>
+        <td class="skill">API Design</td><td class="sc">3 / 5</td>
+        <td><span class="conf hi">High</span></td>
+        <td class="ev">
+          <b>Evidence:</b> 12 متحكمًا رفيعًا فعلًا — لا منطق عمل ولا استعلامات؛
+          معاملات مُغلَّفة ومُتحقَّق منها بـ<code>[ApiController]</code>.
+          <b>Finding:</b> <code>ExistedResource</code> تُرجع <code>BadRequestObjectResult</code>
+          بجسم يعلن 409؛ ولا <code>201 Created</code> ولا رأس <code>Location</code>؛
+          و<code>CollegeIdParameter</code> إلزامي ومُتجاهَل في <code>DepartmentController</code>.
+          <b>Impact:</b> عقد مُعلَن لا يطابق السلوك في ثلاثة مواضع.
+        </td>
+      </tr>
+      <tr>
+        <td class="skill">Validation &amp; Errors</td><td class="sc">3 / 5</td>
+        <td><span class="conf hi">High</span></td>
+        <td class="ev">
+          <b>Evidence:</b> فصل ثلاثي واعٍ بلا ازدواجية — شكل في FluentValidation، قواعد عمل في الخدمة،
+          invariant في الكيان. و<code>catch … when (ex.InnerException is SqlException { Number: 547 })</code>
+          يحوّل قيد الحذف إلى 409 مع حفظ السبب، ورسالة عامة للعميل بلا تسريب.
+          <b>Finding:</b> <code>.When(!IsNullOrEmpty(StudentNumber))</code> تُبطل <code>NotEmpty()</code>
+          للجولة الرابعة؛ و<code>sectionInfo!</code> يُنتج 500 بدل 400؛ و2601/2627 غير معالَجَين.
+          <b>Impact:</b> الآلية ممتازة والتغطية ناقصة.
+        </td>
+      </tr>
+      <tr>
+        <td class="skill">Business Logic</td><td class="sc">3 / 5</td>
+        <td><span class="conf hi">High</span></td>
+        <td class="ev">
+          <b>Evidence:</b> معظم Use Cases صحيحة ومتّسقة عبر الشجرة الأكاديمية والطالب والموظف.
+          <b>Finding:</b> <code>UpdateStudent</code> يُسنِد <code>StatusId</code> إلى "Enrolled" في كل تحديث —
+          فتحديث اسم طالب متخرّج يُعيده مُقيَّدًا صامتًا. و<code>BatchAdmin</code> مذكور في عشر سمات
+          <code>[Authorize]</code> وغير مزروع في بذور الإنتاج. و<code>AddUser</code> لا تُسنِد <code>Type</code>
+          فتُنشئ مستخدمًا يُنتج 500 عند الدخول.
+          <b>Impact:</b> فساد بيانات صامت + ميزتان معطّلتان إنتاجيًا.
+        </td>
+      </tr>
+      <tr>
+        <td class="skill">Authentication</td><td class="sc">3 / 5</td>
+        <td><span class="conf hi">High</span></td>
+        <td class="ev">
+          <b>Evidence:</b> 64 بايت من <code>RandomNumberGenerator</code>، تخزين SHA-256 فقط،
+          تدوير مع <code>ReplacedByTokenId</code>، BCrypt، وفحص <code>IsActive</code> <b>بعد</b>
+          كلمة المرور — قرار متعمَّد يمنع تعداد الحسابات الموقوفة.
+          <b>Finding:</b> <code>refresh</code> لا يفحص <code>IsActive</code> إطلاقًا، فحساب محظور
+          يظل يُصدر رموزًا سبعة أيام. و<code>LoginRequestValidator</code> مسجَّل ولا يُستدعى —
+          وقاعدته تناقض قاعدة إنشاء كلمة المرور.
+          <b>Impact:</b> الآليات محترفة، والمسار الثانوي لم يُراجَع بنفس عناية الأساسي.
+        </td>
+      </tr>
+      <tr>
+        <td class="skill">Authorization</td><td class="sc">2 / 5</td>
+        <td><span class="conf hi">High</span></td>
+        <td class="ev">
+          <b>Evidence:</b> البدائية نفسها ممتازة — 21 موضع استدعاء متّسق، سبعة معالجات ملكية، نطاق هرمي.
+          <b>Finding:</b> ثغرتان حرجتان تلتفّان حولها. (1) إسقاط <code>UserToken</code> يُسقِط
+          <code>UniversityId</code>، فاستدعاء واحد لـ<code>/refresh</code> يجعل نطاق
+          <code>UniversityAdmin</code> فارغًا ⇒ <code>IsGlobal</code> ⇒ صلاحية عبر كل الجامعات.
+          (2) <code>UpdateCollegeAdmin</code> تفحص وجهة النقل ولا تفحص الموظف المستهدَف ⇒ اختطاف حساب عبر المستأجرين.
+          <b>Impact:</b> انهيار عزل المستأجرين — الغرض المركزي للنظام كله.
+        </td>
+      </tr>
+      <tr>
+        <td class="skill">Concurrency</td><td class="sc">2 / 5</td>
+        <td><span class="conf hi">High</span></td>
+        <td class="ev">
+          <b>Evidence:</b> معاملة صريحة مع <code>Rollback</code> في العمليتين متعددتَي الخطوات فقط —
+          وغيابها حيث لا تلزم. تمييز صحيح ونادر.
+          <b>Finding:</b> صفر Concurrency Token في المشروع كله؛ وسباق check-then-act على التفرّد
+          يُنتج 500 بدل 409؛ وطلبا <code>refresh</code> متزامنان يمرّان معًا.
+          <b>Impact:</b> Lost Update صامت تحت أي تزامن حقيقي.
+        </td>
+      </tr>
+      <tr>
+        <td class="skill">Runtime Integrity</td><td class="sc">2 / 5</td>
+        <td><span class="conf hi">High</span></td>
+        <td class="ev">
+          <b>Evidence:</b> <code>dotnet build</code> ينجح بصفر تحذيرات، و<code>build.yml</code> أخضر،
+          و<code>dotnet ef dbcontext info</code> <b>ينجح الآن</b> بعد إصلاح ملاحيات <code>Image</code>
+          وإعلان المفتاح الأجنبي على <code>ContentItem</code>.
+          <b>Finding:</b> السكربت المولَّد بـ<code>dotnet ef migrations script</code> ما زال ينفّذ
+          <span style="direction:ltr;display:inline-block"><code>UPDATE [Semesters] SET [UniversityId] = 0</code></span>
+          ثم يضيف مفتاحًا أجنبيًا إلى <code>Universities</code> — ولا جامعة بمعرّف 0.
+          <b>Impact:</b> التطبيق يُقلع على قاعدة قائمة، ولا يمكن تجهيزه من الصفر.
+          البند الحرج الأول أُغلق؛ هذا ما تبقّى.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ══════════ 9. UNINET RADAR ══════════ -->
+<section id="sys-radar">
+  <div class="shead"><span class="snum">09</span><h2>رادار UniNet — <span class="en">UniNet Radar</span></h2></div>
+  <p class="sintro">شكل الرسم يحكي القصة: نصف متين (أربعة محاور عند <code>4</code>) وحافّة هابطة عند التفويض والتزامن والتشغيل (ثلاثة عند <code>2</code>).</p>
+
+  <div class="panel">
+    <div class="panel-chart" id="sysChart">
+      <p class="panel-title">UniNet Engineering Quality</p>
+      <p class="panel-sub">12 axes · scale 0–5 · implemented scope only</p>
+      <div class="tip" id="sysTip"></div>
+    </div>
+    <div class="readout" id="sysReadout">
+      <h4>Ranked readout</h4>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 10. UNINET STRENGTHS ══════════ -->
+<section id="sys-strengths">
+  <div class="shead"><span class="snum">10</span><h2>نقاط قوة UniNet — <span class="en">Strengths</span></h2></div>
+  <div class="cards">
+    <div class="card sys">
+      <span class="tag">Enforced by the compiler</span>
+      <h5>حدود الطبقات ليست اتفاقًا</h5>
+      <p>
+        لا يمكن كتابة استعلام EF في خدمة حتى لو أراد المطوّر — <code>Application.csproj</code>
+        لا يرجع إلى <code>DataAccessLayer</code>. معظم المشاريع في هذا المستوى تعتمد على
+        الانضباط الشخصي؛ هذا يعتمد على المُصرِّف.
+      </p>
+    </div>
+    <div class="card sys">
+      <span class="tag">Schema as policy</span>
+      <h5>قواعد العمل مفروضة في المحرّك</h5>
+      <p>
+        <code>HasIndex(s =&gt; s.UniversityId).HasFilter("[IsCurrent] = 1").IsUnique()</code>
+        يفرض «فصل دراسي حالي واحد لكل جامعة» على مستوى SQL Server لا على مستوى الكود.
+        ومعه أربعة فهارس مركّبة فريدة تعكس التسلسل الأكاديمي حرفيًا.
+      </p>
+    </div>
+    <div class="card sys">
+      <span class="tag">Query shape</span>
+      <h5>إسقاط بدل تحميل الكيان</h5>
+      <p>
+        كل مستودع يعرّف <code>Expression&lt;Func&lt;TEntity,TDto&gt;&gt;</code> يُطبَّق داخل
+        <code>Select</code>، فيتحوّل إلى <code>JOIN</code> واحد بأعمدة محددة.
+        النتيجة: <b>صفر N+1 في المشروع كله</b>، وأداء أفضل مما يعطيه AutoMapper.
+      </p>
+    </div>
+    <div class="card sys">
+      <span class="tag">Deliberate</span>
+      <h5>404 بدل 403 — بتعليق يشرح لماذا</h5>
+      <p>
+        الوصول لمورد خارج النطاق يُرجع «غير موجود» لا «ممنوع»، فلا يتسرّب وجود المورد.
+        قرار غير بديهي، مطبَّق باتساق، وموثَّق في الكود نفسه.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ 11. UNINET ISSUES ══════════ -->
+<section id="sys-issues">
+  <div class="shead"><span class="snum">11</span><h2>مشاكل UniNet الهندسية — <span class="en">Engineering Issues</span></h2></div>
+  <p class="sintro">مرتّبة بالخطورة. كلها مُتحقَّق منها على شجرة العمل الحالية.</p>
+  <div class="note" style="margin-bottom:22px">
+    <b>أُغلق:</b> «نموذج EF لا يُبنى» — كان البند الحرج الأول، وأُصلح بالطريقة الموصى بها بالضبط:
+    ملاحية <code>ContentItem</code> واحدة على <code>Image</code>، و<code>HasForeignKey&lt;ContentItem&gt;</code>
+    على النوع الأساس، وهجرة TPH مرافقة. <b>التطبيق يُقلع الآن.</b>
+  </div>
+
+  <ol class="issues">
+    <li>
+      <div>
+        <b>تجاوز عزل المستأجرين عبر <code>/refresh</code> <span class="sev crit">Critical</span></b>
+        <p>
+          <code>RefreshTokenRepository.cs:18</code> — الإسقاط لا يُسنِد <code>UniversityId</code>،
+          فالرمز المُجدَّد لمسؤول جامعة يخرج <b>بلا أي مطالبة نطاق</b>،
+          و<code>IsGlobal</code> تعامله كـ Super Admin في كل فحص.
+          يصبح بإمكانه قراءة وتعديل وحذف موارد أي جامعة أخرى.
+          <b>الإصلاح:</b> سطر واحد. <b>والأهم بنيويًا:</b> اجعل «العالمي» دورًا صريحًا
+          لا غياب بيانات — <code>IsGlobal</code> اليوم fail-open.
+        </p>
+      </div>
+    </li>
+    <li>
+      <div>
+        <b>الهجرة الثانية تفشل على أي قاعدة <span class="sev crit">Critical</span></b>
+        <p>
+          <code>SeedData.GetSemesters()</code> لا تُسنِد <code>UniversityId</code> ⇒ القيمة 0 ⇒
+          إنشاء المفتاح الأجنبي يفشل بخطأ 547. مع البند الأول،
+          <b>لا توجد اليوم طريقة لتشغيل المشروع من الصفر.</b>
+        </p>
+      </div>
+    </li>
+    <li>
+      <div>
+        <b>اختطاف موظف عبر المستأجرين <span class="sev crit">Critical</span></b>
+        <p>
+          <code>EmployeeService.cs:192, 235</code> — الفحص على الكلية القادمة في جسم الطلب،
+          لا على الموظف المستهدَف. مسؤول جامعة A ينقل موظفًا من جامعة B إلى جامعته،
+          ويكتب فوق اسمه وبريده، ويعطّل حسابه بـ<code>IsActive = false</code>.
+          <b>النسخة الصحيحة موجودة في المشروع نفسه</b> —
+          <code>StudentService.UpdateStudent</code> يجلب الكيان أولًا ثم يشتق النطاق منه.
+        </p>
+      </div>
+    </li>
+    <li>
+      <div>
+        <b>تسريب شُعَب عبر الدفعات <span class="sev high">High</span></b>
+        <p>
+          <code>SectionRepository.GetSectionsPerBatch</code> يُصفّي بالجامعة والكلية والقسم —
+          و<code>scope.BatchId</code> غائبة، بينما <code>BatchAdmin</code> مصرَّح له على النقطة
+          ويحمل <code>BatchId</code> فعلًا لأنه طالب. يرى شُعَب قسمه كله بدل دفعته.
+          والإغفال نفسه في <code>BatchRepository</code> — <b>أصلحهما معًا.</b>
+        </p>
+      </div>
+    </li>
+    <li>
+      <div>
+        <b>إعادة تعيين حالة الطالب قسرًا <span class="sev high">High</span></b>
+        <p>
+          <code>StudentService.cs:258</code> — كل تحديث يُسنِد <code>StatusId</code> إلى "Enrolled".
+          تحديث بيانات طالب متخرّج أو موقوف يُعيده مُقيَّدًا بلا أثر ولا سجل.
+          قاعدة عمل خاطئة، لا خطأ برمجي.
+        </p>
+      </div>
+    </li>
+    <li>
+      <div>
+        <b>حساب محظور يعمل سبعة أيام <span class="sev high">High</span></b>
+        <p>
+          <code>LoginController.cs:75</code> — <code>Login</code> يفحص <code>IsActive</code>،
+          و<code>Refresh</code> لا يجلب المستخدم إطلاقًا. «حظر مستخدم» ليس فوريًا.
+        </p>
+      </div>
+    </li>
+    <li>
+      <div>
+        <b>ميزتان معطّلتان إنتاجيًا <span class="sev high">High</span></b>
+        <p>
+          <code>BatchAdmin</code> مذكور في عشر سمات <code>[Authorize]</code> وغير مزروع في
+          <code>SeedData.GetRoles()</code> — موجود في بذور التطوير فقط.
+          و<code>AddUser</code> لا تُسنِد <code>Type</code>، فالمستخدم المُنشأ عبرها يُنتج
+          <code>ArgumentNullException</code> عند تسجيل الدخول.
+        </p>
+      </div>
+    </li>
+    <li>
+      <div>
+        <b>غياب حماية التزامن <span class="sev med">Medium</span></b>
+        <p>
+          صفر <code>RowVersion</code> في المشروع. مسؤولان يحرّران الكلية نفسها ⇒ آخر من يحفظ يفوز
+          و تعديل الأول يُفقَد صامتًا. وسباق check-then-act على التفرّد يُنتج 500 بدل 409.
+        </p>
+      </div>
+    </li>
+    <li>
+      <div>
+        <b>عقد HTTP لا يطابق السلوك <span class="sev med">Medium</span></b>
+        <p>
+          409 يُرسَل بحالة 400 بجسم يدّعي 409؛ تسع نقاط إنشاء تعلن 201 وتُرجع 200 بلا
+          <code>Location</code>؛ و<code>PageSize</code> بلا حدّ أعلى يسمح بمسح كامل للجدول.
+        </p>
+      </div>
+    </li>
+  </ol>
+
+  <h3>الحكم الأمني الكامل</h3>
+  <ul class="plain">
+    <li><b>سليم ومُتحقَّق منه:</b> لا حقن SQL في أي مسار — كل الاستعلامات LINQ مُعامَل و<code>EF.Functions.Like</code> يمرّر القيمة كمعامل لا كسلسلة مُدمَجة. لا أسرار في المستودع (<code>UserSecretsId</code> مُعرَّف و<code>appsettings.json</code> نظيف). لا <code>PasswordHash</code> في أي DTO. الـ Middleware يُرجع رسالة عامة والتفاصيل في السجل. CORS بأصول محددة صراحةً. لا مسار لتصعيد صلاحيات رأسي — إدارة الأدوار مقيَّدة بـ Super Admin.</li>
+    <li><b>مكسور:</b> بندان حرجان (2) و(4) أعلاه — كلاهما تجاوز أفقي عبر المستأجرين، وكلاهما في مسار لم يُراجَع بنفس عناية المسار الرئيسي.</li>
+    <li><b>ناقص:</b> لا كشف لإعادة استخدام Refresh Token، ولا كابح لمحاولات الدخول، وتعداد مستخدمين ممكن بفارق التوقيت لأن BCrypt لا يُنفَّذ لمستخدم غير موجود.</li>
+  </ul>
+</section>
+
+<!-- ══════════ 12. COMPARISON ══════════ -->
+<section id="compare">
+  <div class="shead"><span class="snum">12</span><h2>المقارنة — <span class="en">Developer vs UniNet</span></h2></div>
+  <p class="sintro">
+    ليس السؤال «أيهما أفضل»، بل: <b>أين تصل القدرة إلى التنفيذ، وأين تتوقف؟</b>
+    فقط المحاور القابلة للمقارنة منطقيًا.
+  </p>
+
+  <div class="tscroll">
+  <table>
+    <thead>
+      <tr><th>Area</th><th class="ctr">Developer</th><th class="ctr">UniNet</th><th>Observation</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="skill">Software Architecture</td><td class="cd">4</td><td class="cs">4</td>
+        <td class="ev">القرار المعماري وصل إلى التنفيذ كما هو. حين يقرر بنيويًا، يُنفَّذ بنيويًا.</td>
+      </tr>
+      <tr>
+        <td class="skill">EF Core / Data Access</td><td class="cd">4</td><td class="cs">4</td>
+        <td class="ev">أقوى محور عند الاثنين، وأوضح تطابق بين المهارة والأثر.</td>
+      </tr>
+      <tr>
+        <td class="skill">Database Design</td><td class="cd">4</td><td class="cs">4</td>
+        <td class="ev">المخطط يعكس المهارة بأمانة. الهجرة المعطوبة عيب تحقق، لا عيب تصميم — ولذلك لم تخفض المهارة.</td>
+      </tr>
+      <tr>
+        <td class="skill">REST API Design</td><td class="cd">3</td><td class="cs">3</td>
+        <td class="ev">تطابق تام: نفس الفهم الجزئي لرموز الحالة ينتج نفس العقد الجزئي.</td>
+      </tr>
+      <tr>
+        <td class="skill">ASP.NET Core / Authentication</td><td class="cd">3</td><td class="cs">3</td>
+        <td class="ev">الآليات مُتقَنة والتفاصيل التشغيلية ناقصة — في المهارة والتنفيذ معًا.</td>
+      </tr>
+      <tr>
+        <td class="skill">Performance</td><td class="cd">3</td><td class="cs">4</td>
+        <td class="ev"><b>التنفيذ يسبق الوعي المُثبَت.</b> القرار الصحيح (الإسقاط) مُتَّبع كنمط عبر المشروع كله، لكن بلا قياس يثبت أنه مفهوم لا منسوخ.</td>
+      </tr>
+      <tr>
+        <td class="skill">Domain / Business Logic</td><td class="cd">2</td><td class="cs">3</td>
+        <td class="ev">التنفيذ أعلى لأن المشكلة لا تتطلب Domain غنيًا — القدر المطلوب موجود ويعمل، والفجوة المعرفية لم تُكلِّف شيئًا هنا.</td>
+      </tr>
+      <tr>
+        <td class="skill">Authorization</td><td class="cd">4</td><td class="cs">2</td>
+        <td class="ev"><b>أكبر فجوة في الملف كله.</b> البدائية مصمَّمة بمستوى يفوق المتوقَّع، والثغرتان الحرجتان في مسارين جانبيين لم يُجرَدا. المهارة موجودة؛ التغطية لا.</td>
+      </tr>
+      <tr>
+        <td class="skill">Verification / Runtime</td><td class="cd">1</td><td class="cs">2</td>
+        <td class="ev"><b>أوضح علاقة سببية في الملف.</b> صفر ممارسة تحقق أنتج نظامًا يبني بصفر تحذيرات ولا يُقلع. وأُصلح العطل خلال ساعات من الإبلاغ — وهذا يؤكد النمط لا ينفيه: <b>التشخيص والإصلاح سريعان، والاكتشاف الذاتي غائب.</b> المهارة تبقى <code>1</code> لأن الاختبارات ما زالت صفرًا ولا بوابة تشغيل في CI.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="note" style="margin-top:20px">
+    <b>القراءة:</b> في ثمانية من تسعة محاور، جودة UniNet تساوي مهارة المطوّر أو تفوقها.
+    الفجوة تظهر في مكان واحد فقط — <code>Authorization</code> — ولها سبب واحد مُشخَّص:
+    <b>غياب آلية تجرد المسارات الجانبية.</b> وهو نفس السبب الذي أنتج <code>Runtime = 1</code>.
+    <br><br>
+    عمليًا: <b>فجوة واحدة، سببها واحد، وعلاجها واحد.</b>
+  </div>
+</section>
+
+<!-- ══════════ 13. FINAL DEVELOPER PROFILE ══════════ -->
+<section id="dev-profile">
+  <div class="shead"><span class="snum">13</span><h2>الملف النهائي للمطوّر — <span class="en">Developer Profile</span></h2></div>
+
+  <div class="panel" style="display:block;padding:26px 26px 24px">
+    <p style="margin:0 0 16px;font-size:17px;line-height:1.75">
+      مطوّر <b>.NET Backend</b> بخبرة مصدرها <b>التعلّم الذاتي والمشاريع الشخصية</b> —
+      لا عمل داخل شركة برمجيات ولا ضمن فريق هندسي محترف.
+      بنى منفردًا نظام إدارة جامعية متعدد المستأجرين بنحو 10,400 سطر C#،
+      بمعمارية طبقية مفروضة على مستوى المشاريع ونظام مصادقة وتفويض مبنيَّين من الصفر.
+    </p>
+
+    <div class="flow">
+      <b>يفكّر كمعماري</b> → القرارات البنيوية أعلى من مستواه التنفيذي<br>
+      <b>يُصلح كمهندس</b> → يعيد تصميم النوع ليقتل فئة الخطأ، لا الحالة<br>
+      <b>يتحقق كمبتدئ</b> → البناء الأخضر عنده يعني «تمّ»، والتشغيل غير مُختبَر
+    </div>
+
+    <h3>ما يمكن الاعتماد عليه فيه اليوم</h3>
+    <ul class="plain">
+      <li><b>طبقة الوصول للبيانات</b> — مستودعات، إسقاط، تكوينات Fluent API، فهرسة، Migrations. أقوى مناطقه بفارق واضح.</li>
+      <li><b>بناء نقاط نهاية CRUD كاملة ضمن نمط قائم</b> — 12 متحكمًا متّسقًا و61 نقطة نهاية يثبتون ذلك.</li>
+      <li><b>تصميم عقود البيانات وقواعد التحقق</b> — فصل واعٍ بين تحقق الشكل ومنطق العمل.</li>
+      <li><b>إغلاق دَين تقني مُبلَّغ عنه</b> — سرعة وجودة استجابة عالية ومتكرِّرة، وغالبًا بحلٍّ أفضل من المقترح.</li>
+    </ul>
+
+    <h3>ما يحتاج مراجعًا ثانيًا</h3>
+    <ul class="plain">
+      <li><b>أي تعديل على بدائية أمنية أو نوع مشترك</b> — ليس لضعف الفهم، بل لأن جرد المستهلكين لم يصبح عادة بعد.</li>
+      <li><b>إعادة هيكلة كود قائم</b> — القرار ممتاز، والتحقق بعده هو نقطة الضعف.</li>
+      <li><b>أي دمج بلا بوابة تشغيل آلية</b> — البناء الأخضر أثبت أنه ليس كافيًا في هذا المشروع.</li>
+    </ul>
+
+    <h3>التقدير الصادق</h3>
+    <p style="margin:0;color:var(--ink-2);font-size:14.5px;line-height:1.75">
+      في مقابلة Junior سيتفوّق بوضوح في أسئلة EF Core والمعمارية وتصميم التفويض —
+      وسيتعثّر في سؤالين: <b>«أرِني اختباراتك»</b> و<b>«كيف تتأكد أن ما دفعته يعمل؟»</b>.
+      أقوى قصة يملكها ليست ميزة بناها، بل عيبًا أُبلِغ به في 12 موضعًا فأعاد تصميم التوقيع
+      حتى صار غير قابل للكتابة أصلًا. وأصدق ما يُتبعها به أن يذكر العيب المقابل:
+      أنه دفع في اليوم نفسه كودًا لا يُقلع.
+      <br><br>
+      <b>ما ينقصه عادة واحدة، لا مفاهيم</b> — وأرخص صورة لها اختبارٌ واحد وسطرٌ في CI.
+    </p>
+  </div>
+</section>
+
+<!-- ══════════ 14. FINAL UNINET ══════════ -->
+<section id="sys-final">
+  <div class="shead"><span class="snum">14</span><h2>الحكم النهائي على UniNet — <span class="en">Final Assessment</span></h2></div>
+
+  <div class="cards">
+    <div class="card sys">
+      <span class="tag">Overall quality</span>
+      <h5>مصمَّم جيدًا، مُنفَّذ بتفاوت، معطَّل اليوم</h5>
+      <p>
+        متوسط المحاور <b>3.1 / 5</b>. الفصل المعماري وتصميم قاعدة البيانات وبدائية التفويض
+        في مستوى يتجاوز المتوقَّع من مشروع فردي؛ والتحقق هو الفجوة الوحيدة الحقيقية.
+      </p>
+    </div>
+    <div class="card sys">
+      <span class="tag">Strongest</span>
+      <h5>قاعدة البيانات والوصول إليها</h5>
+      <p>
+        فهارس مركّبة ومُصفّاة تفرض قواعد العمل في المحرّك، إسقاط عبر Expression بصفر N+1،
+        و<code>Restrict</code> كسياسة بلا استثناء. هذا المحور وحده يرفع المشروع فوق فئته.
+      </p>
+    </div>
+    <div class="card sys">
+      <span class="tag">Weakest</span>
+      <h5>التفويض، ثم التشغيل والتزامن</h5>
+      <p>
+        <code>Authorization = 2</code> لأن ثغرتين حرجتين تكسران الغرض المركزي — عزل المستأجرين.
+        ومعه <code>Runtime Integrity = 2</code> (الهجرة تفشل على قاعدة جديدة)
+        و<code>Concurrency = 2</code> (صفر optimistic concurrency).
+      </p>
+    </div>
+    <div class="card sys">
+      <span class="tag">Top technical debt</span>
+      <h5>بذرة <code>Semester</code> والفحص المقلوب</h5>
+      <p>
+        ملاحيات <code>Image</code> أُغلقت. المتبقي أرخص وأغلى أثرًا:
+        سطر واحد في بذور <code>Semester</code> يجعل التجهيز من الصفر ممكنًا،
+        ثم قلب ترتيب الفحص في تحديث الموظف، ثم الحارس <code>IsGlobal</code> كـ fail-open.
+      </p>
+    </div>
+    <div class="card sys">
+      <span class="tag">Top architecture issue</span>
+      <h5><code>IsGlobal</code> — «بلا نطاق ⇒ صلاحية كاملة»</h5>
+      <p>
+        المشكلة التصميمية الجوهرية الوحيدة. أي مسار يفقد المطالبات يتحوّل تلقائيًا إلى Super Admin،
+        وهو ما حوّل خطأ إسقاط واحدًا إلى انهيار عزل كامل.
+        <b>العالمي يجب أن يكون دورًا مُثبَتًا، لا غياب بيانات.</b>
+      </p>
+    </div>
+    <div class="card sys">
+      <span class="tag">Top performance concern</span>
+      <h5><code>PageSize</code> بلا حدّ أعلى</h5>
+      <p>
+        المشكلة الفعلية الوحيدة — <code>[Range(1, int.MaxValue)]</code> تسمح لأي مستخدم مصادَق
+        بطلب الجدول كاملًا. الباقي (رحلات إضافية، <code>AsNoTracking</code> ناقص)
+        مقايضات واعية أو أثر ضئيل، لا مشاكل.
+      </p>
+    </div>
+  </div>
+
+  <h3>الترتيب الموصى به</h3>
+  <div class="flow" style="margin-top:12px">
+    <b class="done">✓ تمّ</b> → ملاحيات <code style="all:unset">Image</code> + هجرة TPH ⇒ التطبيق يُقلع<br>
+    <b>10 دقائق</b> → <code style="all:unset">UniversityId = 1</code> في بذرة <code style="all:unset">Semester</code> ⇒ التجهيز من الصفر يعمل<br>
+    <b>ساعتان</b> → إسقاط <code style="all:unset">UniversityId</code> + اقلب فحص تحديث الموظف + <code style="all:unset">scope.BatchId</code> ⇒ العزل يعمل<br>
+    <b>نصف يوم</b> → خمسة اختبارات xUnit، أولها يبني <code style="all:unset">AppDbcontext</code> فقط<br>
+    <b>نصف ساعة</b> → <code style="all:unset">dotnet ef dbcontext info</code> في <code style="all:unset">build.yml</code> ⇒ العطل يوقف الدمج<br>
+    <b>ثم</b> → وحدة Study
+  </div>
+
+  <div class="note" style="margin-top:22px">
+    <b>الخلاصة:</b> يومان يحوّلان UniNet من «نظام لا يقلع بثغرتين حرجتين»
+    إلى أفضل حالة له على الإطلاق — وهو عائد لا تعطيه أي ميزة جديدة.
+    <b>ولا شيء في هذا الملف يقترح تعقيدًا معماريًا إضافيًا:</b>
+    لا Microservices، ولا CQRS، ولا وسيط رسائل، ولا Cache موزّع —
+    لأن لا مشكلة قائمة في UniNet تستدعي أيًّا منها.
+  </div>
+</section>
+
+<footer>
+  تقييم قائم على الأدلة · <code>d24bef7</code> · <code>refactor/v1Branch</code> · 2026-08-19<br>
+  المصادر: قراءة 225 ملف <code>.cs</code> · <code>dotnet build UniNet.slnx</code> · <code>dotnet ef dbcontext info</code> · <code>dotnet ef migrations script</code> · <code>DEVELOPER_PROFILE.md</code><br>
+  لوحة الألوان مُتحقَّق منها آليًا للوضعين (فصل CVD ΔE 27.5 / 25.6). الخطورة مُرمَّزة طباعيًا لا لونيًا لأن الأحمر لا يُميَّز عن لون المطوّر (ΔE 8.7 &lt; 15).
+</footer>
+
+</div>
+
+<script>
+const DEV = {
+  accent:"var(--dev)",
+  words:["No Evidence","Awareness","Basic Practical","Working Proficiency","Strong Proficiency","Advanced"],
+  axes:[
+    {n:"EF Core",              s:4, c:"High",   t:"إسقاط عبر Expression، فهارس مُصفّاة، أعمدة محسوبة، TPH"},
+    {n:"Database Design",      s:4, c:"High",   t:"مخطط يعكس قواعد العمل حرفيًا؛ لا concurrency token"},
+    {n:"Architecture",         s:4, c:"High",   t:"فصل مفروض بمراجع المشاريع؛ تجريدات ميتة"},
+    {n:"Authorization Design", s:4, c:"High",   t:"إعادة تصميم البدائية؛ لكن IsGlobal هو fail-open"},
+    {n:"Debugging",            s:4, c:"High",   t:"يشخّص فئة الخطأ لا حالته — أربع مرات موثّقة"},
+    {n:"C# / .NET",            s:4, c:"High",   t:"NRT، pattern matching، expression trees، MSBuild"},
+    {n:"ASP.NET Core",         s:3, c:"High",   t:"JWT وتفويض المورد؛ أخطاء في ترتيب الـ pipeline"},
+    {n:"REST API Design",      s:3, c:"High",   t:"توجيه متّسق؛ فهم ناقص لرموز الحالة"},
+    {n:"Code Quality",         s:3, c:"High",   t:"اتساق عالٍ؛ كود ميت متراكم وأخطاء إملائية عامة"},
+    {n:"Performance",          s:3, c:"Medium", t:"صفر N+1 وasync متّسق؛ لا دليل على قياس"},
+    {n:"Domain Modeling",      s:2, c:"Medium", t:"كيانات بنيوية؛ SetGrades أول سلوك وقابل للتجاوز"},
+    {n:"Testing &",            n2:"Verification", s:1, c:"High", t:"وعي موجود وممارسة صفر — CI يقيس التصريف لا التشغيل"}
+  ]
+};
+
+const SYS = {
+  accent:"var(--sys)",
+  words:["N/A","Poor","Weak","Acceptable","Strong","Excellent"],
+  axes:[
+    {n:"Architecture",       s:4, c:"High",   t:"اتجاه اعتماد صحيح مفروض على مستوى csproj"},
+    {n:"Database Design",    s:4, c:"High",   t:"فهرسة ممتازة؛ الهجرة الثانية تفشل"},
+    {n:"Data Access",        s:4, c:"High",   t:"صفر N+1؛ AsNoTracking غير متسق"},
+    {n:"Performance",        s:4, c:"Medium", t:"إسقاط فعّال؛ PageSize بلا حدّ أعلى"},
+    {n:"Application Layer",  s:3, c:"High",   t:"نمط موحّد؛ Service Locator وتكرار"},
+    {n:"API Design",         s:3, c:"High",   t:"متحكمات رفيعة؛ 409 كـ400 و201 غير مُنفَّذ"},
+    {n:"Validation &",       n2:"Errors", s:3, c:"High", t:"فصل ثلاثي واعٍ؛ ثغرات تغطية تُنتج 500"},
+    {n:"Business Logic",     s:3, c:"High",   t:"معظمها صحيح؛ إعادة الحالة قسرًا وميزتان معطّلتان"},
+    {n:"Authentication",     s:3, c:"High",   t:"تدوير وhash سليمان؛ refresh بلا فحص IsActive"},
+    {n:"Authorization",      s:2, c:"High",   t:"بدائية ممتازة، وثغرتان حرجتان تلتفّان حولها"},
+    {n:"Concurrency",        s:2, c:"High",   t:"معاملات في مكانها؛ صفر optimistic concurrency"},
+    {n:"Runtime Integrity",  s:2, c:"High",   t:"يُقلع الآن؛ لكن الهجرة تفشل على قاعدة جديدة"}
+  ]
+};
+
+const NS="http://www.w3.org/2000/svg";
+const mk=(t,a)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e;};
+
+function buildRadar(hostId, tipId, cfg, accentVar){
+  const host=document.getElementById(hostId), tip=document.getElementById(tipId);
+  const A=cfg.axes, N=A.length;
+  const W=700,H=600,cx=350,cy=286,R=176;
+  const ang=i=>(-Math.PI/2)+i*2*Math.PI/N;
+  const px=(i,v)=>cx+Math.cos(ang(i))*R*(v/5);
+  const py=(i,v)=>cy+Math.sin(ang(i))*R*(v/5);
+
+  const svg=mk("svg",{viewBox:`0 0 ${W} ${H}`,role:"img",
+    "aria-label":host.querySelector(".panel-title").textContent+" radar chart, 0 to 5 scale"});
+
+  const g=mk("g",{});svg.appendChild(g);
+
+  // rings
+  for(let k=1;k<=5;k++){
+    const pts=[];
+    for(let i=0;i<N;i++)pts.push(`${px(i,k).toFixed(1)},${py(i,k).toFixed(1)}`);
+    const isRef=(k===3);
+    g.appendChild(mk("polygon",{points:pts.join(" "),
+      "stroke-width":isRef?1.2:1,
+      "stroke-dasharray":isRef?"3 3":"none",
+      opacity:isRef?.85:.55,
+      style:`fill:none;stroke:${isRef?"var(--ink-3)":"var(--grid)"}`}));
+  }
+  // spokes
+  for(let i=0;i<N;i++){
+    g.appendChild(mk("line",{x1:cx,y1:cy,x2:px(i,5),y2:py(i,5),
+      "stroke-width":1,opacity:.5,style:"stroke:var(--grid)"}));
+  }
+  // ring numerals
+  for(let k=1;k<=5;k++){
+    const t=mk("text",{x:cx+8,y:cy-R*k/5+4,"stroke-width":3,"paint-order":"stroke",
+      style:"font:10px 'IBM Plex Mono',monospace;fill:var(--ink-3);"+
+            "stroke:var(--surface);font-variant-numeric:tabular-nums"});
+    t.textContent=k;g.appendChild(t);
+  }
+
+  // data polygon
+  const dpts=A.map((a,i)=>`${px(i,a.s).toFixed(1)},${py(i,a.s).toFixed(1)}`).join(" ");
+  g.appendChild(mk("polygon",{points:dpts,"fill-opacity":.16,"stroke-width":2,
+    "stroke-linejoin":"round",style:`fill:${accentVar};stroke:${accentVar}`}));
+
+  // axis labels + values
+  A.forEach((a,i)=>{
+    const co=Math.cos(ang(i)),si=Math.sin(ang(i));
+    const lx=cx+co*(R+24), ly=cy+si*(R+24);
+    const anchor = co>0.25?"start":(co<-0.25?"end":"middle");
+    const two=!!a.n2;
+    const baseY = ly + (si<-0.6? -6 : (si>0.6? 12 : 0));
+
+    const t=mk("text",{x:lx.toFixed(1),y:(baseY-(two?6:0)).toFixed(1),
+      "text-anchor":anchor,
+      style:"font:11.5px 'IBM Plex Mono',monospace;fill:var(--ink-2)"});
+    t.textContent=a.n;g.appendChild(t);
+    if(two){
+      const t2=mk("text",{x:lx.toFixed(1),y:(baseY+7).toFixed(1),
+        "text-anchor":anchor,
+        style:"font:11.5px 'IBM Plex Mono',monospace;fill:var(--ink-2)"});
+      t2.textContent=a.n2;g.appendChild(t2);
+    }
+    const tv=mk("text",{x:lx.toFixed(1),y:(baseY+(two?21:14)).toFixed(1),
+      "text-anchor":anchor,
+      style:"font:600 12px 'IBM Plex Mono',monospace;fill:var(--ink);"+
+            "font-variant-numeric:tabular-nums"});
+    tv.textContent=a.s+"/5";g.appendChild(tv);
+  });
+
+  // vertices + hit targets
+  A.forEach((a,i)=>{
+    const x=px(i,a.s),y=py(i,a.s);
+    g.appendChild(mk("circle",{cx:x,cy:y,r:4.5,"stroke-width":2,
+      style:`fill:${accentVar};stroke:var(--surface)`}));
+    const hit=mk("circle",{cx:x,cy:y,r:16,style:"fill:transparent;cursor:pointer"});
+    const label=(a.n+(a.n2?" "+a.n2:""));
+    hit.addEventListener("mouseenter",e=>{
+      tip.innerHTML=`<span class="tn">${label} — ${a.s}/5</span>`+
+                    `<span class="tc">${a.c} confidence · ${cfg.words[a.s]}</span>${a.t}`;
+      tip.classList.add("show");
+      const hb=host.getBoundingClientRect(), sb=svg.getBoundingClientRect();
+      const sx=sb.width/W;
+      const raw=sb.left-hb.left+x*sx;
+      tip.style.left=Math.max(130,Math.min(hb.width-130,raw))+"px";
+      tip.style.top =(sb.top -hb.top +y*sx-12)+"px";
+    });
+    hit.addEventListener("mouseleave",()=>tip.classList.remove("show"));
+    g.appendChild(hit);
+  });
+
+  host.appendChild(svg);
+
+  // ring key
+  const key=document.createElement("div");key.className="ringkey";
+  key.innerHTML=cfg.words.map((w,k)=>`<span><b>${k}</b> ${w}</span>`).join("");
+  host.appendChild(key);
+}
+
+function buildReadout(id,cfg,accentVar){
+  const host=document.getElementById(id);
+  const sorted=[...cfg.axes].sort((a,b)=>b.s-a.s);
+  sorted.forEach(a=>{
+    const row=document.createElement("div");row.className="rrow";
+    const label=a.n+(a.n2?" "+a.n2:"");
+    row.innerHTML=
+      `<span class="rname" title="${label}">${label}</span>`+
+      `<span class="rval">${a.s}/5</span>`+
+      `<span class="pips">${[1,2,3,4,5].map(k=>
+        `<i class="pip${k<=a.s?" on":""}"></i>`).join("")}</span>`;
+    row.style.setProperty("--acc",accentVar);
+    host.appendChild(row);
+  });
+  const sum=cfg.axes.reduce((t,a)=>t+a.s,0);
+  const mean=(sum/cfg.axes.length);
+  const m=document.createElement("div");m.className="mean";
+  m.innerHTML=`<span>متوسط المحاور (${cfg.axes.length} محورًا)</span>`+
+              `<b style="color:${accentVar}">${mean.toFixed(1)}<span style="color:var(--ink-3);font-size:13px"> / 5</span></b>`;
+  host.appendChild(m);
+}
+
+buildRadar("devChart","devTip",DEV,"var(--dev)");
+buildReadout("devReadout",DEV,"var(--dev)");
+buildRadar("sysChart","sysTip",SYS,"var(--sys)");
+buildReadout("sysReadout",SYS,"var(--sys)");
+</script>
+</body>
+</html>

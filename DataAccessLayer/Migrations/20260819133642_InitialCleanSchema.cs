@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DataAccessLayer.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCommit : Migration
+    public partial class InitialCleanSchema : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -38,27 +38,6 @@ namespace DataAccessLayer.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_StudentStatuses", x => x.StatusId);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Announcements",
-                columns: table => new
-                {
-                    AnnouncementId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Title = table.Column<string>(type: "NVARCHAR(500)", nullable: false),
-                    Content = table.Column<string>(type: "NVARCHAR(MAX)", nullable: false),
-                    Type = table.Column<byte>(type: "TINYINT", nullable: false),
-                    ImageId = table.Column<int>(type: "int", nullable: true),
-                    UserId = table.Column<int>(type: "int", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    CreatedByUserId = table.Column<int>(type: "int", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    UpdatedByUserId = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Announcements", x => x.AnnouncementId);
                 });
 
             migrationBuilder.CreateTable(
@@ -98,6 +77,28 @@ namespace DataAccessLayer.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Colleges", x => x.CollegeId);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ContentItems",
+                columns: table => new
+                {
+                    ContentItemId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Title = table.Column<string>(type: "NVARCHAR(500)", nullable: false),
+                    Body = table.Column<string>(type: "NVARCHAR(MAX)", nullable: false),
+                    Scope = table.Column<byte>(type: "TINYINT", nullable: false),
+                    Type = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: true),
+                    Post_UserId = table.Column<int>(type: "int", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
+                    CreatedByUserId = table.Column<int>(type: "int", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UpdatedByUserId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ContentItems", x => x.ContentItemId);
                 });
 
             migrationBuilder.CreateTable(
@@ -165,37 +166,17 @@ namespace DataAccessLayer.Migrations
                     UploadedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
                     UploadedByUserId = table.Column<int>(type: "int", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UpdatedByUserId = table.Column<int>(type: "int", nullable: true)
+                    UpdatedByUserId = table.Column<int>(type: "int", nullable: true),
+                    ContentItemId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Images", x => x.ImageId);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Posts",
-                columns: table => new
-                {
-                    PostId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Title = table.Column<string>(type: "NVARCHAR(500)", nullable: false),
-                    Content = table.Column<string>(type: "NVARCHAR(MAX)", nullable: false),
-                    Type = table.Column<byte>(type: "TINYINT", nullable: false),
-                    ImageId = table.Column<int>(type: "int", nullable: true),
-                    UserId = table.Column<int>(type: "int", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    CreatedByUserId = table.Column<int>(type: "int", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    UpdatedByUserId = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Posts", x => x.PostId);
                     table.ForeignKey(
-                        name: "FK_Posts_Images_ImageId",
-                        column: x => x.ImageId,
-                        principalTable: "Images",
-                        principalColumn: "ImageId",
+                        name: "FK_Images_ContentItems_ContentItemId",
+                        column: x => x.ContentItemId,
+                        principalTable: "ContentItems",
+                        principalColumn: "ContentItemId",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -273,6 +254,7 @@ namespace DataAccessLayer.Migrations
                     SemesterId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "NVARCHAR(200)", nullable: false),
+                    UniversityId = table.Column<int>(type: "int", nullable: false),
                     StartDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     EndDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsCurrent = table.Column<bool>(type: "bit", nullable: false),
@@ -298,10 +280,10 @@ namespace DataAccessLayer.Migrations
                     Practical = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
                     Final = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false),
                     Total = table.Column<decimal>(type: "decimal(5,2)", precision: 5, scale: 2, nullable: false, computedColumnSql: "[Midterm] + [Practical] + [Final]", stored: true),
-                    EnteredByUserId = table.Column<int>(type: "int", nullable: false),
-                    UpdatedByUserId = table.Column<int>(type: "int", nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    CreatedByUserId = table.Column<int>(type: "int", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UpdatedByUserId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -489,11 +471,6 @@ namespace DataAccessLayer.Migrations
                 values: new object[] { 1, new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, "ahmed@hu.edu.ye", "Dr. Ahmed Al-Hadrami", true, "AQAAAAEAACcQAAAAEP4sN4u5xW9p8oJkzLq2vXy...", "+967 777000111", null, null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "Ahmed.HU" });
 
             migrationBuilder.InsertData(
-                table: "Semesters",
-                columns: new[] { "SemesterId", "CreatedAt", "CreatedByUserId", "EndDate", "IsCurrent", "Name", "StartDate", "UpdatedAt", "UpdatedByUserId" },
-                values: new object[] { 1, new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, new DateTime(2025, 12, 20, 0, 0, 0, 0, DateTimeKind.Utc), true, "Fall 2025", new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc), null, null });
-
-            migrationBuilder.InsertData(
                 table: "Universities",
                 columns: new[] { "UniversityId", "CreatedAt", "CreatedByUserId", "Description", "Name", "UpdatedAt", "UpdatedByUserId" },
                 values: new object[] { 1, new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, "A leading Yemeni university committed to academic excellence and community development.", "Hadhramout University", null, null });
@@ -507,6 +484,11 @@ namespace DataAccessLayer.Migrations
                 table: "Colleges",
                 columns: new[] { "CollegeId", "CreatedAt", "CreatedByUserId", "Description", "Name", "UniversityId", "UpdatedAt", "UpdatedByUserId" },
                 values: new object[] { 1, new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, "Specializes in Software Engineering, AI, Cybersecurity, and Data Science.", "Faculty of Computer Science and Information Technology", 1, null, null });
+
+            migrationBuilder.InsertData(
+                table: "Semesters",
+                columns: new[] { "SemesterId", "CreatedAt", "CreatedByUserId", "EndDate", "IsCurrent", "Name", "StartDate", "UniversityId", "UpdatedAt", "UpdatedByUserId" },
+                values: new object[] { 1, new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, new DateTime(2025, 12, 20, 0, 0, 0, 0, DateTimeKind.Utc), true, "Fall 2025", new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, null, null });
 
             migrationBuilder.InsertData(
                 table: "Departments",
@@ -549,30 +531,8 @@ namespace DataAccessLayer.Migrations
 
             migrationBuilder.InsertData(
                 table: "StudentResults",
-                columns: new[] { "StudentResultId", "CreatedAt", "EnteredByUserId", "Final", "Midterm", "Practical", "SectionSubjectId", "StudentId", "UpdatedAt", "UpdatedByUserId" },
+                columns: new[] { "StudentResultId", "CreatedAt", "CreatedByUserId", "Final", "Midterm", "Practical", "SectionSubjectId", "StudentId", "UpdatedAt", "UpdatedByUserId" },
                 values: new object[] { 1, new DateTime(2025, 12, 25, 0, 0, 0, 0, DateTimeKind.Utc), 1, 40m, 45m, 10m, 1, 1, null, null });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Announcements_CreatedByUserId",
-                table: "Announcements",
-                column: "CreatedByUserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Announcements_ImageId",
-                table: "Announcements",
-                column: "ImageId",
-                unique: true,
-                filter: "[ImageId] IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Announcements_UpdatedByUserId",
-                table: "Announcements",
-                column: "UpdatedByUserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Announcements_UserId",
-                table: "Announcements",
-                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Batches_CreatedByUserId",
@@ -605,6 +565,26 @@ namespace DataAccessLayer.Migrations
                 name: "IX_Colleges_UpdatedByUserId",
                 table: "Colleges",
                 column: "UpdatedByUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ContentItems_CreatedByUserId",
+                table: "ContentItems",
+                column: "CreatedByUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ContentItems_Post_UserId",
+                table: "ContentItems",
+                column: "Post_UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ContentItems_UpdatedByUserId",
+                table: "ContentItems",
+                column: "UpdatedByUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ContentItems_UserId",
+                table: "ContentItems",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Departments_CollegeId_Name",
@@ -644,6 +624,13 @@ namespace DataAccessLayer.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Images_ContentItemId",
+                table: "Images",
+                column: "ContentItemId",
+                unique: true,
+                filter: "[ContentItemId] IS NOT NULL");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Images_UpdatedByUserId",
                 table: "Images",
                 column: "UpdatedByUserId");
@@ -652,28 +639,6 @@ namespace DataAccessLayer.Migrations
                 name: "IX_Images_UploadedByUserId",
                 table: "Images",
                 column: "UploadedByUserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Posts_CreatedByUserId",
-                table: "Posts",
-                column: "CreatedByUserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Posts_ImageId",
-                table: "Posts",
-                column: "ImageId",
-                unique: true,
-                filter: "[ImageId] IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Posts_UpdatedByUserId",
-                table: "Posts",
-                column: "UpdatedByUserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Posts_UserId",
-                table: "Posts",
-                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RefreshTokens_TokenHash",
@@ -714,9 +679,10 @@ namespace DataAccessLayer.Migrations
                 column: "CreatedByUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_SectionSubjects_SectionId",
+                name: "IX_SectionSubjects_SectionId_SubjectId_SemesterId",
                 table: "SectionSubjects",
-                column: "SectionId");
+                columns: new[] { "SectionId", "SubjectId", "SemesterId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_SectionSubjects_SemesterId",
@@ -739,14 +705,27 @@ namespace DataAccessLayer.Migrations
                 column: "CreatedByUserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Semesters_UniversityId",
+                table: "Semesters",
+                column: "UniversityId",
+                unique: true,
+                filter: "[IsCurrent] = 1");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Semesters_UniversityId_Name",
+                table: "Semesters",
+                columns: new[] { "UniversityId", "Name" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Semesters_UpdatedByUserId",
                 table: "Semesters",
                 column: "UpdatedByUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_StudentResults_EnteredByUserId",
+                name: "IX_StudentResults_CreatedByUserId",
                 table: "StudentResults",
-                column: "EnteredByUserId");
+                column: "CreatedByUserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_StudentResults_SectionSubjectId",
@@ -754,9 +733,10 @@ namespace DataAccessLayer.Migrations
                 column: "SectionSubjectId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_StudentResults_StudentId",
+                name: "IX_StudentResults_StudentId_SectionSubjectId",
                 table: "StudentResults",
-                column: "StudentId");
+                columns: new[] { "StudentId", "SectionSubjectId" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_StudentResults_UpdatedByUserId",
@@ -874,37 +854,6 @@ namespace DataAccessLayer.Migrations
                 unique: true);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_Announcements_Images_ImageId",
-                table: "Announcements",
-                column: "ImageId",
-                principalTable: "Images",
-                principalColumn: "ImageId",
-                onDelete: ReferentialAction.Restrict);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Announcements_Users_CreatedByUserId",
-                table: "Announcements",
-                column: "CreatedByUserId",
-                principalTable: "Users",
-                principalColumn: "UserId",
-                onDelete: ReferentialAction.Restrict);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Announcements_Users_UpdatedByUserId",
-                table: "Announcements",
-                column: "UpdatedByUserId",
-                principalTable: "Users",
-                principalColumn: "UserId",
-                onDelete: ReferentialAction.Restrict);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Announcements_Users_UserId",
-                table: "Announcements",
-                column: "UserId",
-                principalTable: "Users",
-                principalColumn: "UserId");
-
-            migrationBuilder.AddForeignKey(
                 name: "FK_Batches_Departments_DepartmentId",
                 table: "Batches",
                 column: "DepartmentId",
@@ -953,6 +902,36 @@ namespace DataAccessLayer.Migrations
                 onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
+                name: "FK_ContentItems_Users_CreatedByUserId",
+                table: "ContentItems",
+                column: "CreatedByUserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_ContentItems_Users_Post_UserId",
+                table: "ContentItems",
+                column: "Post_UserId",
+                principalTable: "Users",
+                principalColumn: "UserId");
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_ContentItems_Users_UpdatedByUserId",
+                table: "ContentItems",
+                column: "UpdatedByUserId",
+                principalTable: "Users",
+                principalColumn: "UserId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
+                name: "FK_ContentItems_Users_UserId",
+                table: "ContentItems",
+                column: "UserId",
+                principalTable: "Users",
+                principalColumn: "UserId");
+
+            migrationBuilder.AddForeignKey(
                 name: "FK_Departments_Users_CreatedByUserId",
                 table: "Departments",
                 column: "CreatedByUserId",
@@ -999,29 +978,6 @@ namespace DataAccessLayer.Migrations
                 principalTable: "Users",
                 principalColumn: "UserId",
                 onDelete: ReferentialAction.Restrict);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Posts_Users_CreatedByUserId",
-                table: "Posts",
-                column: "CreatedByUserId",
-                principalTable: "Users",
-                principalColumn: "UserId",
-                onDelete: ReferentialAction.Restrict);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Posts_Users_UpdatedByUserId",
-                table: "Posts",
-                column: "UpdatedByUserId",
-                principalTable: "Users",
-                principalColumn: "UserId",
-                onDelete: ReferentialAction.Restrict);
-
-            migrationBuilder.AddForeignKey(
-                name: "FK_Posts_Users_UserId",
-                table: "Posts",
-                column: "UserId",
-                principalTable: "Users",
-                principalColumn: "UserId");
 
             migrationBuilder.AddForeignKey(
                 name: "FK_RefreshTokens_Users_UserId",
@@ -1080,6 +1036,14 @@ namespace DataAccessLayer.Migrations
                 onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
+                name: "FK_Semesters_Universities_UniversityId",
+                table: "Semesters",
+                column: "UniversityId",
+                principalTable: "Universities",
+                principalColumn: "UniversityId",
+                onDelete: ReferentialAction.Restrict);
+
+            migrationBuilder.AddForeignKey(
                 name: "FK_Semesters_Users_CreatedByUserId",
                 table: "Semesters",
                 column: "CreatedByUserId",
@@ -1104,9 +1068,9 @@ namespace DataAccessLayer.Migrations
                 onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_StudentResults_Users_EnteredByUserId",
+                name: "FK_StudentResults_Users_CreatedByUserId",
                 table: "StudentResults",
-                column: "EnteredByUserId",
+                column: "CreatedByUserId",
                 principalTable: "Users",
                 principalColumn: "UserId",
                 onDelete: ReferentialAction.Restrict);
@@ -1172,13 +1136,10 @@ namespace DataAccessLayer.Migrations
                 table: "Universities");
 
             migrationBuilder.DropTable(
-                name: "Announcements");
-
-            migrationBuilder.DropTable(
                 name: "Employees");
 
             migrationBuilder.DropTable(
-                name: "Posts");
+                name: "Images");
 
             migrationBuilder.DropTable(
                 name: "RefreshTokens");
@@ -1190,7 +1151,7 @@ namespace DataAccessLayer.Migrations
                 name: "UserRoles");
 
             migrationBuilder.DropTable(
-                name: "Images");
+                name: "ContentItems");
 
             migrationBuilder.DropTable(
                 name: "SectionSubjects");

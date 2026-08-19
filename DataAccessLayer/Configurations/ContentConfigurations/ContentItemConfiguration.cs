@@ -1,5 +1,6 @@
 ﻿using Domain.Entities.Content;
 using Domain.Entities.Enums;
+using Domain.Entities.Images;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
@@ -26,8 +27,11 @@ namespace DataAccessLayer.Configurations.ContentConfigurations
 
             builder.Property(c => c.Scope).HasConversion<byte>().HasColumnType("TINYINT").IsRequired();
 
-            builder.HasOne(c => c.Image).WithOne(i => i.Announcement)
-         .IsRequired(false).HasForeignKey<Announcement>(p => p.ImageId).OnDelete(DeleteBehavior.Restrict);
+            builder.HasOne(c => c.Image)
+                     .WithOne(i => i.ContentItem)
+                     .HasForeignKey<Image>(i => i.ContentItemId)
+                     .IsRequired(false)
+                     .OnDelete(DeleteBehavior.Restrict);
 
             builder.ToTable("ContentItems");
         }

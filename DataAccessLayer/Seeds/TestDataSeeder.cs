@@ -53,6 +53,7 @@ namespace DataAccessLayer.Seeds
             {
                 Name = "Fall 2025",
                 StartDate = new DateTime(2025, 9, 1),
+                UniversityId = 1,
                 EndDate = new DateTime(2025, 12, 20),
                 IsCurrent = true,
                 CreatedAt = now,
@@ -221,8 +222,8 @@ namespace DataAccessLayer.Seeds
             await db.SaveChangesAsync();
 
             await db.Posts.AddRangeAsync(
-                new Post { Title = "Welcome to Fall 2025", Body = "We welcome all students to the new academic year.", Type = EncontentType.Post,Scope = EnContentScope.Public,ImageId = img1.ImageId, CreatedAt = now, CreatedByUserId = creatorId },
-                new Post { Title = "Library Hours", Body = "The library is open 8 AM – 8 PM daily.", Type = EncontentType.Post,Scope = EnContentScope.Public, ImageId = img2.ImageId, CreatedAt = now, CreatedByUserId = creatorId });
+                new Post { Title = "Welcome to Fall 2025", Body = "We welcome all students to the new academic year.", Type = EncontentType.Post,Scope = EnContentScope.Public,CreatedAt = now, CreatedByUserId = creatorId },
+                new Post { Title = "Library Hours", Body = "The library is open 8 AM – 8 PM daily.", Type = EncontentType.Post,Scope = EnContentScope.Public,  CreatedAt = now, CreatedByUserId = creatorId });
 
             await db.Announcements.AddRangeAsync(
                 new Announcement { Title = "Midterm Schedule", Body = "Midterm exams begin December 1st.", Type = EncontentType.Announcement,Scope = EnContentScope.Public, CreatedAt = now, CreatedByUserId = creatorId },
