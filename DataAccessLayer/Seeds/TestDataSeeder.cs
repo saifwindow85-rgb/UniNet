@@ -49,18 +49,18 @@ namespace DataAccessLayer.Seeds
             int creatorId = await EnsureSuperAdminAsync(db, roleIds["Super Admin"]);
 
             // ---- Semester (shared) ----
-            var semester = new Semester
-            {
-                Name = "Fall 2025",
-                StartDate = new DateTime(2025, 9, 1),
-                UniversityId = 1,
-                EndDate = new DateTime(2025, 12, 20),
-                IsCurrent = true,
-                CreatedAt = now,
-                CreatedByUserId = creatorId
-            };
-            await db.Semesters.AddAsync(semester);
-            await db.SaveChangesAsync();
+            //var semester = new Semester
+            //{
+            //    Name = "Fall 2025",
+            //    StartDate = new DateTime(2025, 9, 1),
+            //    UniversityId = 2,
+            //    EndDate = new DateTime(2025, 12, 20),
+            //    IsCurrent = true,
+            //    CreatedAt = now,
+            //    CreatedByUserId = creatorId
+            //};
+            //await db.Semesters.AddAsync(semester);
+            //await db.SaveChangesAsync();
 
             // ---- Universities: 2 new + the existing "Hadhramout University" from HasData ----
             var sanaa = new University { Name = "Sana'a University", Description = "A national university in the capital.", CreatedAt = now, CreatedByUserId = creatorId };
@@ -172,23 +172,23 @@ namespace DataAccessLayer.Seeds
                             await db.SaveChangesAsync();
 
                             // Link this section to each of the department's subjects in the current semester.
-                            foreach (var subj in subjects)
-                            {
-                                await db.SectionSubjects.AddAsync(new SectionSubject
-                                {
-                                    SectionId = section.SectionId,
-                                    SubjectId = subj.SubjectId,
-                                    SemesterId = semester.SemesterId,
-                                    LecturerName = "Staff Lecturer",
-                                    CreatedAt = now,
-                                    CreatedByUserId = creatorId
-                                });
-                            }
-                            await db.SaveChangesAsync();
+                        //    foreach (var subj in subjects)
+                        //    {
+                        //        await db.SectionSubjects.AddAsync(new SectionSubject
+                        //        {
+                        //            SectionId = section.SectionId,
+                        //            SubjectId = subj.SubjectId,
+                        //            SemesterId = semester.SemesterId,
+                        //            LecturerName = "Staff Lecturer",
+                        //            CreatedAt = now,
+                        //            CreatedByUserId = creatorId
+                        //        });
+                        //    }
+                        //    await db.SaveChangesAsync();
 
-                            // 4 Students per section.
-                            await CreateStudentsAsync(db, univ.UniversityId, batch.BatchId, section.SectionId,
-                                enrolledStatusId, roleIds["Student"], creatorId, now, count: 4);
+                        //    // 4 Students per section.
+                        //    await CreateStudentsAsync(db, univ.UniversityId, batch.BatchId, section.SectionId,
+                        //        enrolledStatusId, roleIds["Student"], creatorId, now, count: 4);
                         }
                     }
                 }
