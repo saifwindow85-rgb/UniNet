@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مسار تطوّر المطوّر — تقييم طولي عبر أربعة مشاريع</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --surface:#ffffff; --surface-2:#fbfcfd; --ink:#14181f; --ink-2:#4a5464;
+    --ink-3:#78828f; --line:#e2e6eb; --line-2:#eef1f4;
+    --t1:#b4553c; --t2:#c08a2e; --t3:#3f7ea6; --t4:#2e7d5b;
+    --good:#2e7d5b; --warn:#c08a2e; --bad:#b4553c; --accent:#2f5d8a;
+    --mono:"Cascadia Mono","Consolas","SF Mono",ui-monospace,monospace;
+    --sans:"Segoe UI","Noto Sans Arabic","Dubai",Tahoma,system-ui,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0f1218; --surface:#161b23; --surface-2:#1b212a; --ink:#e8ecf1; --ink-2:#a8b3c1;
+      --ink-3:#78828f; --line:#2a323d; --line-2:#222932;
+      --t1:#d97b60; --t2:#e0ad55; --t3:#6fadd4; --t4:#5cae86;
+      --good:#5cae86; --warn:#e0ad55; --bad:#d97b60; --accent:#7aa8d6;
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans);
+    font-size:16px; line-height:1.75; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1120px; margin:0 auto; padding:32px 24px 96px}
+
+  /* ── Header ─────────────────────────────── */
+  header.hero{
+    background:var(--surface); border:1px solid var(--line); border-radius:16px;
+    padding:36px 32px; margin-bottom:28px; position:relative; overflow:hidden;
+  }
+  header.hero::before{
+    content:""; position:absolute; inset-block-start:0; inset-inline:0; height:4px;
+    background:linear-gradient(90deg,var(--t1),var(--t2),var(--t3),var(--t4));
+  }
+  h1{font-size:1.9rem; margin:0 0 8px; letter-spacing:-.01em; line-height:1.35}
+  .sub{color:var(--ink-2); font-size:1.02rem; margin:0 0 20px}
+  .meta-row{display:flex; flex-wrap:wrap; gap:10px; margin-top:18px}
+  .chip{
+    display:inline-flex; align-items:center; gap:7px; background:var(--surface-2);
+    border:1px solid var(--line); border-radius:999px; padding:6px 14px;
+    font-size:.82rem; color:var(--ink-2);
+  }
+  .chip b{color:var(--ink); font-weight:600}
+  .chip.ok{border-color:color-mix(in srgb,var(--good) 45%,var(--line)); color:var(--good)}
+  .chip.ok b{color:var(--good)}
+
+  /* ── Sections ───────────────────────────── */
+  section{
+    background:var(--surface); border:1px solid var(--line); border-radius:14px;
+    padding:28px 30px; margin-bottom:22px;
+  }
+  h2{
+    font-size:1.24rem; margin:0 0 6px; padding-bottom:14px; border-bottom:1px solid var(--line);
+    display:flex; align-items:baseline; gap:12px; letter-spacing:-.005em;
+  }
+  h2 .num{
+    font-family:var(--mono); font-size:.78rem; color:var(--accent); font-weight:700;
+    background:color-mix(in srgb,var(--accent) 11%,transparent);
+    border-radius:6px; padding:3px 9px; flex:none;
+  }
+  h2 .en{font-size:.74rem; color:var(--ink-3); font-weight:400; margin-inline-start:auto; letter-spacing:0}
+  h3{font-size:1.02rem; margin:26px 0 10px; color:var(--ink)}
+  h4{font-size:.92rem; margin:18px 0 8px; color:var(--ink-2); font-weight:600}
+  p{margin:0 0 14px; color:var(--ink-2)}
+  p.lead{color:var(--ink); font-size:1.04rem}
+  strong{color:var(--ink); font-weight:650}
+  ul{margin:0 0 14px; padding-inline-start:22px; color:var(--ink-2)}
+  li{margin-bottom:7px}
+  code{
+    font-family:var(--mono); font-size:.86em; background:var(--surface-2);
+    border:1px solid var(--line-2); border-radius:5px; padding:1px 6px;
+    direction:ltr; display:inline-block; color:var(--ink);
+  }
+
+  /* ── Tables ─────────────────────────────── */
+  .scroll{overflow-x:auto; margin:16px 0; border-radius:10px; border:1px solid var(--line)}
+  table{width:100%; border-collapse:collapse; font-size:.88rem; min-width:560px}
+  th,td{padding:11px 13px; text-align:right; border-bottom:1px solid var(--line-2)}
+  thead th{
+    background:var(--surface-2); font-weight:650; color:var(--ink);
+    font-size:.8rem; white-space:nowrap; border-bottom:1px solid var(--line);
+  }
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr.total td{background:var(--surface-2); font-weight:700; color:var(--ink)}
+  td.n,th.n{text-align:center; font-family:var(--mono); font-size:.85rem}
+  .ev{font-family:var(--mono); font-size:.78rem; color:var(--ink-2); direction:ltr; text-align:left}
+
+  /* ── Score pills ────────────────────────── */
+  .sc{
+    display:inline-block; min-width:38px; text-align:center; border-radius:6px;
+    padding:2px 8px; font-family:var(--mono); font-weight:700; font-size:.83rem;
+  }
+  .s-low{background:color-mix(in srgb,var(--bad) 16%,transparent); color:var(--bad)}
+  .s-mid{background:color-mix(in srgb,var(--warn) 18%,transparent); color:var(--warn)}
+  .s-ok{background:color-mix(in srgb,var(--t3) 16%,transparent); color:var(--t3)}
+  .s-hi{background:color-mix(in srgb,var(--good) 16%,transparent); color:var(--good)}
+  .delta{font-family:var(--mono); font-size:.8rem; font-weight:700}
+  .up{color:var(--good)} .flat{color:var(--ink-3)} .down{color:var(--bad)}
+
+  /* ── Timeline ───────────────────────────── */
+  .tl{position:relative; margin:24px 0 8px; padding-inline-start:0}
+  .tl::before{
+    content:""; position:absolute; inset-inline-start:11px; inset-block:6px 6px; width:2px;
+    background:linear-gradient(180deg,var(--t1),var(--t2),var(--t3),var(--t4));
+  }
+  .tl-item{position:relative; padding-inline-start:38px; padding-bottom:26px}
+  .tl-item:last-child{padding-bottom:0}
+  .tl-dot{
+    position:absolute; inset-inline-start:4px; inset-block-start:5px; width:16px; height:16px;
+    border-radius:50%; border:3px solid var(--surface);
+  }
+  .tl-head{display:flex; flex-wrap:wrap; align-items:baseline; gap:10px; margin-bottom:4px}
+  .tl-name{font-weight:700; font-size:1.04rem; color:var(--ink)}
+  .tl-date{font-family:var(--mono); font-size:.78rem; color:var(--ink-3)}
+  .tl-desc{color:var(--ink-2); font-size:.9rem; margin:0}
+
+  /* ── Bars ───────────────────────────────── */
+  .bars{margin:18px 0}
+  .bar-row{display:grid; grid-template-columns:180px 1fr 116px; gap:14px; align-items:center; margin-bottom:9px; font-size:.85rem}
+  .bar-lbl{color:var(--ink-2); text-align:start}
+  .bar-track{background:var(--surface-2); border:1px solid var(--line-2); border-radius:6px; height:26px; position:relative; overflow:hidden}
+  .bar-a,.bar-b{position:absolute; inset-block-start:0; inset-inline-start:0; height:50%; border-start-start-radius:5px; border-end-start-radius:5px}
+  .bar-a{background:color-mix(in srgb,var(--t1) 55%,transparent)}
+  .bar-b{inset-block-start:50%; background:var(--t4)}
+  .bar-val{font-family:var(--mono); font-size:.78rem; color:var(--ink-2); text-align:start; white-space:nowrap}
+  .legend{display:flex; gap:18px; font-size:.8rem; color:var(--ink-2); margin-bottom:14px; flex-wrap:wrap}
+  .legend i{display:inline-block; width:14px; height:10px; border-radius:3px; margin-inline-end:6px; vertical-align:middle}
+
+  /* ── Cards ──────────────────────────────── */
+  .grid2{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:14px; margin:16px 0}
+  .card{background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:16px 18px}
+  .card h4{margin:0 0 10px; font-size:.88rem; display:flex; align-items:center; gap:8px}
+  .card ul{margin:0; padding-inline-start:20px; font-size:.87rem}
+  .card li{margin-bottom:6px}
+  .card.g{border-inline-start:3px solid var(--good)}
+  .card.w{border-inline-start:3px solid var(--warn)}
+  .card.b{border-inline-start:3px solid var(--bad)}
+  .card.a{border-inline-start:3px solid var(--accent)}
+
+  /* ── Transition blocks ──────────────────── */
+  .trans{border:1px solid var(--line); border-radius:12px; padding:20px 22px; margin:18px 0; background:var(--surface-2)}
+  .trans-head{display:flex; flex-wrap:wrap; align-items:center; gap:12px; margin-bottom:6px; padding-bottom:12px; border-bottom:1px solid var(--line)}
+  .trans-title{font-weight:700; font-size:1rem}
+  .trans-stat{font-family:var(--mono); font-size:.82rem; background:var(--surface); border:1px solid var(--line); border-radius:6px; padding:3px 10px; color:var(--good)}
+
+  /* ── Evidence formula ───────────────────── */
+  .formula{
+    background:var(--surface-2); border:1px solid var(--line); border-inline-start:3px solid var(--accent);
+    border-radius:10px; padding:14px 18px; margin:14px 0; font-size:.88rem; color:var(--ink-2);
+  }
+  .formula b{color:var(--ink)}
+
+  /* ── Quote ──────────────────────────────── */
+  blockquote{
+    margin:16px 0; padding:14px 20px; background:var(--surface-2);
+    border-inline-start:3px solid var(--accent); border-radius:0 10px 10px 0;
+    color:var(--ink); font-size:.95rem;
+  }
+  blockquote p:last-child{margin-bottom:0}
+
+  /* ── Chart ──────────────────────────────── */
+  .chart-box{background:var(--surface-2); border:1px solid var(--line); border-radius:12px; padding:18px; margin:18px 0; overflow-x:auto}
+  svg{display:block; max-width:100%; height:auto; min-width:640px}
+
+  /* ── Readiness ──────────────────────────── */
+  .rd{display:grid; grid-template-columns:190px 1fr 60px; gap:14px; align-items:center; margin-bottom:14px; font-size:.9rem}
+  .rd-lbl{color:var(--ink)}
+  .rd-track{background:var(--surface-2); border:1px solid var(--line-2); border-radius:999px; height:14px; overflow:hidden}
+  .rd-fill{height:100%; border-radius:999px}
+  .rd-pct{font-family:var(--mono); font-weight:700; font-size:.88rem; text-align:start}
+
+  footer{text-align:center; color:var(--ink-3); font-size:.8rem; padding:28px 0 0; border-top:1px solid var(--line); margin-top:32px}
+
+  @media (max-width:640px){
+    .wrap{padding:18px 14px 60px}
+    section{padding:22px 18px}
+    .bar-row{grid-template-columns:1fr; gap:5px}
+    .bar-lbl{font-weight:600; color:var(--ink)}
+    .rd{grid-template-columns:1fr; gap:5px}
+    h2{flex-wrap:wrap}
+    h2 .en{margin-inline-start:0; width:100%}
+  }
+  @media print{
+    body{background:#fff} section{break-inside:avoid; box-shadow:none}
+    .wrap{max-width:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>مسار تطوّر المطوّر — تقييم طولي عبر أربعة مشاريع</h1>
+  <p class="sub">Longitudinal Developer Skill &amp; Level Assessment · مطوّر ‎.NET Backend · من ديسمبر 2025 إلى أغسطس 2026</p>
+  <div class="meta-row">
+    <span class="chip">المدى الزمني · <b>‏8 أشهر</b></span>
+    <span class="chip">المشاريع · <b>‏4</b></span>
+    <span class="chip">إجمالي الـ Commits · <b>‏307</b></span>
+    <span class="chip">الدرجة الحالية · <b>‏72 / 100</b></span>
+    <span class="chip ok">✔ تحقّق تشغيلي مباشر · <b>Build + EF Model</b></span>
+  </div>
+</header>
+
+<!-- ═══════════ 1 ═══════════ -->
+<section>
+  <h2><span class="num">01</span> الخلاصة التنفيذية <span class="en">Executive Summary</span></h2>
+
+  <p class="lead">خلال ثمانية أشهر انتقل المطوّر من كتابة <strong>تطبيق سطح مكتب ثلاثي الطبقات اسميًّا</strong> — طبقاته منفصلة بالمجلدات لا بالاعتماديات، وبلا أي واجهة (<code>interface</code>) واحدة في 24,800 سطر — إلى بناء <strong>نظام ويب متعدّد المستأجرين (Multi-Tenant)</strong> بمعمارية مفروضة على مستوى مراجع المشاريع، ونظام تفويض قائم على الموارد والنطاق مبنيّ من الصفر، ومخطط قاعدة بيانات يفرض قواعد العمل إعلاميًّا عبر فهارس مُصفّاة وأعمدة محسوبة مخزَّنة.</p>
+
+  <p>الدرجة الكلية ارتفعت من <strong>28</strong> إلى <strong>72</strong> من 100 — أي بزيادة <strong>157% نسبةً إلى التقييم الأول</strong>. المستوى الفعلي الحالي: <strong>Strong Junior / Early Mid-Level</strong>، على حدّ الشريحة العليا مباشرةً.</p>
+
+  <p>الملاحظة الجوهرية في هذا المسار أنّ <strong>النمو لم يكن متجانسًا</strong>. محاور التصميم (المعمارية، قاعدة البيانات، الأمن، حلّ المشكلات) نمت نموًّا حادًّا ووصلت إلى نطاق <strong>Mid-level حقيقي (80–88)</strong>. أمّا محاور <strong>التحقّق</strong> — الاختبارات والانضباط التشغيلي — فبقيت متأخّرة بفارق يتّسع لا يضيق. محور الاختبارات تحديدًا سجّل <strong>10/100 في المشاريع الأربعة جميعًا بلا استثناء</strong>: صفر اختبارات في 307 commits و50,600 سطر.</p>
+
+  <div class="formula">
+    <b>الأثر الكمّي لهذه الفجوة الواحدة:</b> محور الاختبارات وحده يقتطع <strong>6 نقاط</strong> من الدرجة الكلية بوزنه 10%. لو ارتفع من 10 إلى 70 فقط — أي عشرون اختبارًا معقولًا — لقفزت الدرجة الكلية من <strong>72 إلى 77.7</strong>، أي إلى شريحة <strong>Mid-level Capability</strong> دون أي تحسّن آخر في أي محور. <b>هذه هي المسافة الحقيقية المتبقّية بينه وبين المستوى التالي.</b>
+  </div>
+
+  <p>ثانيًا، وهذا مُثبَت بالكود لا مستنتَجًا: تحوّل نمط الإصلاح لديه من <strong>معالجة الحالات</strong> إلى <strong>قتل فئة الخطأ</strong>. حين واجه حاجةً لتمرير وسيط رابع في 12 موضعًا، لم يمرّره اثنتي عشرة مرّة — بل أعاد تصميم التوقيع إلى <code>IsWithinScope(this UserScope?, GeneralAuthorizationInfo)</code> فصار الإغفال <em>مستحيلًا نحويًّا</em>. وحين اكتشف أنّ <code>refresh</code> يُسقِط نطاق المستخدم، لم يُرقّع مسار التجديد — بل جعل <code>IsGlobal</code> يشترط <code>UserType.SystemAdmin</code> صراحةً، فصار السلوك الافتراضي <strong>fail-closed</strong>. هذا تفكير مهندس مستوى أعلى من درجته الرقمية.</p>
+
+  <h4>حالة التحقّق التشغيلي — تحقّقتُ منها بنفسي عند إعداد هذا التقرير</h4>
+  <p>ملف <code>DEVELOPER_PROFILE.md</code> المؤرَّخ عند الـ commit <code>d24bef7</code> سجّل تراجُعًا خطيرًا: «التطبيق لا يعمل» و«الهجرة تفشل». <strong>شغّلتُ الفحوص بنفسي على الحالة الراهنة، والنتيجة أنّ هذا البند أُغلق:</strong></p>
+  <ul>
+    <li><code>dotnet build UniNet.slnx</code> ← <strong>نجح: 0 تحذير، 0 خطأ</strong> (مع <code>TreatWarningsAsErrors</code> مفعّلًا).</li>
+    <li><code>dotnet ef dbcontext info</code> ← <strong>نجح</strong>؛ النموذج يُبنى فعليًّا.</li>
+    <li><code>dotnet ef migrations has-pending-model-changes</code> ← <strong>«No changes have been made to the model since the last migration»</strong> — النموذج مطابق للهجرة.</li>
+  </ul>
+  <p>أي أنّ الـ commits الثلاثة الأخيرة (<code>ce3120e</code>، <code>2ce1682</code>، <code>04fa599</code>) عالجت التراجُع خلال يومين عبر ضغط الهجرات في <code>InitialCleanSchema</code> واحدة نظيفة. <strong>سرعة الاستجابة للنقد مؤشّر إيجابي قوي</strong> — لكنّه لا يُلغي التشخيص الأصلي: الاكتشاف جاء من مراجعة خارجية، لا من فحص ذاتي قبل الدفع. الآليّة التي تمنع التكرار (خطوة تحقّق تشغيلي داخل CI) <strong>ما زالت غير موجودة</strong>.</p>
+
+  <h4>الجاهزية المهنية</h4>
+  <p>جاهز <strong>بلا تحفّظ</strong> للتدريب، وجاهز تقنيًّا <strong>لوظيفة Junior .NET Backend</strong> بنسبة عالية. سيتفوّق بوضوح في أسئلة EF Core وتصميم التفويض والمعمارية — وهي أسئلة يتعثّر فيها كثير من المتقدّمين لوظائف Mid. وسيتعثّر في سؤالين اثنين فقط: <em>«أرِني اختباراتك»</em> و<em>«كيف تتأكّد أنّ ما دفعته يعمل؟»</em>.</p>
+</section>
+
+<!-- ═══════════ 2 ═══════════ -->
+<section>
+  <h2><span class="num">02</span> الخط الزمني لتطوّر المطوّر <span class="en">Developer Growth Timeline</span></h2>
+
+  <div class="tl">
+    <div class="tl-item">
+      <span class="tl-dot" style="background:var(--t1)"></span>
+      <div class="tl-head">
+        <span class="tl-name">DVLD(19)</span>
+        <span class="tl-date">2025-12-13 → 2026-01</span>
+        <span class="sc s-low">28</span>
+      </div>
+      <p class="tl-desc">نظام إدارة رخص قيادة · WinForms · ‎.NET Framework 4.7.2 · ADO.NET خام · 128 ملف / 24,814 سطر · 2 commits</p>
+    </div>
+    <div class="tl-item">
+      <span class="tl-dot" style="background:var(--t2)"></span>
+      <div class="tl-head">
+        <span class="tl-name">WinSmartShope</span>
+        <span class="tl-date">2026-03-12 → 2026-04-02</span>
+        <span class="sc s-mid">47</span>
+      </div>
+      <p class="tl-desc">إدارة متجر وحسابات · WinForms + Clean-ish · ‎.NET 8 · EF Core 8 · 41 ملف / 5,216 سطر · 20 commits</p>
+    </div>
+    <div class="tl-item">
+      <span class="tl-dot" style="background:var(--t3)"></span>
+      <div class="tl-head">
+        <span class="tl-name">BarshaiedAPI</span>
+        <span class="tl-date">2026-04-13 → 2026-06-19</span>
+        <span class="sc s-ok">60</span>
+      </div>
+      <p class="tl-desc">أول Web API · ASP.NET Core 8 · JWT + Refresh Rotation · UoW · FluentValidation · 87 ملف / 5,203 سطر · 107 commits</p>
+    </div>
+    <div class="tl-item">
+      <span class="tl-dot" style="background:var(--t4)"></span>
+      <div class="tl-head">
+        <span class="tl-name">UniNet</span>
+        <span class="tl-date">2026-06-26 → 2026-08-20 (الحالي)</span>
+        <span class="sc s-ok">72</span>
+      </div>
+      <p class="tl-desc">نظام جامعي متعدّد المستأجرين · 5 مشاريع · Contracts مشتركة · نطاق قائم على الـ Claims · CI · 228 ملف / 15,420 سطر · 178 commits</p>
+    </div>
+  </div>
+
+  <div class="scroll">
+  <table>
+    <thead><tr>
+      <th>#</th><th>التاريخ</th><th>المشروع / المرحلة</th><th class="n">الدرجة</th>
+      <th>المستوى المقدَّر</th><th class="n">الثقة</th><th>أساس الثقة</th>
+    </tr></thead>
+    <tbody>
+      <tr><td class="n">T1</td><td class="ev">2025-12 → 2026-01</td><td><b>DVLD(19)</b></td><td class="n"><span class="sc s-low">28</span></td><td>Beginner</td><td class="n">متوسطة</td><td>الكود كامل، لكن commitان فقط — لا تاريخ تدريجي يكشف السلوك</td></tr>
+      <tr><td class="n">T2</td><td class="ev">2026-03-12 → 04-02</td><td><b>WinSmartShope</b></td><td class="n"><span class="sc s-mid">47</span></td><td>Junior (مبكّر)</td><td class="n">متوسطة–عالية</td><td>20 commit + فرع ميزة + وثيقة تعلّم ذاتي</td></tr>
+      <tr><td class="n">T3</td><td class="ev">2026-04-13 → 06-19</td><td><b>BarshaiedAPI</b></td><td class="n"><span class="sc s-ok">60</span></td><td>Junior (متمكّن)</td><td class="n">عالية</td><td>107 commits، 4 فروع، نطاق وظيفي كامل</td></tr>
+      <tr><td class="n">T4</td><td class="ev">2026-06-26 → 08-20</td><td><b>UniNet</b></td><td class="n"><span class="sc s-ok">72</span></td><td>Strong Junior / Early Mid</td><td class="n">عالية جدًّا</td><td>178 commits، 14 فرعًا، CI، توثيق ذاتي، <b>+ فحوص تشغيلية نفّذتُها مباشرةً</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p style="font-size:.85rem; color:var(--ink-3)">‏⚠ <strong>فجوة رصد:</strong> الفترة من يناير إلى منتصف مارس 2026 (نحو 8 أسابيع) لا يغطيها أي مستودع من المستودعات الأربعة. القفزة من T1 إلى T2 حقيقية ومُثبَتة بالكود، لكن <em>مسارها</em> غير مرصود — ومن المرجّح أنّها تضمّنت تعلّمًا نظريًّا مكثّفًا لا يظهر في الـ commits.</p>
+</section>
+
+<!-- ═══════════ 3 ═══════════ -->
+<section>
+  <h2><span class="num">03</span> الدرجات حسب الفترة والمحاور <span class="en">Score by Period &amp; Axes Breakdown</span></h2>
+
+  <div class="scroll">
+  <table>
+    <thead><tr>
+      <th>المحور</th><th class="n">الوزن</th>
+      <th class="n">T1<br><span style="font-weight:400;font-size:.72rem">DVLD</span></th>
+      <th class="n">T2<br><span style="font-weight:400;font-size:.72rem">WinSmart</span></th>
+      <th class="n">T3<br><span style="font-weight:400;font-size:.72rem">Barshaied</span></th>
+      <th class="n">T4<br><span style="font-weight:400;font-size:.72rem">UniNet</span></th>
+      <th class="n">Δ الكلي</th>
+    </tr></thead>
+    <tbody>
+      <tr><td>أساسيات البرمجة</td><td class="n">10%</td><td class="n"><span class="sc s-low">32</span></td><td class="n"><span class="sc s-mid">58</span></td><td class="n"><span class="sc s-ok">68</span></td><td class="n"><span class="sc s-hi">78</span></td><td class="n delta up">+46</td></tr>
+      <tr><td>معمارية البرمجيات</td><td class="n">15%</td><td class="n"><span class="sc s-low">30</span></td><td class="n"><span class="sc s-ok">62</span></td><td class="n"><span class="sc s-ok">70</span></td><td class="n"><span class="sc s-hi">84</span></td><td class="n delta up">+54</td></tr>
+      <tr><td>هندسة الـ Backend</td><td class="n">15%</td><td class="n"><span class="sc s-low">25</span></td><td class="n"><span class="sc s-low">40</span></td><td class="n"><span class="sc s-ok">72</span></td><td class="n"><span class="sc s-hi">80</span></td><td class="n delta up">+55</td></tr>
+      <tr><td>قواعد البيانات والوصول للبيانات</td><td class="n">10%</td><td class="n"><span class="sc s-mid">42</span></td><td class="n"><span class="sc s-ok">65</span></td><td class="n"><span class="sc s-ok">70</span></td><td class="n"><span class="sc s-hi">88</span></td><td class="n delta up">+46</td></tr>
+      <tr><td>هندسة الأمن</td><td class="n">10%</td><td class="n"><span class="sc s-low">28</span></td><td class="n"><span class="sc s-low">32</span></td><td class="n"><span class="sc s-hi">74</span></td><td class="n"><span class="sc s-hi">82</span></td><td class="n delta up">+54</td></tr>
+      <tr><td>الاختبارات وضبط الجودة</td><td class="n">10%</td><td class="n"><span class="sc s-low">10</span></td><td class="n"><span class="sc s-low">10</span></td><td class="n"><span class="sc s-low">10</span></td><td class="n"><span class="sc s-low">10</span></td><td class="n delta flat">0</td></tr>
+      <tr><td>جودة الكود وقابلية الصيانة</td><td class="n">10%</td><td class="n"><span class="sc s-low">28</span></td><td class="n"><span class="sc s-mid">50</span></td><td class="n"><span class="sc s-mid">52</span></td><td class="n"><span class="sc s-ok">66</span></td><td class="n delta up">+38</td></tr>
+      <tr><td>حلّ المشكلات والاستدلال الهندسي</td><td class="n">10%</td><td class="n"><span class="sc s-low">32</span></td><td class="n"><span class="sc s-mid">58</span></td><td class="n"><span class="sc s-ok">65</span></td><td class="n"><span class="sc s-hi">80</span></td><td class="n delta up">+48</td></tr>
+      <tr><td>التنقيح والانضباط التشغيلي</td><td class="n">5%</td><td class="n"><span class="sc s-low">22</span></td><td class="n"><span class="sc s-low">35</span></td><td class="n"><span class="sc s-mid">45</span></td><td class="n"><span class="sc s-mid">58</span></td><td class="n delta up">+36</td></tr>
+      <tr><td>النضج الهندسي</td><td class="n">5%</td><td class="n"><span class="sc s-low">20</span></td><td class="n"><span class="sc s-mid">48</span></td><td class="n"><span class="sc s-mid">52</span></td><td class="n"><span class="sc s-hi">76</span></td><td class="n delta up">+56</td></tr>
+      <tr class="total"><td>الدرجة المرجّحة</td><td class="n">100%</td><td class="n">28</td><td class="n">47</td><td class="n">60</td><td class="n">72</td><td class="n delta up">+44</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="formula">
+    <b>ملاحظة معايرة مهمّة على محور «هندسة الـ Backend» في T1 و T2:</b> المشروعان تطبيقا سطح مكتب (WinForms)، فلا يمكن أن يحتويا REST API. الدرجة المنخفضة هنا <strong>ليست حكمًا على أداء المطوّر</strong> بل انعكاس لغياب النطاق. لتفادي تشويه المسار، قُيِّم المحور في T1/T2 على ما يقبل القياس فعلًا — حدود الطبقات، فصل منطق العمل عن الواجهة، والتحقّق من المدخلات — لا على غياب الـ HTTP. <b>الجزء الحقيقي من القفزة T2→T3 في هذا المحور هو مهارة مكتسَبة، لا تغيّر نوع مشروع فحسب.</b>
+  </div>
+</section>
+
+<!-- ═══════════ 4 ═══════════ -->
+<section>
+  <h2><span class="num">04</span> مصفوفة المهارات والنمو الطولي <span class="en">Skill Matrix &amp; Longitudinal Growth</span></h2>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th>البُعد</th><th>T1 — DVLD</th><th>T4 — UniNet</th><th class="n">الاتجاه</th></tr></thead>
+    <tbody>
+      <tr><td><b>التجريد</b></td><td><b>صفر</b> واجهة في الحلّ كلّه؛ استدعاءات ساكنة (<code>static</code>) مباشرة بين الطبقات</td><td>واجهات الخدمات والمستودعات كلّها في <code>Domain</code>؛ الاعتماد على التجريد لا على التنفيذ</td><td class="n delta up">↗↗</td></tr>
+      <tr><td><b>اتجاه الاعتماديات</b></td><td>اسميّ — <code>DataTable</code> يتسرّب من طبقة البيانات إلى نماذج الواجهة مباشرةً</td><td>مفروض بمراجع الـ <code>csproj</code>؛ لا تسرّب لـ EF إلى <code>Application</code> ولا لـ <code>HttpContext</code> تحت طبقة الويب</td><td class="n delta up">↗↗</td></tr>
+      <tr><td><b>التزامن</b></td><td><b>0</b> استخدام لـ <code>async</code> — حجب كامل لخيط الواجهة عند كل استعلام</td><td><b>255</b> استخدامًا لـ <code>async Task</code> عبر كل الطبقات</td><td class="n delta up">↗↗</td></tr>
+      <tr><td><b>الوصول للبيانات</b></td><td>ADO.NET خام، <code>SELECT *</code>، اتصال يُغلَق يدويًّا في <code>finally</code></td><td>EF Core 8، إسقاط عبر <code>Expression&lt;Func&lt;&gt;&gt;</code>، <code>AsNoTracking</code>، UoW بمعاملات</td><td class="n delta up">↗↗</td></tr>
+      <tr><td><b>قيود قاعدة البيانات</b></td><td>لا فهارس ولا قيود معرَّفة في الكود إطلاقًا</td><td>20 فهرسًا فريدًا، فهارس مركّبة ومُصفّاة، عمود محسوب مخزَّن، 31 سياسة حذف صريحة</td><td class="n delta up">↗↗</td></tr>
+      <tr><td><b>معالجة الأخطاء</b></td><td><code>catch(Exception ex) { Console.WriteLine(...) }</code> — في تطبيق رسومي لا Console له، فالخطأ <b>يختفي تمامًا</b></td><td>Middleware مركزي + مغلّف نتائج (<code>AddUpdateServiceResponse</code>) + تصنيف أخطاء يُترجَم إلى رموز HTTP</td><td class="n delta up">↗↗</td></tr>
+      <tr><td><b>الأمن</b></td><td>استعلامات مُعلَّمة فقط (218 <code>AddWithValue</code>، صفر دمج نصّي) — وقاية صحيحة من حقن SQL</td><td>JWT + تدوير Refresh Token مع تخزين الـ Hash فقط + BCrypt + تفويض قائم على الموارد والنطاق</td><td class="n delta up">↗↗</td></tr>
+      <tr><td><b>الانضباط الآلي</b></td><td>لا شيء — 2 commits، لا فروع، لا أدوات</td><td><code>TreatWarningsAsErrors</code> + <code>Directory.Build.props</code> + GitHub Actions CI</td><td class="n delta up">↗↗</td></tr>
+      <tr><td><b>التوثيق الذاتي</b></td><td>لا شيء</td><td><code>CLAUDE.md</code>، <code>LEARNING_MAP.md</code>، <code>DEVELOPER_PROFILE.md</code>، ملاحظات مقارنة</td><td class="n delta up">↗↗</td></tr>
+      <tr><td style="color:var(--bad)"><b>الاختبارات</b></td><td><b>صفر</b></td><td><b>صفر</b> — لا مشروع اختبار في أيٍّ من المستودعات الأربعة</td><td class="n delta flat">↔</td></tr>
+      <tr><td style="color:var(--warn)"><b>التحقّق قبل الدفع</b></td><td>غير مرصود (لا تاريخ تدريجي)</td><td>البناء أخضر آليًّا؛ لكن <b>لا خطوة تشغيل أو قاعدة بيانات في CI</b> — والتحقّق ما زال يعتمد على مراجعة خارجية</td><td class="n delta up">↗ جزئي</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ═══════════ 5 ═══════════ -->
+<section>
+  <h2><span class="num">05</span> تحليل الانتقالات التفصيلي <span class="en">Detailed Period Transitions</span></h2>
+
+  <!-- T1 → T2 -->
+  <div class="trans">
+    <div class="trans-head">
+      <span class="trans-title">T1 → T2 · «الصحوة المعمارية»</span>
+      <span class="trans-stat">28 → 47</span>
+      <span class="trans-stat">Absolute +19</span>
+      <span class="trans-stat">Relative +67.9%</span>
+    </div>
+    <p style="margin-top:12px">أكبر قفزة نسبية في المسار كلّه. المطوّر لم يُحسّن ما كان يفعله — بل <strong>استبدل نموذجه الذهني بالكامل</strong>: من «الكود ينادي الكود» إلى «الكود يعتمد على تجريد يُحقَن».</p>
+    <div class="grid2">
+      <div class="card g"><h4>✔ مهارات تحسّنت</h4><ul>
+        <li><b>المعمارية 30→62:</b> ظهور <code>Domain/Interfaces/</code> و<code>ICustomerRepository</code> — أول عكس اعتماد حقيقي</li>
+        <li><b>أساسيات البرمجة 32→58:</b> الانتقال إلى <code>net8.0</code> مع <code>Nullable enable</code>، وتعابير <code>switch</code></li>
+        <li><b>قواعد البيانات 42→65:</b> من ADO.NET خام إلى EF Core 8 مع <code>IEntityTypeConfiguration</code> لكل كيان</li>
+      </ul></div>
+      <div class="card a"><h4>✦ قدرات ظهرت لأوّل مرّة</h4><ul>
+        <li>حاوية حقن اعتماديات (<code>IServiceCollection</code>) — داخل تطبيق WinForms</li>
+        <li>‏EF Core Fluent API + الهجرات + <code>HasData</code> للبذور</li>
+        <li><b>أشجار التعابير:</b> <code>Expression&lt;Func&lt;Customer, CustomerDTO&gt;&gt;</code> — <em>هذا بالضبط هو النمط الذي ما زال مستخدَمًا في UniNet اليوم</em></li>
+        <li><code>AsNoTracking</code> وترقيم الصفحات عبر <code>PagedResult</code></li>
+        <li>‏DTOs تفصل نموذج العرض عن الكيان</li>
+      </ul></div>
+      <div class="card g"><h4>✖ ضعف اختفى</h4><ul>
+        <li>تسرّب <code>DataTable</code> إلى طبقة العرض — انتهى</li>
+        <li>الاستدعاءات الساكنة بين الطبقات — انتهت</li>
+        <li>ابتلاع الاستثناءات عبر <code>Console.WriteLine</code> — اختفى</li>
+      </ul></div>
+      <div class="card w"><h4>⚠ ضعف استمرّ</h4><ul>
+        <li><b>صفر <code>async</code></b> — ما زال كل وصول لقاعدة البيانات متزامنًا</li>
+        <li>معاملات <code>out</code> بدل أنواع نتائج (عادة موروثة من DVLD)</li>
+        <li>الخدمات أصناف ملموسة بلا واجهات — التجريد طُبِّق على المستودعات فقط</li>
+        <li><b>كود ميت:</b> معامل <code>pageSize</code> في <code>FilterCustomers</code> يُستقبَل ثمّ يُتجاهَل لصالح <code>_pageSize</code></li>
+        <li>الاختبارات: صفر</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <!-- T2 → T3 -->
+  <div class="trans">
+    <div class="trans-head">
+      <span class="trans-title">T2 → T3 · «دخول عالم الويب»</span>
+      <span class="trans-stat">47 → 60</span>
+      <span class="trans-stat">Absolute +13</span>
+      <span class="trans-stat">Relative +27.7%</span>
+    </div>
+    <p style="margin-top:12px">هنا تشكّلت <strong>مفردات الحلّ</strong> التي يستخدمها حتى اليوم. مغلّف النتائج، وتصنيف الأخطاء، ووحدة العمل، والتفويض القائم على الموارد — كلّها وُلدت في هذا المشروع، ثمّ نُقلت إلى UniNet ونُقّحت.</p>
+    <div class="grid2">
+      <div class="card g"><h4>✔ مهارات تحسّنت</h4><ul>
+        <li><b>الأمن 32→74:</b> أكبر قفزة محور مفرد في المسار كلّه</li>
+        <li><b>الـ Backend 40→72:</b> 25 نقطة نهاية مع فصل واضح بين المتحكّم والخدمة</li>
+        <li><b>المعمارية 62→70:</b> واجهات للخدمات أيضًا، لا للمستودعات فحسب</li>
+      </ul></div>
+      <div class="card a"><h4>✦ قدرات ظهرت لأوّل مرّة</h4><ul>
+        <li><b><code>async/await</code></b> — 88 استخدامًا، من صفر</li>
+        <li><b>مغلّف النتائج:</b> <code>AddUpdateServiceResponse&lt;T&gt;</code> بمصانع ساكنة</li>
+        <li><b>تصنيف أخطاء:</b> <code>EnErrorTypes</code> يُترجَم إلى رموز HTTP في طبقة الويب</li>
+        <li>‏<code>ExceptionHandlingMiddleware</code> مركزي</li>
+        <li>‏FluentValidation مفصولة عن منطق العمل</li>
+        <li><b>Unit of Work</b> بمعاملات صريحة</li>
+        <li><b>أمن متقدّم:</b> تدوير Refresh Token، تخزين SHA-256 فقط، 64 بايت من <code>RandomNumberGenerator</code>، سلسلة إبطال عبر <code>ReplacedByTokenId</code>، BCrypt</li>
+        <li><b>تفويض قائم على الموارد:</b> <code>UserOwnerOrAdminHandler</code> + سياسة مخصّصة</li>
+        <li>‏<code>ILogger</code> (أول ظهور)</li>
+      </ul></div>
+      <div class="card g"><h4>✖ ضعف اختفى</h4><ul>
+        <li>التزامن الحاجب — عولج جذريًّا</li>
+        <li>غياب أي نموذج لمعالجة الأخطاء — عولج</li>
+        <li>الخدمات بلا واجهات — عولج</li>
+      </ul></div>
+      <div class="card w"><h4>⚠ ضعف استمرّ</h4><ul>
+        <li><b>تكرار غير مُستخرَج:</b> منطق حساب الـ Hash مكرَّر <b>أربع مرّات حرفيًّا</b> داخل <code>RefreshTokenService</code> نفسه</li>
+        <li>‏DTOs داخل <code>Domain</code> — تلويث لطبقة النطاق (يُصحَّح في T4)</li>
+        <li>أخطاء إملائية متكرّرة: <code>RfereshTokens</code>، <code>Repoisory</code>، <code>LigthProduct</code></li>
+        <li>رسائل commit من نوع «Fix Bugs» بلا بيان للسبب</li>
+        <li><b>نيّة بلا متابعة:</b> مجلد <code>.github/</code> أُنشئ ثمّ تُرك <b>فارغًا</b> — CI لن يصل إلّا بعد ثلاثة أشهر</li>
+        <li>الاختبارات: صفر</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <!-- T3 → T4 -->
+  <div class="trans">
+    <div class="trans-head">
+      <span class="trans-title">T3 → T4 · «الانضباط والتعقيد الحقيقي»</span>
+      <span class="trans-stat">60 → 72</span>
+      <span class="trans-stat">Absolute +12</span>
+      <span class="trans-stat">Relative +20.0%</span>
+    </div>
+    <p style="margin-top:12px">التحسّن النسبي هو الأصغر رقميًّا، <strong>لكنّه الأصعب هندسيًّا</strong>. القفزات السابقة كانت «تعلّم أداة جديدة»؛ هذه قفزة في <em>الحُكم الهندسي</em>: تعدّد المستأجرين، وتوحيد بدائيّة التفويض، وفرض قواعد العمل في مخطط قاعدة البيانات، وبناء آليات انضباط تعمل بلا تدخّله.</p>
+    <div class="grid2">
+      <div class="card g"><h4>✔ مهارات تحسّنت</h4><ul>
+        <li><b>قواعد البيانات 70→88:</b> أعلى محور لديه على الإطلاق</li>
+        <li><b>النضج الهندسي 52→76:</b> أكبر قفزة في هذا الانتقال</li>
+        <li><b>المعمارية 70→84:</b> طبقة <code>Contracts</code> مشتركة تُصلح تلويث <code>Domain</code> في T3</li>
+        <li><b>حلّ المشكلات 65→80:</b> الإصلاح على مستوى النوع صار نمطًا ثابتًا</li>
+      </ul></div>
+      <div class="card a"><h4>✦ قدرات ظهرت لأوّل مرّة</h4><ul>
+        <li><b>تعدّد المستأجرين:</b> نطاق محمول في الـ Claims (<code>UniversityId</code>/<code>CollegeId</code>/<code>DepartmentId</code>/<code>BatchId</code>)</li>
+        <li><b>فهرس فريد مُصفّى يفرض قاعدة عمل:</b> <code>HasIndex(s =&gt; s.UniversityId).HasFilter("[IsCurrent] = 1").IsUnique()</code> — «فصل دراسي جارٍ واحد لكل جامعة» مفروض في المحرّك لا في الكود</li>
+        <li><b>عمود محسوب مخزَّن:</b> <code>Total</code> = <code>Midterm + Practical + Final</code></li>
+        <li><b>وراثة TPH:</b> دمج <code>Post</code> و<code>Announcement</code> في <code>ContentItem</code> بمُميِّز</li>
+        <li><b>بدائيّة تفويض موحّدة:</b> <code>IsWithinScope</code> يتقاسمها منطق الخدمة ومعالج التفويض</li>
+        <li><b>انضباط آلي:</b> <code>TreatWarningsAsErrors</code> + <code>Directory.Build.props</code> + GitHub Actions</li>
+        <li><b>سلوك في النطاق:</b> <code>StudentResult.SetGrades()</code> — أول خروج للمنطق من الخدمة إلى الكيان</li>
+        <li><b>رسائل commit اصطلاحية</b> بمتن يشرح السبب (<code>fix(auth): ...</code>)</li>
+      </ul></div>
+      <div class="card g"><h4>✖ ضعف اختفى</h4><ul>
+        <li>‏DTOs في <code>Domain</code> — حُلّت بطبقة <code>Contracts</code></li>
+        <li>الاعتماد على الذاكرة في ضبط الجودة — حُلّ بآليّة المُصرِّف والـ CI</li>
+        <li>تحذيرات البناء: 3 ← <b>0</b>، ومقفلة آليًّا</li>
+        <li>ديون مخطط قاعدة البيانات الخمسة — أُغلقت كلّها في هجرة واحدة</li>
+      </ul></div>
+      <div class="card b"><h4>⚠ ضعف استمرّ / تراجُع</h4><ul>
+        <li><b>الاختبارات: صفر — للمشروع الرابع على التوالي.</b> هذه ليست فجوة معرفة بل فجوة عادة</li>
+        <li><b>تراجُع مؤقّت ومُعالَج:</b> commit <code>d24bef7</code> ترك التطبيق غير قابل للإقلاع وهجرة تفشل على قاعدة نظيفة. <b>أُصلح خلال يومين</b> — وتحقّقتُ من ذلك بنفسي: النموذج يُبنى والهجرة مطابقة</li>
+        <li><b>الآليّة المانعة ما زالت غائبة:</b> الـ CI يقيس <em>التصريف</em> لا <em>التشغيل</em>؛ لا خطوة <code>dbcontext info</code> ولا اختبار فيه</li>
+        <li>بنود صغيرة معلَّقة لأربع جولات (<code>StudentNumber</code>) بينما تُغلق البنود الكبيرة فورًا</li>
+        <li>بقايا كود ومعالجات مُهيّأة لم تُنفَّذ</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <div class="formula">
+    <b>قراءة معدّل النمو:</b> ‎+67.9% ← ‎+27.7% ← ‎+20.0%. تباطؤ النسبة <strong>ليس تباطؤًا في التعلّم</strong> — بل الأثر الحسابي الطبيعي لارتفاع قاعدة المقارنة، مقرونًا بأنّ المكاسب المتبقّية صارت في المحاور الأصعب. الزيادة المطلقة بقيت شبه ثابتة (‎+19، ‎+13، ‎+12) على مدى ثمانية أشهر، <b>وهذا معدّل نمو صحّي ومستدام لا يُظهر أي علامة على الاستقرار عند سقف</b>.
+  </div>
+</section>
+
+<!-- ═══════════ 6 ═══════════ -->
+<section>
+  <h2><span class="num">06</span> تحوّل نمط التفكير <span class="en">Qualitative Mindset Shift</span></h2>
+
+  <h3>‏1. من «معالجة الحالة» إلى «قتل فئة الخطأ»</h3>
+  <div class="formula">
+    <b>Observation:</b> عند الحاجة إلى تمرير وسيط تفويض رابع، كان الحلّ المباشر تعديل 12 موضع استدعاء.<br>
+    <b>Evidence:</b> <code>Contracts/Common/Extensions/EmployeeScopeExtension.cs</code> — أعاد تصميم التوقيع إلى <code>IsWithinScope(this UserScope?, GeneralAuthorizationInfo)</code> وأضاف الخاصية المحسوبة <code>IsGlobal</code>، بدل تمرير الوسيط اثنتي عشرة مرّة.<br>
+    <b>Interpretation:</b> عالج <em>إمكانية</em> الخطأ لا <em>وقوعه</em>؛ فإغفال الوسيط صار مستحيلًا نحويًّا — يرفضه المُصرِّف لا المراجع.<br>
+    <b>Skill Impact:</b> استدلال هندسي على مستوى Mid-level. مؤشّر: مرصود <b>خمس مرّات موثَّقة</b>، آخرها <code>04fa599</code>.
+  </div>
+
+  <h3>‏2. من «الافتراض المفتوح» إلى «الافتراض المغلق» (Fail-Closed)</h3>
+  <div class="formula">
+    <b>Observation:</b> كان <code>IsGlobal</code> يُعيد <code>true</code> ضمنًا حين تكون كل معرّفات النطاق فارغة.<br>
+    <b>Evidence:</b> commit <code>04fa599</code> — <code>Type = UserType.SystemAdmin</code> صار شرطًا صريحًا في <code>TokenUserInfoMapper</code>، فالنطاق العالمي يتطلّب <em>إثباتًا</em> لا <em>غياب نفي</em>.<br>
+    <b>Interpretation:</b> إدراك أنّ «غياب القيد» في سياق أمني يساوي «غياب الحماية». وهو الفرق بين من يكتب تفويضًا ومن يفهم نماذج التهديد.<br>
+    <b>Skill Impact:</b> نضج أمني حقيقي — ويؤكّده اختياره إرجاع <b>404 بدل 403</b> لمنع تسريب وجود المورد.
+  </div>
+
+  <h3>‏3. من «الانضباط بالذاكرة» إلى «الانضباط بالآليّة»</h3>
+  <div class="formula">
+    <b>Observation:</b> تحذيرا <code>CS8602</code> ظلّا يشيران إلى عطل حقيقي في تسجيل دخول الموظفين <b>لجولتين كاملتين</b> دون أن يُلاحَظا.<br>
+    <b>Evidence:</b> <code>Directory.Build.props</code> و<code>.github/workflows/build.yml</code> (كلاهما 2026-08-09) — والتعليق داخل ملف الـ CI يشير صراحةً إلى الـ commit الذي سبّب العطل.<br>
+    <b>Interpretation:</b> لم يَعِد بأن ينتبه أكثر — بل بنى نظامًا يجعل عدم الانتباه <em>غير ممكن</em>. وتوثيق سبب القرار داخل الملف سلوك نادر في هذا المستوى.<br>
+    <b>Skill Impact:</b> النضج الهندسي 52→76. <b>التحفّظ الوحيد:</b> الآليّتان تقيسان التصريف لا التشغيل — وهي بالضبط الثغرة التي نفذ منها التراجُع لاحقًا.
+  </div>
+
+  <h3>‏4. من «حماية الكود» إلى «حماية البيانات»</h3>
+  <div class="formula">
+    <b>Observation:</b> قواعد العمل كانت تُفرض في الخدمات فقط، فتبقى قاعدة البيانات قادرة على قبول حالات غير صالحة.<br>
+    <b>Evidence:</b> <code>SemesterConfiguration.cs:28</code> — فهرس فريد مُصفّى يجعل «أكثر من فصل جارٍ لجامعة واحدة» <em>مستحيلًا في المحرّك</em>، ولو كتب أحدهم خدمة جديدة تتجاهل الفحص.<br>
+    <b>Interpretation:</b> انتقل من الثقة في مسار الكود إلى فرض الثوابت في أدنى طبقة ممكنة — حيث لا يستطيع أي مسار تجاوزها.<br>
+    <b>Skill Impact:</b> هذا هو سبب كون قواعد البيانات محوره الأقوى (88)، وهو مستوى Mid-level بلا تحفّظ.
+  </div>
+
+  <h3>‏5. الفجوة الباقية: من «التفكير» إلى «التحقّق»</h3>
+  <div class="formula">
+    <b>Observation:</b> جودة القرارات التصميمية تسبق جودة التحقّق من أنّ القرار يعمل فعلًا.<br>
+    <b>Evidence:</b> في اليوم نفسه الذي أعاد فيه تصميم بدائيّة التفويض (عمل Mid-level)، دفع commit يترك التطبيق غير قابل للإقلاع (خطأ Junior). والأهم: <b>الاكتشاف جاء من مراجعة خارجية لا من فحص ذاتي</b>.<br>
+    <b>Interpretation:</b> يُنجز «العمل الممل حين يُطلَب صراحةً»، ولا يُنجزه حين لا يُطلَب — والتحقّق من التشغيل هو العمل الممل الذي لا يطلبه أحد.<br>
+    <b>Skill Impact:</b> هذه <b>فجوة سلوك لا فجوة معرفة</b>، وهي السبب الأوحد في بقاء الانضباط التشغيلي عند 58 بينما شقيقاته فوق 80.
+  </div>
+</section>
+
+<!-- ═══════════ 7 ═══════════ -->
+<section>
+  <h2><span class="num">07</span> الخط الزمني المكتشَف للمهارات <span class="en">Discovered Timeline of Skills</span></h2>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th>المهارة / القدرة</th><th class="n">أول ظهور</th><th>الدليل المباشر من الكود</th></tr></thead>
+    <tbody>
+      <tr><td>استعلامات مُعلَّمة (وقاية من حقن SQL)</td><td class="n ev">2025-12</td><td class="ev">ClsDataLayer/* — 218 × AddWithValue, 0 concat</td></tr>
+      <tr><td>فصل الطبقات على مستوى المشاريع</td><td class="n ev">2025-12</td><td class="ev">4 × .csproj (BLL / DAL / UI / Global)</td></tr>
+      <tr><td>الواجهات وعكس الاعتماد (DIP)</td><td class="n ev">2026-03</td><td class="ev">Domain/Interfaces/ICustomerRepository.cs</td></tr>
+      <tr><td>حاوية حقن الاعتماديات</td><td class="n ev">2026-03</td><td class="ev">Application/Dependency Injection/DependencyInjection.cs</td></tr>
+      <tr><td>‏EF Core Fluent API + الهجرات</td><td class="n ev">2026-03</td><td class="ev">Infrastructure/Configurations/*Configuration.cs</td></tr>
+      <tr><td><b>أشجار التعابير للإسقاط</b></td><td class="n ev">2026-03</td><td class="ev">CustomerRepository.CustomerToDTO</td></tr>
+      <tr><td>‏<code>AsNoTracking</code> وترقيم الصفحات</td><td class="n ev">2026-03</td><td class="ev">CustomerRepository.cs · Domain/Helpper Models/PagedResult.cs</td></tr>
+      <tr><td>أنواع المراجع القابلة للإفراغ (NRT)</td><td class="n ev">2026-03</td><td class="ev">&lt;Nullable&gt;enable&lt;/Nullable&gt;</td></tr>
+      <tr><td><b>‏<code>async/await</code></b></td><td class="n ev">2026-04</td><td class="ev">BarshaiedAPI — 88 × async Task</td></tr>
+      <tr><td>‏REST API ومتحكّمات ASP.NET Core</td><td class="n ev">2026-04</td><td class="ev">BarshaiedAPI/Controllers/* — 25 endpoints</td></tr>
+      <tr><td><b>مغلّف النتائج</b></td><td class="n ev">2026-04</td><td class="ev">Domain/Results/AddUpdateServicesResponse.cs</td></tr>
+      <tr><td>تصنيف الأخطاء ← رموز HTTP</td><td class="n ev">2026-04</td><td class="ev">EnErrorTypes.cs + Extensions/ServicesResultExtension.cs</td></tr>
+      <tr><td>‏Middleware لمعالجة الاستثناءات</td><td class="n ev">2026-04</td><td class="ev">Middlewares/ExceptionHandlingMiddleware.cs</td></tr>
+      <tr><td>‏FluentValidation</td><td class="n ev">2026-04</td><td class="ev">BusinessLayer/Validators/*</td></tr>
+      <tr><td>‏Unit of Work بمعاملات</td><td class="n ev">2026-04</td><td class="ev">Domain/Interfaces/IUnitOfWork.cs</td></tr>
+      <tr><td>‏JWT Bearer + BCrypt</td><td class="n ev">2026-04</td><td class="ev">Program.cs · BCrypt.Net-Next 4.1.0</td></tr>
+      <tr><td><b>تدوير Refresh Token + SHA-256</b></td><td class="n ev">2026-05</td><td class="ev">RefreshTokenService.cs · RandomNumberGenerator(64B) · ReplacedByTokenId</td></tr>
+      <tr><td><b>تفويض قائم على الموارد</b></td><td class="n ev">2026-05</td><td class="ev">Authorization/UserOwnerOrAdminHandler.cs + Requirement</td></tr>
+      <tr><td>‏<code>ILogger</code></td><td class="n ev">2026-05</td><td class="ev">AuthController — commit «Logging Added»</td></tr>
+      <tr><td><b>طبقة Contracts مشتركة</b></td><td class="n ev">2026-06-26</td><td class="ev">Contracts/Contracts.csproj</td></tr>
+      <tr><td><b>نطاق متعدّد المستأجرين عبر Claims</b></td><td class="n ev">2026-07-23</td><td class="ev">UniNet/CustomClaims/CustomClaimTypes.cs</td></tr>
+      <tr><td><b>بدائيّة نطاق موحّدة</b></td><td class="n ev">2026-07-30</td><td class="ev">Contracts/Common/Extensions/EmployeeScopeExtension.cs</td></tr>
+      <tr><td><b>‏<code>TreatWarningsAsErrors</code> + MSBuild مركزي</b></td><td class="n ev">2026-08-09</td><td class="ev">Directory.Build.props</td></tr>
+      <tr><td><b>‏CI عبر GitHub Actions</b></td><td class="n ev">2026-08-09</td><td class="ev">.github/workflows/build.yml</td></tr>
+      <tr><td><b>فهرس فريد مُصفّى يفرض قاعدة عمل</b></td><td class="n ev">2026-08</td><td class="ev">SemesterConfiguration.cs:28 — HasFilter("[IsCurrent] = 1")</td></tr>
+      <tr><td><b>عمود محسوب مخزَّن</b></td><td class="n ev">2026-08</td><td class="ev">StudentResultConfiguration.cs:25 — stored: true</td></tr>
+      <tr><td><b>وراثة TPH</b></td><td class="n ev">2026-08-19</td><td class="ev">ContentItemConfiguration.cs — HasDiscriminator</td></tr>
+      <tr><td>سلوك حقيقي في كيان النطاق</td><td class="n ev">2026-08-19</td><td class="ev">StudentResult.SetGrades() + GradeConstants</td></tr>
+      <tr><td>رسائل commit اصطلاحية بمتن يشرح السبب</td><td class="n ev">2026-08-19</td><td class="ev">fix(auth): prevent refresh tokens from losing user scope</td></tr>
+      <tr style="background:color-mix(in srgb,var(--bad) 7%,transparent)"><td style="color:var(--bad)"><b>اختبارات آلية</b></td><td class="n" style="color:var(--bad)"><b>لم تظهر</b></td><td class="ev" style="color:var(--bad)">لا مشروع اختبار في أيٍّ من المستودعات الأربعة</td></tr>
+      <tr style="background:color-mix(in srgb,var(--warn) 7%,transparent)"><td style="color:var(--warn)"><b>تحقّق تشغيلي داخل CI</b></td><td class="n" style="color:var(--warn)"><b>لم يظهر</b></td><td class="ev" style="color:var(--warn)">build.yml يبني فقط — لا dbcontext info ولا اختبار</td></tr>
+      <tr style="background:color-mix(in srgb,var(--warn) 7%,transparent)"><td style="color:var(--warn)"><b>‏Docker / تغليف</b></td><td class="n" style="color:var(--warn)"><b>لم يظهر</b></td><td class="ev" style="color:var(--warn)">لا Dockerfile في أي مستودع</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ═══════════ 8 ═══════════ -->
+<section>
+  <h2><span class="num">08</span> تطوّر النضج الهندسي والانضباط التشغيلي <span class="en">Engineering Maturity &amp; Operational Discipline</span></h2>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th>المؤشّر</th><th class="n">T1</th><th class="n">T2</th><th class="n">T3</th><th class="n">T4</th></tr></thead>
+    <tbody>
+      <tr><td>عدد الـ Commits</td><td class="n">2</td><td class="n">20</td><td class="n">107</td><td class="n"><b>178</b></td></tr>
+      <tr><td>فروع الميزات</td><td class="n">0</td><td class="n">1</td><td class="n">3</td><td class="n"><b>14</b></td></tr>
+      <tr><td>رسائل commit اصطلاحية</td><td class="n">—</td><td class="n">0</td><td class="n">0</td><td class="n">3 (بدايات)</td></tr>
+      <tr><td>تكامل مستمرّ (CI)</td><td class="n">✖</td><td class="n">✖</td><td class="n">مجلد فارغ</td><td class="n" style="color:var(--good)"><b>✔</b></td></tr>
+      <tr><td>‏<code>TreatWarningsAsErrors</code></td><td class="n">✖</td><td class="n">✖</td><td class="n">✖</td><td class="n" style="color:var(--good)"><b>✔</b></td></tr>
+      <tr><td>تحذيرات البناء</td><td class="n">غير مقيس</td><td class="n">غير مقيس</td><td class="n">غير مقيس</td><td class="n" style="color:var(--good)"><b>0</b></td></tr>
+      <tr><td>إدارة الأسرار</td><td class="n">نص صريح</td><td class="n">appsettings</td><td class="n">appsettings</td><td class="n" style="color:var(--good)"><b>User Secrets</b></td></tr>
+      <tr><td>توثيق ذاتي</td><td class="n">✖</td><td class="n">EF_CORE_GUIDE (48KB)</td><td class="n">✖</td><td class="n" style="color:var(--good)"><b>4 وثائق</b></td></tr>
+      <tr><td>‏<code>ILogger</code></td><td class="n">✖</td><td class="n">✖</td><td class="n">4 مواضع</td><td class="n" style="color:var(--warn)">2 مواضع (Middleware فقط)</td></tr>
+      <tr style="background:color-mix(in srgb,var(--bad) 7%,transparent)"><td><b>الاختبارات</b></td><td class="n">0</td><td class="n">0</td><td class="n">0</td><td class="n">0</td></tr>
+      <tr><td><b>البناء يعمل</b> (تحقّق مباشر)</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n" style="color:var(--good)"><b>✔ 0/0</b></td></tr>
+      <tr><td><b>نموذج EF يُبنى</b> (تحقّق مباشر)</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n" style="color:var(--good)"><b>✔</b></td></tr>
+      <tr><td><b>الهجرة مطابقة للنموذج</b> (تحقّق مباشر)</td><td class="n">—</td><td class="n">—</td><td class="n">—</td><td class="n" style="color:var(--good)"><b>✔</b></td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>التعامل مع الديون التقنية — نمط مزدوج واضح</h3>
+  <p>يُظهر الكود تمييزًا حادًّا في طريقة سداده للديون:</p>
+  <div class="grid2">
+    <div class="card g"><h4>✔ الديون الكبيرة: تُسدَّد فورًا ودفعةً واحدة</h4><ul>
+      <li>خمسة بنود في مخطط قاعدة البيانات أُغلقت في <b>هجرة واحدة</b></li>
+      <li>ضغط الهجرات في <code>InitialCleanSchema</code> نظيفة بدل تراكم هجرات معطوبة</li>
+      <li>دمج <code>Post</code> و<code>Announcement</code> في <code>ContentItem</code> — إعادة هيكلة نطاق كاملة</li>
+      <li>نقل الـ DTOs من <code>Domain</code> إلى <code>Contracts</code></li>
+    </ul></div>
+    <div class="card w"><h4>⚠ الديون الصغيرة: تُترك معلَّقة لجولات</h4><ul>
+      <li>بند <code>StudentNumber</code> مفتوح <b>لأربع جولات مراجعة</b></li>
+      <li>بقايا كود ومعالجات مُهيّأة لم تُنفَّذ</li>
+      <li>أخطاء إملائية تعبر من مشروع إلى آخر</li>
+      <li>تناقضات صغيرة في العقد (409 / 201) مؤجَّلة</li>
+    </ul></div>
+  </div>
+  <p><strong>التفسير:</strong> النمط ليس كسلًا — بل ترتيب أولويّات يفضّل المشاكل ذات الأثر المعماري على المشاكل ذات الأثر التجميلي. وهو ترتيب <em>سليم في جوهره</em>، لكنّه يُنتج تراكمًا بطيئًا من البنود الصغيرة يظهر أثره في محور جودة الكود (66 — أدنى محاوره غير الاختبارات).</p>
+
+  <h3>وعي البيئة الإنتاجية</h3>
+  <p><b>حاضر في التصميم:</b> <code>DeleteBehavior.Restrict</code> كسياسة واعية لا افتراض، فهارس على الأعمدة المُستعلَمة، <code>AsNoTracking</code> للقراءات، إسقاط عبر التعابير بدل تحميل كيانات كاملة، أسرار خارج المستودع، 404 بدل 403 لمنع تعداد الموارد، فحص <code>IsActive</code> <em>بعد</em> التحقّق من كلمة المرور لمنع تعداد الحسابات الموقوفة.</p>
+  <p><b>غائب في التشغيل:</b> لا Docker، لا تسجيل مُهيكَل (<code>ILogger</code> في موضعين فقط، وهو <em>تراجُع</em> عن أربعة في BarshaiedAPI)، لا فحوص صحّة (health checks)، لا خطوة تحقّق تشغيلي في CI.</p>
+  <blockquote><p>المعادلة التي تلخّص المستوى: <strong>يفكّر كمعماري، ويُصلح كمهندس، ويتحقّق كمبتدئ.</strong> والفجوة الثالثة وحدها هي ما يفصله عن Mid-level — وهي الأرخص إصلاحًا بين الثلاث.</p></blockquote>
+</section>
+
+<!-- ═══════════ 9 ═══════════ -->
+<section>
+  <h2><span class="num">09</span> نقاط التحوّل الكبرى <span class="en">Major Turning Points</span></h2>
+
+  <div class="grid2">
+    <div class="card a"><h4>‏① مارس 2026 — إدراك أنّ الطبقات اعتماديات لا مجلدات</h4>
+      <p style="font-size:.87rem; margin:0">ظهور <code>ICustomerRepository</code> في <code>Domain/Interfaces/</code> هو <b>اللحظة الفاصلة في المسار كلّه</b>. في DVLD كانت أسماء الطبقات موجودة والفصل معدومًا. هنا صار الفصل <em>مفروضًا باتجاه الاعتماد</em>. كل ما تلا — الحقن، الاختبارية، التبديل — انبنى على هذا الفهم.</p></div>
+
+    <div class="card a"><h4>‏② أبريل 2026 — مغلّف النتائج بدل الاستثناءات للتحكّم بالتدفّق</h4>
+      <p style="font-size:.87rem; margin:0"><code>AddUpdateServiceResponse&lt;T&gt;</code> + <code>EnErrorTypes</code>: قرار بأن يكون فشل منطق العمل <b>قيمة مُعادة صريحة</b> لا استثناءً. هذا قرار تصميمي متقدّم على مستواه آنذاك، وهو النمط الذي ما زال العمود الفقري لـ UniNet بعد أربعة أشهر.</p></div>
+
+    <div class="card a"><h4>‏③ مايو 2026 — الأمن كنظام لا كميزة</h4>
+      <p style="font-size:.87rem; margin:0">تدوير Refresh Token مع تخزين الـ Hash فقط وسلسلة إبطال: كثيرون في مستواه يكتفون بـ JWT ينتهي بعد ساعة. بناء دورة حياة رمز كاملة قابلة للإبطال يدلّ على قراءة <em>نموذج تهديد</em> لا نسخ <em>درس تعليمي</em>.</p></div>
+
+    <div class="card a"><h4>‏④ يوليو 2026 — النطاق كبدائيّة موحّدة</h4>
+      <p style="font-size:.87rem; margin:0"><code>IsWithinScope</code> يتقاسمها منطق الخدمة ومعالج التفويض. هذا يحلّ فئة الأخطاء الأخطر في الأنظمة متعدّدة المستأجرين: <b>اختلاف قاعدة الفلترة عن قاعدة التفويض</b> — حيث ترى الاستعلامات ما لا يُصرَّح به.</p></div>
+
+    <div class="card g"><h4>‏⑤ 2026-08-09 — الانتقال من العزم إلى الآليّة</h4>
+      <p style="font-size:.87rem; margin:0"><code>Directory.Build.props</code> و<code>build.yml</code> في يوم واحد، والتعليق داخلهما يشير للـ commit الذي سبّب العطل. <b>هذه أوضح إشارة نضج في المسار كلّه</b>: لم يَعِد بأن ينتبه — بنى ما يجعل عدم الانتباه مستحيلًا.</p></div>
+
+    <div class="card b"><h4>‏⑥ 2026-08-19/20 — التراجُع المُصحَّح: الدرس الأثمن</h4>
+      <p style="font-size:.87rem; margin:0">دفع commit يترك التطبيق غير قابل للإقلاع رغم أنّ البناء أخضر بصفر تحذيرات — <b>ثمّ أصلحه خلال يومين</b>. الحادثة أثبتت بالدليل العملي أنّ الآليّتين اللتين بناهما تقيسان <em>التصريف</em> لا <em>التشغيل</em>، وأنّ الاختبارات هي الطبقة المفقودة. <b>لا يوجد درس أوضح من هذا لتبرير الأولوية القادمة.</b></p></div>
+  </div>
+</section>
+
+<!-- ═══════════ 10 ═══════════ -->
+<section>
+  <h2><span class="num">10</span> مستوى المطوّر وتقييم الجاهزية <span class="en">Level &amp; Readiness Assessment</span></h2>
+
+  <h3>التقييم الحالي الدقيق</h3>
+  <p class="lead"><strong>Strong Junior / Early Mid-Level Capability — 72/100</strong>، مع قيد تشغيلي صريح.</p>
+  <p>التصنيف ليس متجانسًا، وقراءته الصحيحة تتطلّب فصل شقّيه:</p>
+  <ul>
+    <li><b>على محاور التصميم</b> (معمارية 84، قاعدة بيانات 88، أمن 82، حلّ مشكلات 80، Backend 80): يعمل بمستوى <strong>Mid-level حقيقي</strong>. مخطط قاعدة البيانات تحديدًا فوق المستوى المتوقّع من كثير من المطوّرين في وظائف Mid.</li>
+    <li><b>على محاور التحقّق</b> (اختبارات 10، انضباط تشغيلي 58): يعمل بمستوى <strong>مبتدئ</strong>.</li>
+  </ul>
+  <p><strong>الترجيح لا يُخفي هذا التباين — بل ينبغي قراءته كما هو.</strong> المطوّر قادر على اتّخاذ قرارات معمارية يعتمد عليها فريق، وغير قادر بعدُ على إثبات أنّ ما بناه يعمل دون مراجعة خارجية. القيد <strong>إجرائي لا معرفي</strong> — وهذا ما يجعله قابلًا للإغلاق خلال أسبوع.</p>
+
+  <h3>النسبة التقديرية للجاهزية</h3>
+  <div class="rd"><span class="rd-lbl">تدريب (Internship / Trainee)</span><span class="rd-track"><span class="rd-fill" style="width:97%; background:var(--good)"></span></span><span class="rd-pct" style="color:var(--good)">97%</span></div>
+  <div class="rd"><span class="rd-lbl">وظيفة Junior ‎.NET Backend</span><span class="rd-track"><span class="rd-fill" style="width:87%; background:var(--t4)"></span></span><span class="rd-pct" style="color:var(--t4)">87%</span></div>
+  <div class="rd"><span class="rd-lbl">وظيفة Mid-level مباشرة</span><span class="rd-track"><span class="rd-fill" style="width:60%; background:var(--warn)"></span></span><span class="rd-pct" style="color:var(--warn)">60%</span></div>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th>المسار</th><th class="n">النسبة</th><th>التبرير</th></tr></thead>
+    <tbody>
+      <tr><td><b>تدريب</b></td><td class="n"><span class="sc s-hi">97%</span></td><td>جاهز الآن بلا تحفّظ. مستواه يتجاوز ما يُتوقَّع من متدرّب بفارق واسع.</td></tr>
+      <tr><td><b>‏Junior ‎.NET Backend</b></td><td class="n"><span class="sc s-hi">87%</span></td><td>جاهز تقنيًّا. <b>‎+2 عن التقدير السابق (85%)</b> — بعد التحقّق المباشر من أنّ البناء ونموذج EF والهجرة كلّها سليمة الآن، وأنّه أغلق التراجُع خلال يومين. تصل إلى <b>95%</b> بنصف يوم عمل: خمسة اختبارات + خطوة تحقّق تشغيلي في CI.</td></tr>
+      <tr><td><b>‏Mid-level مباشرة</b></td><td class="n"><span class="sc s-mid">60%</span></td><td>‏<b>▲ 2</b>. إعادة تصميم <code>IsWithinScope</code> ومخطط قاعدة البيانات عمل Mid-level حقيقي. يمنعه بندان فقط: <b>صفر اختبارات</b>، و<b>غياب آليّة تمنع دفع كود غير مُشغَّل</b>.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <blockquote><p><b>تقدير صادق:</b> لو تقدّم غدًا لمقابلة Junior، سيتفوّق بوضوح في أسئلة EF Core والمعمارية وتصميم التفويض — أسئلة يتعثّر فيها كثير من المتقدّمين لوظائف Mid. وسيتعثّر في سؤالين فقط: <em>«أرِني اختباراتك»</em> و<em>«كيف تتأكّد أنّ ما دفعته يعمل؟»</em>. <b>السؤالان يُغلقان بأسبوع عمل، بينما بناء ما بناه استغرق ثمانية أشهر.</b></p></blockquote>
+</section>
+
+<!-- ═══════════ 11 ═══════════ -->
+<section>
+  <h2><span class="num">11</span> جودة الأدلّة وموثوقية التقييم <span class="en">Evidence Quality &amp; Reliability</span></h2>
+
+  <div class="scroll">
+  <table>
+    <thead><tr><th>نوع الدليل</th><th class="n">التغطية</th><th>الملاحظات</th></tr></thead>
+    <tbody>
+      <tr><td>الشيفرة المصدرية</td><td class="n" style="color:var(--good)"><b>ممتازة</b></td><td>الأربعة كاملة ومقروءة — نحو 50,600 سطر عبر 484 ملف <code>.cs</code></td></tr>
+      <tr><td>تاريخ Git</td><td class="n" style="color:var(--warn)"><b>متفاوتة</b></td><td>‏307 commits إجمالًا، لكن موزّعة بشدّة: <b>2 في T1</b> مقابل 178 في T4. سلوك T1 مستنتَج من الكود لا من التاريخ</td></tr>
+      <tr><td>مخططات وتهيئة قاعدة البيانات</td><td class="n" style="color:var(--good)"><b>ممتازة</b></td><td>تهيئات لكل كيان + هجرات + لقطة نموذج، عبر ثلاثة مشاريع</td></tr>
+      <tr><td>معمارية الأمن</td><td class="n" style="color:var(--good)"><b>ممتازة</b></td><td>مسار المصادقة والتفويض كامل ومقروء في T3 و T4</td></tr>
+      <tr><td>‏CI / MSBuild</td><td class="n" style="color:var(--good)"><b>جيدة</b></td><td>موجودة في T4 فقط — وهذا في ذاته دليل تأريخي دقيق</td></tr>
+      <tr><td>قرارات المراجعة والإصلاح</td><td class="n" style="color:var(--good)"><b>استثنائية</b></td><td><code>DEVELOPER_PROFILE.md</code> يوثّق دورات مراجعة سابقة بأدلّتها — مصدر نادر لتتبّع <em>الاستجابة</em> للنقد لا النتيجة فقط</td></tr>
+      <tr style="background:color-mix(in srgb,var(--good) 8%,transparent)"><td><b>تحقّق تشغيلي مباشر</b></td><td class="n" style="color:var(--good)"><b>مُنفَّذ</b></td><td><b>لم أكتفِ بقراءة الكود:</b> شغّلتُ <code>dotnet build</code> و<code>dotnet ef dbcontext info</code> و<code>has-pending-model-changes</code> على الحالة الراهنة، فرفعت موثوقية محور الانضباط التشغيلي من استنتاجية إلى مقيسة</td></tr>
+      <tr style="background:color-mix(in srgb,var(--bad) 7%,transparent)"><td style="color:var(--bad)"><b>الاختبارات</b></td><td class="n" style="color:var(--bad)"><b>معدومة</b></td><td>لا شيء لتقييمه — الدرجة 10 تعكس غيابًا تامًّا مؤكَّدًا، لا نقص أدلّة</td></tr>
+      <tr style="background:color-mix(in srgb,var(--warn) 7%,transparent)"><td style="color:var(--warn)"><b>سلوك الفترة يناير–مارس</b></td><td class="n" style="color:var(--warn)"><b>مفقودة</b></td><td>‏8 أسابيع غير مرصودة بين T1 و T2 — القفزة مُثبَتة بالنتيجة، ومسارها غير مُثبَت</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p><strong>الموثوقية الكلّية: عالية.</strong> تقييمات T3 و T4 موثوقة جدًّا (تاريخ غنيّ + كود كامل + فحوص منفَّذة). تقييم T2 موثوق. تقييم T1 موثوق على <em>الكود</em> ومحدود على <em>السلوك</em> — ولذا قُدِّرت ثقته بـ«متوسطة»، وينبغي قراءة درجته (28) على أنّها تقدير للقدرة الظاهرة في الكود لا لعادات العمل.</p>
+
+  <h4>حدود هذا التقييم — تُذكَر صراحةً</h4>
+  <ul>
+    <li>لم يُشغَّل أيّ من المشاريع الثلاثة الأولى؛ تقييمها قائم على قراءة الكود فقط.</li>
+    <li>‏DVLD مشروع تدريبي معروف القالب؛ جزء من بنيته قد يعكس القالب لا اختيارات المطوّر. رُوعي هذا بعدم المبالغة في تفسير قراراته المعمارية.</li>
+    <li>‏UniNet لم يُختبَر ضدّ قاعدة بيانات فعلية — تحقّقتُ من بناء النموذج ومطابقة الهجرة، لا من تطبيقها على خادم SQL Server حقيقي.</li>
+  </ul>
+</section>
+
+<!-- ═══════════ 12 ═══════════ -->
+<section>
+  <h2><span class="num">12</span> الرسوم البيانية <span class="en">Visualizations</span></h2>
+
+  <h3>مسار الدرجة الكلّية عبر الزمن</h3>
+  <div class="chart-box">
+    <svg viewBox="0 0 900 400" role="img" aria-label="مخطط خطي لتطور الدرجة الكلية من 28 إلى 72 عبر أربع فترات">
+      <!-- level bands -->
+      <g opacity="0.5">
+        <rect x="60" y="282.8" width="810" height="60.8" fill="#b4553c" opacity="0.13"/>
+        <rect x="60" y="222"   width="810" height="60.8" fill="#c08a2e" opacity="0.13"/>
+        <rect x="60" y="158"   width="810" height="64"   fill="#3f7ea6" opacity="0.13"/>
+        <rect x="60" y="110"   width="810" height="48"   fill="#2e7d5b" opacity="0.13"/>
+        <rect x="60" y="78"    width="810" height="32"   fill="#2e7d5b" opacity="0.2"/>
+        <rect x="60" y="30"    width="810" height="48"   fill="#2e7d5b" opacity="0.28"/>
+      </g>
+      <!-- band labels -->
+      <g font-size="10" fill="currentColor" opacity="0.62" font-family="var(--sans)">
+        <text x="864" y="317" text-anchor="end">Beginner · 21–40</text>
+        <text x="864" y="256" text-anchor="end">Junior · 41–60</text>
+        <text x="864" y="194" text-anchor="end">Strong Junior · 61–75</text>
+        <text x="864" y="139" text-anchor="end">Mid-level · 76–85</text>
+        <text x="864" y="99"  text-anchor="end">Strong Mid · 86–92</text>
+        <text x="864" y="58"  text-anchor="end">Senior · 93–100</text>
+      </g>
+      <!-- axes -->
+      <line x1="60" y1="350" x2="870" y2="350" stroke="currentColor" opacity="0.35"/>
+      <line x1="60" y1="30"  x2="60"  y2="350" stroke="currentColor" opacity="0.35"/>
+      <!-- y ticks -->
+      <g font-size="10" fill="currentColor" opacity="0.6" font-family="monospace">
+        <text x="52" y="354" text-anchor="end">0</text>
+        <text x="52" y="290" text-anchor="end">20</text>
+        <text x="52" y="226" text-anchor="end">40</text>
+        <text x="52" y="162" text-anchor="end">60</text>
+        <text x="52" y="98"  text-anchor="end">80</text>
+        <text x="52" y="34"  text-anchor="end">100</text>
+      </g>
+      <!-- area -->
+      <path d="M120,260.4 L360,199.6 L600,158 L840,119.6 L840,350 L120,350 Z" fill="#3f7ea6" opacity="0.14"/>
+      <!-- line -->
+      <polyline points="120,260.4 360,199.6 600,158 840,119.6" fill="none" stroke="#3f7ea6" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+      <!-- points -->
+      <g>
+        <circle cx="120" cy="260.4" r="7" fill="#b4553c" stroke="#fff" stroke-width="2.5"/>
+        <circle cx="360" cy="199.6" r="7" fill="#c08a2e" stroke="#fff" stroke-width="2.5"/>
+        <circle cx="600" cy="158"   r="7" fill="#3f7ea6" stroke="#fff" stroke-width="2.5"/>
+        <circle cx="840" cy="119.6" r="8" fill="#2e7d5b" stroke="#fff" stroke-width="2.5"/>
+      </g>
+      <!-- value labels -->
+      <g font-size="14" font-weight="700" fill="currentColor" font-family="monospace">
+        <text x="120" y="245" text-anchor="middle">28</text>
+        <text x="360" y="184" text-anchor="middle">47</text>
+        <text x="600" y="143" text-anchor="middle">60</text>
+        <text x="840" y="103" text-anchor="middle">72</text>
+      </g>
+      <!-- x labels -->
+      <g font-size="11.5" fill="currentColor" opacity="0.85" font-family="var(--sans)">
+        <text x="120" y="371" text-anchor="middle">DVLD</text>
+        <text x="360" y="371" text-anchor="middle">WinSmartShope</text>
+        <text x="600" y="371" text-anchor="middle">BarshaiedAPI</text>
+        <text x="840" y="371" text-anchor="middle">UniNet</text>
+      </g>
+      <g font-size="10" fill="currentColor" opacity="0.55" font-family="monospace">
+        <text x="120" y="387" text-anchor="middle">2025-12</text>
+        <text x="360" y="387" text-anchor="middle">2026-03</text>
+        <text x="600" y="387" text-anchor="middle">2026-05</text>
+        <text x="840" y="387" text-anchor="middle">2026-08</text>
+      </g>
+      <!-- deltas -->
+      <g font-size="10.5" fill="#2e7d5b" font-weight="700" font-family="monospace">
+        <text x="240" y="222" text-anchor="middle">+67.9%</text>
+        <text x="480" y="170" text-anchor="middle">+27.7%</text>
+        <text x="720" y="130" text-anchor="middle">+20.0%</text>
+      </g>
+    </svg>
+  </div>
+
+  <h3>مقارنة المحاور — المرحلة الأولى مقابل الأخيرة</h3>
+  <div class="legend">
+    <span><i style="background:color-mix(in srgb,var(--t1) 55%,transparent)"></i>T1 — DVLD (ديسمبر 2025)</span>
+    <span><i style="background:var(--t4)"></i>T4 — UniNet (أغسطس 2026)</span>
+  </div>
+  <div class="bars">
+    <div class="bar-row"><span class="bar-lbl">قواعد البيانات</span><span class="bar-track"><span class="bar-a" style="width:42%"></span><span class="bar-b" style="width:88%"></span></span><span class="bar-val">42 → 88 <b class="up">(+46)</b></span></div>
+    <div class="bar-row"><span class="bar-lbl">معمارية البرمجيات</span><span class="bar-track"><span class="bar-a" style="width:30%"></span><span class="bar-b" style="width:84%"></span></span><span class="bar-val">30 → 84 <b class="up">(+54)</b></span></div>
+    <div class="bar-row"><span class="bar-lbl">هندسة الأمن</span><span class="bar-track"><span class="bar-a" style="width:28%"></span><span class="bar-b" style="width:82%"></span></span><span class="bar-val">28 → 82 <b class="up">(+54)</b></span></div>
+    <div class="bar-row"><span class="bar-lbl">هندسة الـ Backend</span><span class="bar-track"><span class="bar-a" style="width:25%"></span><span class="bar-b" style="width:80%"></span></span><span class="bar-val">25 → 80 <b class="up">(+55)</b></span></div>
+    <div class="bar-row"><span class="bar-lbl">حلّ المشكلات</span><span class="bar-track"><span class="bar-a" style="width:32%"></span><span class="bar-b" style="width:80%"></span></span><span class="bar-val">32 → 80 <b class="up">(+48)</b></span></div>
+    <div class="bar-row"><span class="bar-lbl">أساسيات البرمجة</span><span class="bar-track"><span class="bar-a" style="width:32%"></span><span class="bar-b" style="width:78%"></span></span><span class="bar-val">32 → 78 <b class="up">(+46)</b></span></div>
+    <div class="bar-row"><span class="bar-lbl">النضج الهندسي</span><span class="bar-track"><span class="bar-a" style="width:20%"></span><span class="bar-b" style="width:76%"></span></span><span class="bar-val">20 → 76 <b class="up">(+56)</b></span></div>
+    <div class="bar-row"><span class="bar-lbl">جودة الكود</span><span class="bar-track"><span class="bar-a" style="width:28%"></span><span class="bar-b" style="width:66%"></span></span><span class="bar-val">28 → 66 <b class="up">(+38)</b></span></div>
+    <div class="bar-row"><span class="bar-lbl">الانضباط التشغيلي</span><span class="bar-track"><span class="bar-a" style="width:22%"></span><span class="bar-b" style="width:58%"></span></span><span class="bar-val">22 → 58 <b class="up">(+36)</b></span></div>
+    <div class="bar-row"><span class="bar-lbl" style="color:var(--bad); font-weight:600">الاختبارات</span><span class="bar-track"><span class="bar-a" style="width:10%"></span><span class="bar-b" style="width:10%; background:var(--bad)"></span></span><span class="bar-val">10 → 10 <b class="flat">(0)</b></span></div>
+  </div>
+  <p style="font-size:.86rem"><strong>ما يقوله هذا المخطّط في سطر واحد:</strong> تسعة محاور من عشرة نمت بين ‎+36 و‎+56 نقطة. محور واحد — الاختبارات — <strong>لم يتحرّك إطلاقًا</strong>. هذا ليس بطء نمو، بل <em>غياب بدء</em>. وهو المحور الوحيد الذي لا يستطيع أي قرار معماري بارع أن يعوّضه.</p>
+</section>
+
+<!-- ═══════════ 13 ═══════════ -->
+<section>
+  <h2><span class="num">13</span> التقييم النهائي ومتطلّبات المستوى التالي <span class="en">Final Assessment &amp; Next Level</span></h2>
+
+  <h3>إجابات مباشرة</h3>
+
+  <h4>هل تطوّر المطوّر فعلًا؟</h4>
+  <p><strong>نعم، بلا لبس ومُثبَتًا بالكود.</strong> ‎+44 نقطة مطلقة، ‎+157% نسبةً إلى التقييم الأول، خلال ثمانية أشهر. الأهم من الرقم أنّ النمو <strong>بنيوي لا تراكمي</strong>: لم يكتب المزيد من الكود بالأسلوب نفسه، بل غيّر أسلوبه أربع مرّات — أضاف التجريد، ثمّ التزامن ونماذج الأخطاء، ثمّ نماذج التهديد، ثمّ آليات الانضباط الآلي.</p>
+
+  <h4>ما أسرع محاوره نموًّا؟</h4>
+  <p><strong>النضج الهندسي (‎+56)</strong> و<strong>هندسة الـ Backend (‎+55)</strong> و<strong>المعمارية والأمن (‎+54 لكل منهما)</strong>. وأنّ <em>النضج الهندسي</em> يتصدّر القائمة مؤشّر مهم: الوعي بكيفية العمل ينمو لديه أسرع من المهارات التقنية المفردة — وهذا هو النمط المرتبط بالنمو طويل الأمد.</p>
+
+  <h4>ما أقوى مهاراته اليوم؟</h4>
+  <p><strong>‏EF Core ونمذجة البيانات (88)</strong> — بلا منافس. فهارس مركّبة ومُصفّاة تفرض قواعد عمل في المحرّك، أعمدة محسوبة مخزَّنة، TPH، سياسات حذف صريحة، إسقاط عبر أشجار التعابير. <strong>هذا مستوى Mid-level بلا تحفّظ</strong>، وهو ميزته التنافسية الأوضح في أي مقابلة.</p>
+
+  <h4>ما الذي يمنعه من المستوى التالي؟</h4>
+  <p>بندان، كلاهما إجرائي لا معرفي، ومجموع الجهد المطلوب لهما <strong>أقلّ من أسبوع</strong>:</p>
+  <ul>
+    <li><strong>صفر اختبارات عبر 307 commits.</strong> وليست فجوة نظرية: خمسة اختبارات كانت ستمنع ثلاثة من البنود الحرجة الأربعة في الجولة الأخيرة.</li>
+    <li><strong>لا آليّة تمنع دفع كود غير مُشغَّل.</strong> الـ CI يقيس التصريف؛ والحادثة الأخيرة أثبتت عمليًّا أنّ ذلك غير كافٍ.</li>
+  </ul>
+
+  <h3>متطلّبات الارتقاء إلى Mid-level — مرتّبة حسب العائد</h3>
+  <div class="scroll">
+  <table>
+    <thead><tr><th class="n">#</th><th>المتطلَّب</th><th class="n">الجهد</th><th class="n">الأثر</th><th>لماذا هذه الأولوية بالذات</th></tr></thead>
+    <tbody>
+      <tr>
+        <td class="n">1</td>
+        <td><b>خطوة تحقّق تشغيلي في <code>build.yml</code></b><br><span style="font-size:.82rem;color:var(--ink-3)">إضافة <code>dotnet ef dbcontext info</code> بعد خطوة البناء</span></td>
+        <td class="n" style="color:var(--good)"><b>‏15 دقيقة</b></td>
+        <td class="n" style="color:var(--good)"><b>عالٍ جدًّا</b></td>
+        <td><b>أعلى عائد لكل دقيقة في القائمة كلّها.</b> يُغلق آليًّا فئة الخطأ التي سبّبت أخطر تراجُع في المسار، ويحوّل «لا يشغّل ما يكتب» من عادة إلى استحالة.</td>
+      </tr>
+      <tr>
+        <td class="n">2</td>
+        <td><b>أول خمسة اختبارات وحدة (xUnit)</b><br><span style="font-size:.82rem;color:var(--ink-3)">‏<code>IsWithinScope</code> لكل مستوى نطاق · <code>SetGrades</code> على الحدود · مصانع مغلّف النتائج · مُدقِّقان</span></td>
+        <td class="n" style="color:var(--warn)"><b>نصف يوم</b></td>
+        <td class="n" style="color:var(--good)"><b>عالٍ جدًّا</b></td>
+        <td>يفتح المحور العالق منذ أربعة مشاريع. <code>IsWithinScope</code> هو المرشّح الأمثل: منطق تفويض خالص بلا اعتماديات، وأي خطأ فيه ثغرة أمنية عابرة للمستأجرين.</td>
+      </tr>
+      <tr>
+        <td class="n">3</td>
+        <td><b>الوصول إلى عشرين اختبارًا + تشغيلها في CI</b></td>
+        <td class="n" style="color:var(--warn)"><b>أسبوع</b></td>
+        <td class="n" style="color:var(--good)"><b>حاسم</b></td>
+        <td><b>هذا هو البند الذي يحسم الترقية.</b> يرفع محور الاختبارات من 10 إلى ~70، فترتفع الدرجة الكلّية إلى <b>77.7</b> — أي شريحة Mid-level — دون أي تحسّن آخر في أي محور.</td>
+      </tr>
+      <tr>
+        <td class="n">4</td>
+        <td><b>‏<code>ILogger</code> في الخدمات لا في الـ Middleware فقط</b></td>
+        <td class="n">يومان</td>
+        <td class="n" style="color:var(--warn)">متوسط</td>
+        <td>الاستخدام الحالي <b>تراجَع</b> عن BarshaiedAPI (2 مقابل 4). ولا يمكن تشخيص نظام إنتاجي دون أثر تنفيذ.</td>
+      </tr>
+      <tr>
+        <td class="n">5</td>
+        <td><b>‏<code>Dockerfile</code> + <code>docker-compose</code> مع SQL Server</b></td>
+        <td class="n">يوم</td>
+        <td class="n" style="color:var(--warn)">متوسط</td>
+        <td>معيار شائع في إعلانات الوظائف، ويُمكِّن من اختبارات تكامل حقيقية مقابل قاعدة بيانات فعلية.</td>
+      </tr>
+      <tr>
+        <td class="n">6</td>
+        <td><b>تمريرة تنظيف واحدة للبنود الصغيرة</b></td>
+        <td class="n">نصف يوم</td>
+        <td class="n">منخفض</td>
+        <td>بنود مثل <code>StudentNumber</code> معلَّقة لأربع جولات. الأثر تجميلي، لكن تراكمها هو سبب كون جودة الكود (66) أدنى محاوره غير الاختبارات.</td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <blockquote>
+    <p><b>السؤال الحاسم للتقييم القادم:</b> هل صار <code>dotnet ef dbcontext info</code> — أو أول اختبار وحدة — جزءًا من <code>build.yml</code>؟</p>
+    <p>إن كان الجواب نعم، فقد أُغلقت الفجوة الأخيرة <em>آليًّا لا سلوكيًّا</em>، وتكون الترقية الكاملة إلى <b>Mid-level</b> قد اكتملت. كل ما عدا ذلك موجود بالفعل.</p>
+  </blockquote>
+
+  <h3>الخلاصة</h3>
+  <p class="lead">مطوّر ‎.NET Backend يبني منفردًا — وفي ثمانية أشهر — نظامًا متعدّد المستأجرين بمعمارية مفروضة على مستوى المشاريع، ونظام تفويض من الصفر، ومخطط قاعدة بيانات يفوق مستواه الرقمي. <strong>يفكّر كمعماري، ويُصلح كمهندس، ويتحقّق كمبتدئ.</strong></p>
+  <p>المسار يُظهر شيئًا أندر من المهارة نفسها: <strong>القدرة على تحويل النقد إلى كود خلال دورة واحدة، وتحسين الحلّ المقترح بدل نسخه</strong> — مرصودة خمس مرّات موثَّقة. ومعدّل نموّه لا يُظهر أيّ علامة على الاستقرار عند سقف.</p>
+  <p>الفجوة الوحيدة الحقيقية المتبقّية <strong>ليست في ما يعرفه، بل في ما يتحقّق منه</strong>. وهي الفجوة الأرخص في القائمة كلّها: <strong>خمسة عشر دقيقة تُغلق نصفها، وأسبوع يُغلق الباقي</strong>.</p>
+</section>
+
+<footer>
+  تقرير تقييم طولي · مُولَّد في 2026-08-20 · مبنيّ على 4 مستودعات · 307 commits · ~50,600 سطر · 484 ملف <code>.cs</code><br>
+  كل درجة في هذا التقرير مقرونة بدليل مباشر من الكود أو من سجلّ Git أو من فحص تشغيلي مُنفَّذ.
+</footer>
+
+</div>
+</body>
+</html>
