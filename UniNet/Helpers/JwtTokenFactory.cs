@@ -1,4 +1,5 @@
 ﻿using Contracts.Common.DTOs.User_Token_DTOs;
+using Contracts.Enums;
 using Contracts.Requests.LoginRequests;
 using DataAccessLayer.Configurations.Options;
 using Domain.Entities.Identity;
@@ -48,6 +49,15 @@ namespace UniNet.Helpers
             if(info.EmployeeId.HasValue)
             {
                 claims.Add(new Claim(CustomClaimTypes.EmployeeId, info.EmployeeId.ToString()!));
+            }
+
+            if(info.Type == UserType.SystemAdmin || info.Type == UserType.Student|| info.Type == UserType.Employee)
+            {
+                claims.Add(new Claim(CustomClaimTypes.UserType, info.Type.ToString()));
+            }
+            else
+            {
+                throw new ArgumentNullException("Type cannnot be null!");
             }
 
             foreach (var role in info.UserRoles)

@@ -8,5 +8,6 @@
         public const string BatchId = "BatchId";
         public const string StudentId = "StudentId";
         public const string EmployeeId = "EmployeeId";
+        public const string UserType = "Type";
     }
 }

@@ -27,6 +27,7 @@ namespace Application.Mappers
                     UserName = user.UserName,
                     UniversityId = user.UniversityId,
                     UserRoles = userRoles,
+                    Type = UserType.SystemAdmin,
                 };
             }
 
@@ -42,7 +43,7 @@ namespace Application.Mappers
                     DepartmentId = typeResult.StudentAuthorizationInfo?.DepartmentId,
                     CollegeId = typeResult.StudentAuthorizationInfo?.CollegeId,
                     StudentId = typeResult.StudentAuthorizationInfo?.StudentId,
-
+                    Type = UserType.Student,
                 };
             }
 
@@ -57,7 +58,7 @@ namespace Application.Mappers
                     CollegeId = typeResult.EmployeeAuthorizationInfo?.CollegeId,
                     DepartmentId = typeResult.EmployeeAuthorizationInfo?.DepartmentId,
                     EmployeeId = typeResult.EmployeeAuthorizationInfo?.EmployeeId,
-
+                    Type = UserType.Employee
                 };
             }
 
@@ -77,6 +78,7 @@ namespace Application.Mappers
                     UserName = token.UserName,
                     UniversityId = token.UniversityId,
                     UserRoles = userRoles,
+                    Type = UserType.SystemAdmin,
                 };
             }
             if(typeResult.Type == UserType.Student)
@@ -91,6 +93,7 @@ namespace Application.Mappers
                     DepartmentId = typeResult.StudentAuthorizationInfo?.DepartmentId,
                     CollegeId = typeResult.StudentAuthorizationInfo?.CollegeId,
                     StudentId = typeResult.StudentAuthorizationInfo?.StudentId,
+                    Type = UserType.Student,
                 };
             }
 
@@ -105,6 +108,7 @@ namespace Application.Mappers
                     CollegeId = typeResult.EmployeeAuthorizationInfo?.CollegeId,
                     DepartmentId = typeResult.EmployeeAuthorizationInfo?.DepartmentId,
                     EmployeeId = typeResult.EmployeeAuthorizationInfo?.EmployeeId,
+                    Type = UserType.Employee,
                 };
             }
 

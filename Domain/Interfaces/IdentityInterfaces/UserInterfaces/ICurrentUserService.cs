@@ -16,5 +16,6 @@ namespace Domain.Interfaces.IdentityInterfaces.UserInterfaces
         public int? BatchId { get; }
         public int? StudentId { get; }
         public int? EmployeeId { get; }
+        public string Type { get; } 
     }
 }

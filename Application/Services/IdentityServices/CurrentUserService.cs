@@ -102,5 +102,16 @@ namespace Application.Services.IdentityServices
                 return int.Parse(employeeIdClaim);
             }
         }
+
+        public string Type
+        {
+            get
+            {
+                var typeClaim = _httpContextAccessor.HttpContext?.User.FindFirst("Type")?.Value;
+                if(string.IsNullOrEmpty(typeClaim))
+                    throw new UnauthorizedAccessException("User is not authenticated.");
+                return typeClaim;
+            }
+        }
     }
 }
