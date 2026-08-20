@@ -19,6 +19,7 @@ namespace DataAccessLayer.Repos
         {
             RefreshTokenId = t.RefreshTokenId,
             Type = t.User.Type,
+            UniversityId = t.User.UniversityId,
             TokenHash = t.TokenHash,
             ExpiresAt = t.ExpiresAt,
             RevokedAt = t.RevokedAt,

@@ -107,6 +107,7 @@ namespace UniNet.Extensions
                 CollegeId = currentUserService.CollegeId,
                 DepartmentId = currentUserService.DepartmentId,
                 BatchId = currentUserService.BatchId,
+                TypeName = currentUserService.Type,
             };
         }
     }

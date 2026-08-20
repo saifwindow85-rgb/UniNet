@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Contracts.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,6 +17,7 @@ namespace Contracts.Common.DTOs.User_Token_DTOs
         public int? BatchId { get; set; }
         public int? StudentId { get; set; }
         public int? EmployeeId { get; set; }
+        public UserType Type { get; set; }
         public List<string>UserRoles { get; set; } = new List<string>();
     }
 }

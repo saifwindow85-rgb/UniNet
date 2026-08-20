@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Contracts.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,6 +16,8 @@ namespace Contracts.Requests.RequestParameters
         public int? DepartmentId { get; set; }
         public int? BatchId { get; set; }
 
-        public bool IsGlobal => UniversityId is null && CollegeId is null && DepartmentId is null && BatchId is null;
+        public string TypeName { get; set; } = null!;
+        public bool IsGlobal => UniversityId is null && CollegeId is null && DepartmentId is null && BatchId is null&&TypeName == "SystemAdmin";
+
     }
 }
