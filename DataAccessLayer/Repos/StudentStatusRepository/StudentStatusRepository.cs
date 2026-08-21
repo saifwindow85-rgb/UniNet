@@ -56,5 +56,10 @@ namespace DataAccessLayer.Repos.StudentRepositories
         {
             return await _context.StudentStatuses.AnyAsync(s=>s.Name == name);
         }
+
+        public async Task<bool> IsExistsById(int statusId)
+        {
+            return await _context.StudentStatuses.AnyAsync(s => s.StatusId == statusId);
+        }
     }
 }

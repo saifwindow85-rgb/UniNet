@@ -114,5 +114,21 @@ namespace UniNet.Controllers.StudentController
             var response = await _studentService.UpdateStudent(idParameter.Id, _currentUserService.ToUserScope(), updateStudent, _currentUserService.UserId);
             return response.ToActionResult();
         }
+
+        [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin,BatchAdmin")]
+        [HttpPut("status", Name = "UpdateStudentStatus")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<AddUpdateServiceResponse<StudentDTO>>> UpdateStudentStatus
+            ([FromQuery]StudentIdParameter studentParameter, [FromQuery]StudentStatusIdParameter statusParameter)
+        {
+            var response = await _studentService.UpdateStudentStatus
+                (_currentUserService.ToUserScope(), studentParameter.StudentId, statusParameter.StudentStatusId, _currentUserService.UserId);
+
+            return response.ToActionResult();
+        }
     }
 }

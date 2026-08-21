@@ -106,13 +106,7 @@ namespace Application.Services
                 return AddUpdateServiceResponse<StudentDTO>.ResourceDoesntExist<Role>();
             }
 
-            var status = await _unitOfWork.StatusRepository.GetDTOByName("Enrolled");
-            if (status == null)
-            {
-                return AddUpdateServiceResponse<StudentDTO>.ResourceDoesntExist<StudentStatus>();
-            }
-
-            return await UpdateStudent(studentId, scope, updatedStudent, currentUser, role.RoleId, status.StatusId);
+            return await UpdateStudent(studentId, scope, updatedStudent, currentUser, role.RoleId);
         }
 
         public async Task<AddUpdateServiceResponse<StudentDTO>> UpdateStudent(int studentId,UserScope? scope, UpdateStudentDTO updatedStudent, int currentUser)
@@ -128,7 +122,43 @@ namespace Application.Services
             {
                 return AddUpdateServiceResponse<StudentDTO>.ResourceDoesntExist<StudentStatus>();
             }
-            return await UpdateStudent(studentId, scope, updatedStudent, currentUser, role.RoleId, status.StatusId);
+            return await UpdateStudent(studentId, scope, updatedStudent, currentUser, role.RoleId);
+        }
+
+        public async Task<AddUpdateServiceResponse<StudentDTO>> UpdateStudentStatus(UserScope?scope,int studentId, int statusId,int currentUserId)
+        {
+            var studentInfo = await GetStudentAuthorizationInfoAsync(studentId);
+            if(studentInfo == null)
+            {
+                return AddUpdateServiceResponse<StudentDTO>.ResourceDoesntExist<Student>();
+            }
+
+            if(!scope.IsWithinScope(studentInfo.ToStudentInfo()))
+            {
+                return AddUpdateServiceResponse<StudentDTO>.ResourceDoesntExist<Student>();
+            }
+
+            var student = await GetEntityById(studentId);
+         
+
+            if (!await _unitOfWork.StatusRepository.IsExistsById(statusId))
+            {
+                return AddUpdateServiceResponse<StudentDTO>.ResourceDoesntExist<StudentStatus>();
+            }
+
+            var user = await _unitOfWork.UserRepository.GetUserEntityById(student!.UserId);
+            if(user == null)
+            {
+                return AddUpdateServiceResponse<StudentDTO>.InvalidRelatedData();
+            }
+
+            user.UpdatedAt = DateTime.UtcNow;
+            user.UpdatedByUserId = currentUserId;
+
+            student.StatusId = statusId;
+            await _unitOfWork.CompleteAsync();
+            var studentDto = await GetDTOById(studentId);
+            return AddUpdateServiceResponse<StudentDTO>.Success(studentDto!);
         }
 
         private async Task<AddUpdateServiceResponse<StudentDTO>> CreateStudent(UserScope? scope, AddStudentDTO newStudent, int currentUser, int roleId,int statusId)
@@ -208,7 +238,7 @@ namespace Application.Services
             }
         }
 
-        private async Task<AddUpdateServiceResponse<StudentDTO>> UpdateStudent(int studentId, UserScope? scope, UpdateStudentDTO updatedStudent, int currentUser, int roleId,int statusId)
+        private async Task<AddUpdateServiceResponse<StudentDTO>> UpdateStudent(int studentId, UserScope? scope, UpdateStudentDTO updatedStudent, int currentUser, int roleId)
         {
             var validationResult = await _updateStudentValidator.ValidateAsync(updatedStudent);
             if (!validationResult.IsValid)
@@ -255,7 +285,6 @@ namespace Application.Services
             user.IsActive = updatedStudent.IsActive;
             user.UpdatedAt = DateTime.UtcNow;
             user.UpdatedByUserId = currentUser;
-            studentEntity.StatusId = statusId;
             studentEntity.SectionId = updatedStudent.SectionId;
 
             await _unitOfWork.CompleteAsync();

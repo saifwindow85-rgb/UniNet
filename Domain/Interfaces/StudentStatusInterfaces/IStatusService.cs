@@ -20,5 +20,7 @@ namespace Domain.Interfaces.StudentStatusInterfaces
         public Task<AddUpdateServiceResponse<StudentStatusDTO>> AddStatus(AddUpdateStudentStatusDTO newStatus);
         public Task<AddUpdateServiceResponse<StudentStatusDTO>>UpdateStatus(int statusId,AddUpdateStudentStatusDTO updatedStatus);
         public Task<bool> IsExistsByName(string name);
+        public Task<bool> IsExistsById(int statusId);
+
     }
 }

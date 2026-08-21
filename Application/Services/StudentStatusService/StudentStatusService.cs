@@ -71,6 +71,11 @@ namespace Application.Services.StudentServices
             return await _unitOfWorkRepository.StatusRepository.GetStatuses(pageNumber, pageSize);
         }
 
+        public async Task<bool> IsExistsById(int statusId)
+        {
+            return await _unitOfWorkRepository.StatusRepository.IsExistsById(statusId);
+        }
+
         public async Task<bool> IsExistsByName(string name)
         {
             return await _unitOfWorkRepository.StatusRepository.IsExistsByName(name);
