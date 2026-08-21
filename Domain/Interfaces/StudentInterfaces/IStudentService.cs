@@ -25,5 +25,6 @@ namespace Domain.Interfaces.StudentInterfaces
         public Task<AddUpdateServiceResponse<StudentDTO>>AddBatchAdmin(UserScope? scope, AddStudentDTO newStudent, int currentUser);
         public Task<AddUpdateServiceResponse<StudentDTO>> UpdateBatchAdmin(int studentId,UserScope? scope, UpdateStudentDTO updatedStudent, int currentUser);
         public Task<StudentAuthorizationInfo?> GetStudentAuthorizationInfoAsync(int studentId);
+        public Task<AddUpdateServiceResponse<StudentDTO>> UpdateStudentStatus(UserScope?scope,int studentId, int statusId,int currentUserId);
     }
 }
