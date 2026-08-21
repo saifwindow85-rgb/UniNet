@@ -28,7 +28,8 @@ namespace UniNet
             //JWT Options
             builder.Services.Configure<JWTOption>(builder.Configuration.GetSection("Jwt"));
             var JwtSection = builder.Configuration.GetSection("Jwt");
-            var JwtOptions = JwtSection.Get<JWTOption>();
+            var JwtOptions = JwtSection.Get<JWTOption>() ??
+                throw new InvalidOperationException("Jwt configuration section is missing. Set Jwt:Key/Issuer/Audience in user-secrets.");
             //Auth
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
