@@ -436,6 +436,11 @@ namespace DataAccessLayer.Migrations
                         {
                             RoleId = 6,
                             Name = "Student"
+                        },
+                        new
+                        {
+                            RoleId = 7,
+                            Name = "BatchAdmin"
                         });
                 });
 
@@ -514,7 +519,7 @@ namespace DataAccessLayer.Migrations
                             Email = "ahmed@hu.edu.ye",
                             FullName = "Dr. Ahmed Al-Hadrami",
                             IsActive = true,
-                            PasswordHash = "AQAAAAEAACcQAAAAEP4sN4u5xW9p8oJkzLq2vXy...",
+                            PasswordHash = "$2a$11$co8IwpHzsf8C.PS/a/ZYUeQA//rUxp2epNB70c5qkNK0YUkS/RO46",
                             PhoneNumber = "+967 777000111",
                             UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             UserName = "Ahmed.HU"

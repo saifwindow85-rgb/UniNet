@@ -30,7 +30,7 @@ namespace DataAccessLayer.Seeds
             new Role { RoleId = 4, Name = "DepartmentAdmin" },
             new Role { RoleId = 5, Name = "Lecturer" },
             new Role { RoleId = 6, Name = "Student" },
-            new Role { RoleId =6,Name = "BatchAdmin"}
+            new Role { RoleId =7,Name = "BatchAdmin"}
         };
 
         public static List<User> GetUsers() => new()
