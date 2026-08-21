@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Academic_Structure;
+﻿using BCrypt.Net;
+using Domain.Entities.Academic_Structure;
 using Domain.Entities.Content;
 using Domain.Entities.Employees;
 using Domain.Entities.Enums;
@@ -28,7 +29,8 @@ namespace DataAccessLayer.Seeds
             new Role { RoleId = 3, Name = "CollegeAdmin" },
             new Role { RoleId = 4, Name = "DepartmentAdmin" },
             new Role { RoleId = 5, Name = "Lecturer" },
-            new Role { RoleId = 6, Name = "Student" }
+            new Role { RoleId = 6, Name = "Student" },
+            new Role { RoleId =6,Name = "BatchAdmin"}
         };
 
         public static List<User> GetUsers() => new()
@@ -39,8 +41,7 @@ namespace DataAccessLayer.Seeds
                 FullName = "Dr. Ahmed Al-Hadrami",
                 UserName = "Ahmed.HU",
                 // استخدم مكتبة BCrypt لتوليد هذا النص من كلمة المرور "P@ssw0rd123!"
-                // مثال: BCrypt.Net.BCrypt.HashPassword("P@ssw0rd123!")
-                PasswordHash = "AQAAAAEAACcQAAAAEP4sN4u5xW9p8oJkzLq2vXy...",
+                PasswordHash =   BCrypt.Net.BCrypt.HashPassword("P@ssw0rd123!"),
                 Email = "ahmed@hu.edu.ye",
                 PhoneNumber = "+967 777000111",
                 IsActive = true,
