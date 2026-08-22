@@ -63,8 +63,7 @@ namespace Application.Validators.StudentValidator
                 .NotEmpty().WithMessage("Student number is required.")
                 .MinimumLength(9).WithMessage("Student number must be at least 9 digits long!")
                 .MaximumLength(20).WithMessage("Student number cannot exceed 25 digits!")
-                  .Matches(@"^\+?[1-9]\d{1,14}$").WithMessage("Invalid student number format!")
-                  .When(x => !string.IsNullOrEmpty(x.StudentNumber));
+                  .Matches(@"^[0-9]+$").WithMessage("Invalid student number format!/Student number can only contain digits");
 
         }
     }

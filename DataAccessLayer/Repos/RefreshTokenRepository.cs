@@ -18,6 +18,7 @@ namespace DataAccessLayer.Repos
         private Expression<Func<RefreshToken, UserToken>> ToDetaieldTokenDTO = t => new UserToken
         {
             RefreshTokenId = t.RefreshTokenId,
+            IsActive = t.User.IsActive,
             Type = t.User.Type,
             UniversityId = t.User.UniversityId,
             TokenHash = t.TokenHash,

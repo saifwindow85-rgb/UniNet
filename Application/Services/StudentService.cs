@@ -253,11 +253,11 @@ namespace Application.Services
             var batchInfo = await _unitOfWork.BatchRepository.GetBatchAuthorizationInfoAsync(studentEntity.BatchId);
             if (batchInfo == null)
             {
-                return AddUpdateServiceResponse<StudentDTO>.ResourceDoesntExist<Batch>();
+                return AddUpdateServiceResponse<StudentDTO>.InvalidRelatedData();
             }
             if (!scope.IsWithinScope(batchInfo.ToBatchInfo()))
             {
-                return AddUpdateServiceResponse<StudentDTO>.ResourceDoesntExist<Batch>();
+                return AddUpdateServiceResponse<StudentDTO>.InvalidRelatedData();
             }
             var user = await _unitOfWork.UserRepository.GetUserEntityById(studentEntity.UserId);
             if (user == null)

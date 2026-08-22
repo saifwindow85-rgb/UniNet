@@ -80,7 +80,12 @@ namespace UniNet.Controllers.Identity_Controllers.Auth
                 return Unauthorized("Invalid refresh request");
             }
 
-            if(userToken.RevokedAt != null)
+            if(!userToken.IsActive)
+            {
+                return StatusCode(403, new { Title = "Banned Account", Message = "Your Account Is Banned" });
+            }
+
+            if (userToken.RevokedAt != null)
             {
                 return Unauthorized("Refresh token is revoked");
             }
