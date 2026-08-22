@@ -8,8 +8,8 @@ namespace Domain.Entities.StudyConstants
 {
     public class GradeConstants
     {
-        public const int MidtermMax = 50;
-        public const int PracticalMax = 50;
-        public const int FinalMax = 100;
+        public const int MidtermMax = 30;
+        public const int PracticalMax = 20;
+        public const int FinalMax = 50;
     }
 }
