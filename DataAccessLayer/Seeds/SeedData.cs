@@ -41,7 +41,7 @@ namespace DataAccessLayer.Seeds
                 FullName = "Dr. Ahmed Al-Hadrami",
                 UserName = "Ahmed.HU",
                 // استخدم مكتبة BCrypt لتوليد هذا النص من كلمة المرور "P@ssw0rd123!"
-                PasswordHash =   BCrypt.Net.BCrypt.HashPassword("P@ssw0rd123!"),
+                PasswordHash =  "$2a$11$co8IwpHzsf8C.PS/a/ZYUeQA//rUxp2epNB70c5qkNK0YUkS/RO46",
                 Email = "ahmed@hu.edu.ye",
                 PhoneNumber = "+967 777000111",
                 IsActive = true,

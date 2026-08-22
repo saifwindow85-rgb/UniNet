@@ -189,13 +189,22 @@ namespace Application.Services.EmployeeService
                 return AddUpdateServiceResponse<EmployeeDTO>.ResourceDoesntExist<College>();
                 // not returning 403 because we dont want the end user to know that resource exists even
             }
-            var employee = await GetEntityById(employeeId);
-            if(employee == null)
+
+            var employeeInfo = await GetEmployeeAuthorizationInfoAsync(employeeId);
+            if(employeeInfo == null)
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.ResourceDoesntExist<Employee>();
             }
 
-            var user = await _unitOfWorkRepository.UserRepository.GetUserEntityById(employee.UserId);
+            if (!scope.IsWithinScope(employeeInfo.ToEmployeeInfo()))
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.ResourceDoesntExist<Employee>();
+            }
+
+            var employee = await GetEntityById(employeeId);
+         
+
+            var user = await _unitOfWorkRepository.UserRepository.GetUserEntityById(employee!.UserId);
             if(user == null)
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.ResourceDoesntExist<User>();
@@ -232,13 +241,20 @@ namespace Application.Services.EmployeeService
                 // not returning 403 because we dont want the end user to know that resource exists even
             }
 
-            var employee = await GetEntityById(employeeId);
-            if(employee == null)
+            var employeeInfo = await GetEmployeeAuthorizationInfoAsync(employeeId);
+            if(employeeInfo == null)
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.ResourceDoesntExist<Employee>();
             }
 
-            var user = await _unitOfWorkRepository.UserRepository.GetUserEntityById(employee.UserId);
+            if(!scope.IsWithinScope(employeeInfo.ToEmployeeInfo()))
+            {
+                return AddUpdateServiceResponse<EmployeeDTO>.ResourceDoesntExist<Employee>();
+            }
+
+            var employee = await GetEntityById(employeeId);
+
+            var user = await _unitOfWorkRepository.UserRepository.GetUserEntityById(employee!.UserId);
             if(user == null)
             {
                 return AddUpdateServiceResponse<EmployeeDTO>.ResourceDoesntExist<User>();

@@ -12,6 +12,7 @@ namespace Contracts.Requests.LoginRequests
     {
         public int UserId { get; set; }
         public string UserName { get; set; } = null!;
+        public bool IsActive { get; set; }
         public int? UniversityId { get; set; }
         public  UserType ?Type { get; set; }
         public List<string>UserRoles { get; set; } = new List<string>();
