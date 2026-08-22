@@ -14,11 +14,11 @@ namespace Domain.Entities.Study
 
         public int SectionSubjectId { get; set; }
         public SectionSubject SectionSubject { get; set; } = null!;
-        public decimal Midterm { get; set; }
+        public decimal Midterm { get; private set; }
 
-        public decimal Practical { get; set; }
+        public decimal Practical { get; private set; }
 
-        public decimal Final { get; set; }
+        public decimal Final { get; private set; }
 
         public decimal Total { get; private set; }
 

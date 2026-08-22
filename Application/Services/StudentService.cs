@@ -117,11 +117,7 @@ namespace Application.Services
                 return AddUpdateServiceResponse<StudentDTO>.ResourceDoesntExist<Role>();
             }
 
-            var status = await _unitOfWork.StatusRepository.GetDTOByName("Enrolled");
-            if (status == null)
-            {
-                return AddUpdateServiceResponse<StudentDTO>.ResourceDoesntExist<StudentStatus>();
-            }
+
             return await UpdateStudent(studentId, scope, updatedStudent, currentUser, role.RoleId);
         }
 
