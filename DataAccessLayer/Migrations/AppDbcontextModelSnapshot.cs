@@ -890,9 +890,9 @@ namespace DataAccessLayer.Migrations
                             StudentResultId = 1,
                             CreatedAt = new DateTime(2025, 12, 25, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedByUserId = 1,
-                            Final = 40m,
-                            Midterm = 45m,
-                            Practical = 10m,
+                            Final = 45m,
+                            Midterm = 27m,
+                            Practical = 16m,
                             SectionSubjectId = 1,
                             StudentId = 1,
                             Total = 0m
