@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 
 namespace Contracts.Responses.StudyResponses.SubjectResponses
 {
-    public class SubjectDTO : DTOsBaseEntity
+    public class SubjectDTO 
     {
         public int SubjectId { get; set; }
 
         public string Code { get; set; } = null!;
 
-        public string Name { get; set; } = null!;
+        public string SubjectName { get; set; } = null!;
 
         public string? Description { get; set; }
 

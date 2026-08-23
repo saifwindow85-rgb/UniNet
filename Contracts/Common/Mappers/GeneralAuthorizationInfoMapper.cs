@@ -2,6 +2,7 @@
 using Contracts.Common.AuthorizationInfos.AcademicInfos;
 using Contracts.Common.AuthorizationInfos.EmployeeAuthorizationInfo;
 using Contracts.Common.AuthorizationInfos.StudentAuthorizationInfo;
+using Contracts.Common.AuthorizationInfos.StudyAuthorizationInfos;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -82,6 +83,16 @@ namespace Contracts.Common.Mappers
                 DepartmentId = authorizationInfo.DepartmentId,
                 BatchId = authorizationInfo.BatchId,
                 SectionId = authorizationInfo.SectionId,
+            };
+        }
+
+        public static GeneralAuthorizationInfo ToSubjectInfo(this SubjectAuthorizationInfo authorizationInfo)
+        {
+            return new GeneralAuthorizationInfo
+            {
+                UniversityId = authorizationInfo.UniversityId,
+                CollegeId = authorizationInfo.CollegeId,
+                DepartmentId = authorizationInfo.DepartmentId,
             };
         }
     }

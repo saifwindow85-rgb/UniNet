@@ -6,6 +6,7 @@ using DataAccessLayer.Repos.EmployeeRepository;
 using DataAccessLayer.Repos.IdentityRepositories;
 using DataAccessLayer.Repos.StudentRepositories;
 using DataAccessLayer.Repos.StudentRepository;
+using DataAccessLayer.Repos.StudyRepository;
 using Domain.Interfaces.AcademicStructureInterfaces.BatchInterfaces;
 using Domain.Interfaces.AcademicStructureInterfaces.CollegeInterfaces;
 using Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces;
@@ -19,6 +20,7 @@ using Domain.Interfaces.LoginInterfaces;
 using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
 using Domain.Interfaces.StudentInterfaces;
 using Domain.Interfaces.StudentStatusInterfaces;
+using Domain.Interfaces.StudyInterfaces.SubjectInterfaces;
 using Domain.Interfaces.UnitOfWork;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -58,6 +60,8 @@ namespace DataAccessLayer.Repos
 
         public IStudentRepository StudentRepository { get; private set; }
 
+        public ISubjectRepository SubjectRepository { get; private set;  }
+
         public UnitOfWorkRepository(AppDbcontext context)
         {
             _context = context;
@@ -74,6 +78,7 @@ namespace DataAccessLayer.Repos
             EmployeeRepository = new EmployeeRepository.EmployeeRepository(context);
             StatusRepository = new StudentStatusRepository(context);
             StudentRepository = new StudentRepository.StudentRepository(context);
+            SubjectRepository = new SubjectRepository(context);
         }
         public async Task<int> CompleteAsync()
         {
