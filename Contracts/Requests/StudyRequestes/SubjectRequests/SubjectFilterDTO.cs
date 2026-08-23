@@ -12,10 +12,6 @@ namespace Contracts.Requests.StudyRequestes.SubjectRequests
 
         public string Name { get; set; } = null!;
 
-        public string? Description { get; set; }
-
-        public int? CreditHours { get; set; }
-
-        public int DepartmentId { get; set; }
+        public int?DepartmentId { get; set; }
     }
 }

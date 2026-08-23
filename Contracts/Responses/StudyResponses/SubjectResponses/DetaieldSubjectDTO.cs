@@ -7,19 +7,15 @@ using System.Threading.Tasks;
 
 namespace Contracts.Responses.StudyResponses.SubjectResponses
 {
-    public class SubjectDTO 
+    public class DetaieldSubjectDTO : DTOsBaseEntity
     {
         public int SubjectId { get; set; }
-
-        public string Code { get; set; } = null!;
-
         public string SubjectName { get; set; } = null!;
-
-        public string? Description { get; set; }
-
-        public int? CreditHours { get; set; }
-
+        public string Code { get; set; } = null!;
+        public string?Description { get; set; } = null!;
         public int DepartmentId { get; set; }
         public string DepartmentName { get; set; } = null!;
+        public int? CreditHours { get; set; }
+
     }
 }

@@ -326,7 +326,7 @@ footer code{font-family:"IBM Plex Mono",monospace;font-size:.9em}
 
 <!-- ══════════ MASTHEAD ══════════ -->
 <header class="masthead">
-  <p class="kicker">Dual Assessment · Evidence-Based · 2026-08-19</p>
+  <p class="kicker">Dual Assessment · Evidence-Based · 2026-08-23</p>
   <h1>Developer <span class="amp">&amp;</span> UniNet<br>Radar Assessment</h1>
   <p class="dek">
     تقييمان منفصلان تمامًا: الأول يقيس <b>ما يستطيع المطوّر إثباته عمليًا</b>،
@@ -335,22 +335,27 @@ footer code{font-family:"IBM Plex Mono",monospace;font-size:.9em}
   </p>
 
   <dl class="meta">
-    <div><dt>Commit</dt><dd>d24bef7 + wt</dd></div>
+    <div><dt>Commit</dt><dd>d1f0510</dd></div>
     <div><dt>Branch</dt><dd>refactor/v1Branch</dd></div>
-    <div><dt>C# LOC</dt><dd>~10,400</dd></div>
-    <div><dt>Build</dt><dd>0 warnings</dd></div>
-    <div><dt>EF Model</dt><dd>builds ✓</dd></div>
+    <div><dt>C# files</dt><dd>233</dd></div>
+    <div><dt>Build</dt><dd>3 errors</dd></div>
+    <div><dt>EF Model</dt><dd>consistent</dd></div>
     <div><dt>Tests</dt><dd>0 · out of scope</dd></div>
   </dl>
 
   <div class="note" style="margin-top:20px">
-    <b>تحديث أثناء المراجعة — 2026-08-19.</b>
-    أُغلق البند الحرج الأول قبل نشر هذا الملف: <code>Image</code> صار له ملاحية واحدة
-    <code>ContentItem</code>، والمفتاح الأجنبي أُعلن على النوع الأساس، ومعه هجرة TPH جديدة.
-    <code>dotnet ef dbcontext info</code> ينجح الآن و<b>التطبيق يُقلع</b>.
-    لذلك رُفع محور <code>Runtime Integrity</code> من <code>1</code> إلى <code>2</code> —
-    ولم يُرفع أكثر لأن هجرة <code>Semesters</code> ما زالت تفشل على قاعدة جديدة (البند 02 أدناه).
-    كل ما عدا ذلك مُتحقَّق منه على شجرة العمل الحالية.
+    <b>تحديث — 2026-08-23 · <code>d1f0510</code>.</b>
+    بعد جولة تحصين للـ MVP، أُغلقت — ومُتحقَّق منها حيًّا بطلبات HTTP فعلية — كل البنود الحرجة:
+    اختطاف الموظف عبر المستأجرين، تسريب النطاق في <code>/refresh</code>، إعادة تعيين حالة الطالب قسرًا،
+    رقم الطالب الفارغ، دور <code>BatchAdmin</code> غير المزروع، وإعداد <code>Jwt</code> المفقود.
+    و<code>IsGlobal</code> صار <b>fail-closed</b> (يشترط <code>SystemAdmin</code>)، وتسريب الشُعَب عبر الدفعة مغلق.
+    لذلك ارتفعت محاور <code>Authorization</code> و<code>Authentication</code> و<code>Business Logic</code>.
+    <br><br>
+    <b>لكن الحل لا يُبنى الآن:</b> <code>dotnet build</code> يفشل بثلاثة أخطاء <code>CS0200</code> —
+    <code>SeedData.GetStudentResults()</code> يُسنِد <code>Midterm/Practical/Final</code> بعد أن صارت
+    <code>private set</code> في تحسين تغليف <code>StudentResult</code>. مُنتِج عُدِّل ومستهلكه لم يُجرَد —
+    تكرار حيّ لنفس النمط. لذلك هبط <code>Runtime Integrity</code> من <code>2</code> إلى <code>1</code>.
+    وبدأت وحدة Study فعليًا (شريحة <code>Subject</code>: DTOs + validators + interfaces).
   </div>
 </header>
 
@@ -368,7 +373,7 @@ footer code{font-family:"IBM Plex Mono",monospace;font-size:.9em}
       <p>
         الملف المرجعي المطلوب <code>DEVELOPER_FILE.md</code> غير موجود في المستودع؛
         الموجود هو <code>DEVELOPER_PROFILE.md</code> واعتُمد لتحديد النطاق والقرارات الهندسية.
-        كل درجة أدناه مسنودة بقراءة الكود الفعلي: 225 ملف <code>.cs</code>، بناء الحل،
+        كل درجة أدناه مسنودة بقراءة الكود الفعلي: 233 ملف <code>.cs</code>، بناء الحل،
         وتشغيل <code>dotnet ef dbcontext info</code>.
       </p>
     </div>
@@ -405,9 +410,9 @@ footer code{font-family:"IBM Plex Mono",monospace;font-size:.9em}
 
   <div class="note" style="margin-top:20px">
     <b>لماذا رسمان منفصلان؟</b> لأن الفجوة بينهما هي أهم معلومة في هذا الملف.
-    مثال حيّ من هذا المشروع: تصميم التفويض يستحق <code>4/5</code> كمهارة،
-    بينما تنفيذه في UniNet يستحق <code>2/5</code> — لأن ثغرتين حرجتين تلتفّان حول بدائية سليمة.
-    دمج الرقمين في رسم واحد كان سيخفي هذه الحقيقة تحديدًا.
+    مثال حيّ متجدّد: فجوة التفويض (مهارة 4 مقابل تنفيذ 2) أُغلقت هذه الجولة — صار الاثنان 4.
+    لكن فجوة التحقّق بقيت: مهارة النمذجة ارتفعت إلى 3 بينما <code>Runtime</code> هبط إلى 1 لأن البناء أحمر الآن.
+    رسم واحد كان سيخفي أنّ الأمن لحق بالمهارة بينما التحقّق ما زال متأخّرًا.
   </div>
 </section>
 
@@ -484,8 +489,8 @@ footer code{font-family:"IBM Plex Mono",monospace;font-size:.9em}
           فغيّر التوقيع إلى <code>IsWithinScope(UserScope?, GeneralAuthorizationInfo)</code>
           حتى صار الخطأ <b>غير قابل للكتابة</b>. ومعه: تفويض قائم على المورد بسبعة معالجات،
           نطاق هرمي رباعي، و404 بدل 403 لمنع تسريب الوجود — مع تعليق يشرح السبب.
-          <b>السقف:</b> جعل «بلا نطاق ⇒ صلاحية كاملة» (<code>IsGlobal</code>) — وهو fail-open،
-          والقرار الأمني الوحيد الخاطئ على مستوى التصميم لا التحقق.
+          <b>تطوّر لاحق:</b> جعل <code>IsGlobal</code> يشترط <code>SystemAdmin</code> صراحةً — فصار السلوك الافتراضي
+          <b>fail-closed</b> لا fail-open، وطبّق فحص ملكية المورد الحالي في تحديث الموظف بعد الإبلاغ.
         </td>
       </tr>
       <tr>
@@ -555,13 +560,13 @@ footer code{font-family:"IBM Plex Mono",monospace;font-size:.9em}
         </td>
       </tr>
       <tr>
-        <td class="skill">Domain Modeling</td><td class="sc">2 / 5</td>
+        <td class="skill">Domain Modeling</td><td class="sc">3 / 5</td>
         <td><span class="conf md">Medium</span></td>
         <td class="ev">
-          الكيانات بنيوية بالكامل تقريبًا. أول سلوك حقيقي هو <code>StudentResult.SetGrades()</code>
-          مع <code>GradeConstants</code> — اتجاه صحيح لكنه قابل للتجاوز لأن الحقول الثلاثة لها
-          <code>set</code> عام. <b>الثقة متوسطة:</b> النموذج الفقير قرار مناسب لمشكلة CRUD،
-          فغياب الأدلة هنا ليس دليلًا على غياب القدرة — بل على غياب الحاجة.
+          الكيانات بنيوية في الغالب، لكن <code>StudentResult</code> صار سلوكيًّا: الدرجات الثلاث
+          <code>private set</code>، تُكتب فقط عبر <code>SetGrades()</code> الذي يفرض حدود <code>GradeConstants</code> —
+          فالـ invariant محميّ لا قابل للتجاوز. <b>الثقة متوسطة:</b> النموذج الفقير مناسب لباقي المشروع (CRUD)،
+          فالدرجة تعكس أول تطبيق حقيقي للتغليف لا خبرة واسعة.
         </td>
       </tr>
       <tr>
@@ -806,46 +811,45 @@ footer code{font-family:"IBM Plex Mono",monospace;font-size:.9em}
           <b>Evidence:</b> فصل ثلاثي واعٍ بلا ازدواجية — شكل في FluentValidation، قواعد عمل في الخدمة،
           invariant في الكيان. و<code>catch … when (ex.InnerException is SqlException { Number: 547 })</code>
           يحوّل قيد الحذف إلى 409 مع حفظ السبب، ورسالة عامة للعميل بلا تسريب.
-          <b>Finding:</b> <code>.When(!IsNullOrEmpty(StudentNumber))</code> تُبطل <code>NotEmpty()</code>
-          للجولة الرابعة؛ و<code>sectionInfo!</code> يُنتج 500 بدل 400؛ و2601/2627 غير معالَجَين.
-          <b>Impact:</b> الآلية ممتازة والتغطية ناقصة.
+          <b>Fixed (مُتحقَّق حيًّا):</b> قاعدة <code>StudentNumber</code> أُصلحت (أُزيل <code>.When</code>، regex أرقام فقط) — الفارغ يُرفَض 400.
+          <b>Finding المتبقّي:</b> <code>sectionInfo!</code> يُنتج 500 بدل 400؛ و2601/2627 (انتهاك التفرّد) غير معالَجَين.
+          <b>Impact:</b> الآلية ممتازة، والتغطية تحسّنت وتبقّى انتهاك التفرّد.
         </td>
       </tr>
       <tr>
-        <td class="skill">Business Logic</td><td class="sc">3 / 5</td>
+        <td class="skill">Business Logic</td><td class="sc">4 / 5</td>
         <td><span class="conf hi">High</span></td>
         <td class="ev">
           <b>Evidence:</b> معظم Use Cases صحيحة ومتّسقة عبر الشجرة الأكاديمية والطالب والموظف.
-          <b>Finding:</b> <code>UpdateStudent</code> يُسنِد <code>StatusId</code> إلى "Enrolled" في كل تحديث —
-          فتحديث اسم طالب متخرّج يُعيده مُقيَّدًا صامتًا. و<code>BatchAdmin</code> مذكور في عشر سمات
-          <code>[Authorize]</code> وغير مزروع في بذور الإنتاج. و<code>AddUser</code> لا تُسنِد <code>Type</code>
-          فتُنشئ مستخدمًا يُنتج 500 عند الدخول.
-          <b>Impact:</b> فساد بيانات صامت + ميزتان معطّلتان إنتاجيًا.
+          <b>Fixed (مُتحقَّق حيًّا):</b> إعادة الحالة قسرًا زالت — الحالة عبر <code>UpdateStudentStatus</code> صريح؛
+          و<code>BatchAdmin</code> مزروع (RoleId 7) وأُنشئ ودخل حيًّا.
+          <b>Finding المتبقّي:</b> <code>AddUser</code> ما زالت لا تُسنِد <code>Type</code> فتُنشئ مستخدمًا يُخطئ عند الدخول.
+          <b>Impact:</b> العطلان الرئيسيان أُغلقا؛ تبقّى مسار <code>AddUser</code>.
         </td>
       </tr>
       <tr>
-        <td class="skill">Authentication</td><td class="sc">3 / 5</td>
+        <td class="skill">Authentication</td><td class="sc">4 / 5</td>
         <td><span class="conf hi">High</span></td>
         <td class="ev">
           <b>Evidence:</b> 64 بايت من <code>RandomNumberGenerator</code>، تخزين SHA-256 فقط،
           تدوير مع <code>ReplacedByTokenId</code>، BCrypt، وفحص <code>IsActive</code> <b>بعد</b>
           كلمة المرور — قرار متعمَّد يمنع تعداد الحسابات الموقوفة.
-          <b>Finding:</b> <code>refresh</code> لا يفحص <code>IsActive</code> إطلاقًا، فحساب محظور
-          يظل يُصدر رموزًا سبعة أيام. و<code>LoginRequestValidator</code> مسجَّل ولا يُستدعى —
-          وقاعدته تناقض قاعدة إنشاء كلمة المرور.
-          <b>Impact:</b> الآليات محترفة، والمسار الثانوي لم يُراجَع بنفس عناية الأساسي.
+          <b>Fixed (مُتحقَّق حيًّا):</b> <code>refresh</code> صار يفحص <code>IsActive</code> عبر إسقاط <code>UserToken</code> —
+          الحساب المحظور يُرفَض بـ403 (كان يجدّد الرمز 7 أيام).
+          <b>Finding المتبقّي:</b> <code>LoginRequestValidator</code> مسجَّل ولا يُستدعى؛ لا كشف لإعادة استخدام الرمز، ولا كابح لمحاولات الدخول.
+          <b>Impact:</b> الآليات محترفة، والثغرة الملموسة أُغلقت.
         </td>
       </tr>
       <tr>
-        <td class="skill">Authorization</td><td class="sc">2 / 5</td>
+        <td class="skill">Authorization</td><td class="sc">4 / 5</td>
         <td><span class="conf hi">High</span></td>
         <td class="ev">
-          <b>Evidence:</b> البدائية نفسها ممتازة — 21 موضع استدعاء متّسق، سبعة معالجات ملكية، نطاق هرمي.
-          <b>Finding:</b> ثغرتان حرجتان تلتفّان حولها. (1) إسقاط <code>UserToken</code> يُسقِط
-          <code>UniversityId</code>، فاستدعاء واحد لـ<code>/refresh</code> يجعل نطاق
-          <code>UniversityAdmin</code> فارغًا ⇒ <code>IsGlobal</code> ⇒ صلاحية عبر كل الجامعات.
-          (2) <code>UpdateCollegeAdmin</code> تفحص وجهة النقل ولا تفحص الموظف المستهدَف ⇒ اختطاف حساب عبر المستأجرين.
-          <b>Impact:</b> انهيار عزل المستأجرين — الغرض المركزي للنظام كله.
+          <b>Evidence:</b> البدائية ممتازة — 21 موضع استدعاء متّسق، سبعة معالجات ملكية، نطاق هرمي.
+          <b>Fixed (مُتحقَّق حيًّا):</b> (1) إسقاط <code>/refresh</code> صار يحمل <code>UniversityId</code>،
+          و<code>IsGlobal</code> صار fail-closed (يشترط <code>SystemAdmin</code>). (2) <code>UpdateCollegeAdmin</code>/<code>UpdateDepartmentAdmin</code>
+          صارتا تفحصان ملكية الموظف الحالي — الاختطاف يعيد 404. (3) تسريب الشُعَب عبر الدفعة مغلق.
+          <b>Finding المتبقّي:</b> <code>UpdateUniversityAdmin</code> بلا فحص ملكية (Super-Admin فقط، آمنة عمليًّا).
+          <b>Impact:</b> عزل المستأجرين صامد — الثغرتان الحرجتان أُغلقتا.
         </td>
       </tr>
       <tr>
@@ -860,17 +864,15 @@ footer code{font-family:"IBM Plex Mono",monospace;font-size:.9em}
         </td>
       </tr>
       <tr>
-        <td class="skill">Runtime Integrity</td><td class="sc">2 / 5</td>
+        <td class="skill">Runtime Integrity</td><td class="sc">1 / 5</td>
         <td><span class="conf hi">High</span></td>
         <td class="ev">
-          <b>Evidence:</b> <code>dotnet build</code> ينجح بصفر تحذيرات، و<code>build.yml</code> أخضر،
-          و<code>dotnet ef dbcontext info</code> <b>ينجح الآن</b> بعد إصلاح ملاحيات <code>Image</code>
-          وإعلان المفتاح الأجنبي على <code>ContentItem</code>.
-          <b>Finding:</b> السكربت المولَّد بـ<code>dotnet ef migrations script</code> ما زال ينفّذ
-          <span style="direction:ltr;display:inline-block"><code>UPDATE [Semesters] SET [UniversityId] = 0</code></span>
-          ثم يضيف مفتاحًا أجنبيًا إلى <code>Universities</code> — ولا جامعة بمعرّف 0.
-          <b>Impact:</b> التطبيق يُقلع على قاعدة قائمة، ولا يمكن تجهيزه من الصفر.
-          البند الحرج الأول أُغلق؛ هذا ما تبقّى.
+          <b>Fixed:</b> الهجرة موحّدة (<code>InitialCleanSchema</code>) وطبّقتُها على قاعدة نظيفة → نجحت،
+          والنموذج مطابق للهجرة (لا تغييرات معلّقة).
+          <b>Finding (حرج، حالي):</b> <code>dotnet build</code> <b>يفشل بثلاثة أخطاء</b> <code>CS0200</code> —
+          <code>SeedData.GetStudentResults()</code> يُسنِد <code>Midterm/Practical/Final</code> بعد أن صارت
+          <code>private set</code>. مُنتِج عُدِّل ومستهلكه لم يُجرَد — نفس النمط.
+          <b>Impact:</b> الحل لا يُبنى الآن؛ لا شيء يعمل حتى يُصلَح (دقائق عبر <code>SetGrades</code>).
         </td>
       </tr>
     </tbody>
@@ -952,12 +954,10 @@ footer code{font-family:"IBM Plex Mono",monospace;font-size:.9em}
       <div>
         <b>تجاوز عزل المستأجرين عبر <code>/refresh</code> <span class="sev crit">Critical</span></b>
         <p>
-          <code>RefreshTokenRepository.cs:18</code> — الإسقاط لا يُسنِد <code>UniversityId</code>،
-          فالرمز المُجدَّد لمسؤول جامعة يخرج <b>بلا أي مطالبة نطاق</b>،
-          و<code>IsGlobal</code> تعامله كـ Super Admin في كل فحص.
-          يصبح بإمكانه قراءة وتعديل وحذف موارد أي جامعة أخرى.
-          <b>الإصلاح:</b> سطر واحد. <b>والأهم بنيويًا:</b> اجعل «العالمي» دورًا صريحًا
-          لا غياب بيانات — <code>IsGlobal</code> اليوم fail-open.
+          <b>✅ مغلق (2026-08-23).</b> كان: الإسقاط لا يُسنِد <code>UniversityId</code>، فالرمز المُجدَّد
+          يخرج بلا نطاق و<code>IsGlobal</code> تعامله كـ Super Admin. أُصلح الإسقاط،
+          <b>والأهم بنيويًا:</b> صار <code>IsGlobal</code> يشترط <code>SystemAdmin</code> — أي fail-closed،
+          فلا يعود أي مسار يفقد المطالبات ثغرةً. مُتحقَّق منه بسلسلة المطالبة الكاملة.
         </p>
       </div>
     </li>
@@ -1083,35 +1083,35 @@ footer code{font-family:"IBM Plex Mono",monospace;font-size:.9em}
         <td class="ev">تطابق تام: نفس الفهم الجزئي لرموز الحالة ينتج نفس العقد الجزئي.</td>
       </tr>
       <tr>
-        <td class="skill">ASP.NET Core / Authentication</td><td class="cd">3</td><td class="cs">3</td>
-        <td class="ev">الآليات مُتقَنة والتفاصيل التشغيلية ناقصة — في المهارة والتنفيذ معًا.</td>
+        <td class="skill">ASP.NET Core / Authentication</td><td class="cd">3</td><td class="cs">4</td>
+        <td class="ev">التنفيذ ارتفع بعد إغلاق فحص <code>IsActive</code> في <code>/refresh</code>؛ الآليات كانت مُتقَنة والتفصيل الناقص أُكمِل.</td>
       </tr>
       <tr>
         <td class="skill">Performance</td><td class="cd">3</td><td class="cs">4</td>
         <td class="ev"><b>التنفيذ يسبق الوعي المُثبَت.</b> القرار الصحيح (الإسقاط) مُتَّبع كنمط عبر المشروع كله، لكن بلا قياس يثبت أنه مفهوم لا منسوخ.</td>
       </tr>
       <tr>
-        <td class="skill">Domain / Business Logic</td><td class="cd">2</td><td class="cs">3</td>
-        <td class="ev">التنفيذ أعلى لأن المشكلة لا تتطلب Domain غنيًا — القدر المطلوب موجود ويعمل، والفجوة المعرفية لم تُكلِّف شيئًا هنا.</td>
+        <td class="skill">Domain / Business Logic</td><td class="cd">3</td><td class="cs">4</td>
+        <td class="ev">كلاهما ارتفع: <code>SetGrades</code> أول تغليف حقيقي (مهارة)، وإغلاق إعادة الحالة قسرًا + زرع <code>BatchAdmin</code> (تنفيذ).</td>
       </tr>
       <tr>
-        <td class="skill">Authorization</td><td class="cd">4</td><td class="cs">2</td>
-        <td class="ev"><b>أكبر فجوة في الملف كله.</b> البدائية مصمَّمة بمستوى يفوق المتوقَّع، والثغرتان الحرجتان في مسارين جانبيين لم يُجرَدا. المهارة موجودة؛ التغطية لا.</td>
+        <td class="skill">Authorization</td><td class="cd">4</td><td class="cs">4</td>
+        <td class="ev"><b>الفجوة أُغلقت.</b> كانت 4/2؛ بعد فحص ملكية الموظف + <code>IsGlobal</code> fail-closed + إغلاق تسريب الدفعة، صار التنفيذ يطابق المهارة. مُتحقَّق حيًّا.</td>
       </tr>
       <tr>
-        <td class="skill">Verification / Runtime</td><td class="cd">1</td><td class="cs">2</td>
-        <td class="ev"><b>أوضح علاقة سببية في الملف.</b> صفر ممارسة تحقق أنتج نظامًا يبني بصفر تحذيرات ولا يُقلع. وأُصلح العطل خلال ساعات من الإبلاغ — وهذا يؤكد النمط لا ينفيه: <b>التشخيص والإصلاح سريعان، والاكتشاف الذاتي غائب.</b> المهارة تبقى <code>1</code> لأن الاختبارات ما زالت صفرًا ولا بوابة تشغيل في CI.</td>
+        <td class="skill">Verification / Runtime</td><td class="cd">1</td><td class="cs">1</td>
+        <td class="ev"><b>أوضح علاقة سببية في الملف — وتكرّرت.</b> تحسين تغليف (<code>private set</code>) كسر مستهلكًا في <code>SeedData</code> فصار الحل لا يُبنى. صفر اختبارات وصفر بوابة بناء في CI ⇒ يمرّ هذا صامتًا. المهارة والتنفيذ عند <code>1</code> للسبب نفسه.</td>
       </tr>
     </tbody>
   </table>
   </div>
 
   <div class="note" style="margin-top:20px">
-    <b>القراءة:</b> في ثمانية من تسعة محاور، جودة UniNet تساوي مهارة المطوّر أو تفوقها.
-    الفجوة تظهر في مكان واحد فقط — <code>Authorization</code> — ولها سبب واحد مُشخَّص:
-    <b>غياب آلية تجرد المسارات الجانبية.</b> وهو نفس السبب الذي أنتج <code>Runtime = 1</code>.
+    <b>القراءة:</b> فجوة <code>Authorization</code> السابقة (4 مقابل 2) أُغلقت بالكامل — صار التنفيذ يطابق المهارة.
+    الفجوة الوحيدة الباقية هي <code>Verification / Runtime</code> (1 و1): البناء الأحمر الحالي دليلها الحيّ —
+    تحسينٌ سليم كسر مستهلكًا، ولا آلية تمسكه.
     <br><br>
-    عمليًا: <b>فجوة واحدة، سببها واحد، وعلاجها واحد.</b>
+    عمليًا: <b>الأمن لحق بالمهارة؛ التحقّق وحده ما زال متأخّرًا — وهو نفس السبب منذ أربعة مشاريع.</b>
   </div>
 </section>
 
@@ -1168,9 +1168,9 @@ footer code{font-family:"IBM Plex Mono",monospace;font-size:.9em}
   <div class="cards">
     <div class="card sys">
       <span class="tag">Overall quality</span>
-      <h5>مصمَّم جيدًا، مُنفَّذ بتفاوت، معطَّل اليوم</h5>
+      <h5>مُصمَّم جيدًا، آمن العزل، لا يُبنى مؤقتًا</h5>
       <p>
-        متوسط المحاور <b>3.1 / 5</b>. الفصل المعماري وتصميم قاعدة البيانات وبدائية التفويض
+        متوسط المحاور <b>3.3 / 5</b>. الفصل المعماري وتصميم قاعدة البيانات وبدائية التفويض
         في مستوى يتجاوز المتوقَّع من مشروع فردي؛ والتحقق هو الفجوة الوحيدة الحقيقية.
       </p>
     </div>
@@ -1184,29 +1184,29 @@ footer code{font-family:"IBM Plex Mono",monospace;font-size:.9em}
     </div>
     <div class="card sys">
       <span class="tag">Weakest</span>
-      <h5>التفويض، ثم التشغيل والتزامن</h5>
+      <h5>التشغيل، ثم التزامن</h5>
       <p>
-        <code>Authorization = 2</code> لأن ثغرتين حرجتين تكسران الغرض المركزي — عزل المستأجرين.
-        ومعه <code>Runtime Integrity = 2</code> (الهجرة تفشل على قاعدة جديدة)
-        و<code>Concurrency = 2</code> (صفر optimistic concurrency).
+        <code>Runtime Integrity = 1</code> لأن الحل <b>لا يُبنى الآن</b> —
+        <code>SeedData</code> يُسنِد درجات صارت <code>private set</code> (تكرار نمط: مُنتِج عُدِّل، مستهلكه لم يُجرَد).
+        ومعه <code>Concurrency = 2</code> (صفر optimistic concurrency). التفويض ارتفع إلى <code>4</code> بعد إغلاق الثغرتين.
       </p>
     </div>
     <div class="card sys">
       <span class="tag">Top technical debt</span>
-      <h5>بذرة <code>Semester</code> والفحص المقلوب</h5>
+      <h5>البناء الأحمر في <code>SeedData</code></h5>
       <p>
-        ملاحيات <code>Image</code> أُغلقت. المتبقي أرخص وأغلى أثرًا:
-        سطر واحد في بذور <code>Semester</code> يجعل التجهيز من الصفر ممكنًا،
-        ثم قلب ترتيب الفحص في تحديث الموظف، ثم الحارس <code>IsGlobal</code> كـ fail-open.
+        أرخص دَين وأوقف أثر: ثلاثة أخطاء <code>CS0200</code> لأن <code>GetStudentResults()</code>
+        يُسنِد <code>Midterm/Practical/Final</code> بعد أن صارت <code>private set</code>.
+        استخدم <code>SetGrades(...)</code> في البذرة بدل مُهيِّئ الكائن. دقائق، وبدونها لا يُبنى شيء.
       </p>
     </div>
     <div class="card sys">
       <span class="tag">Top architecture issue</span>
-      <h5><code>IsGlobal</code> — «بلا نطاق ⇒ صلاحية كاملة»</h5>
+      <h5>غياب بوابة تحقّق تشغيلي</h5>
       <p>
-        المشكلة التصميمية الجوهرية الوحيدة. أي مسار يفقد المطالبات يتحوّل تلقائيًا إلى Super Admin،
-        وهو ما حوّل خطأ إسقاط واحدًا إلى انهيار عزل كامل.
-        <b>العالمي يجب أن يكون دورًا مُثبَتًا، لا غياب بيانات.</b>
+        المشكلة البنيوية المتبقية الوحيدة. <code>IsGlobal</code> صار fail-closed،
+        والثغرات أُغلقت — لكن لا شيء يمنع دفع كود لا يُبنى (كما الآن).
+        <b>سطر <code>dotnet build</code>/اختبار في <code>build.yml</code> يحوّل النمط من «تذكُّر» إلى «آليّة».</b>
       </p>
     </div>
     <div class="card sys">
@@ -1222,17 +1222,16 @@ footer code{font-family:"IBM Plex Mono",monospace;font-size:.9em}
 
   <h3>الترتيب الموصى به</h3>
   <div class="flow" style="margin-top:12px">
-    <b class="done">✓ تمّ</b> → ملاحيات <code style="all:unset">Image</code> + هجرة TPH ⇒ التطبيق يُقلع<br>
-    <b>10 دقائق</b> → <code style="all:unset">UniversityId = 1</code> في بذرة <code style="all:unset">Semester</code> ⇒ التجهيز من الصفر يعمل<br>
-    <b>ساعتان</b> → إسقاط <code style="all:unset">UniversityId</code> + اقلب فحص تحديث الموظف + <code style="all:unset">scope.BatchId</code> ⇒ العزل يعمل<br>
+    <b class="done">✓ تمّ</b> → البنود الحرجة الستة + تسريب الدفعة + <code style="all:unset">IsGlobal</code> fail-closed<br>
+    <b>دقائق</b> → أصلح <code style="all:unset">SeedData.GetStudentResults()</code> عبر <code style="all:unset">SetGrades(...)</code> ⇒ الحل يُبنى<br>
+    <b>نصف ساعة</b> → أضِف خطوة <code style="all:unset">dotnet build</code> في <code style="all:unset">build.yml</code> ⇒ لا يمرّ كود لا يُبنى<br>
     <b>نصف يوم</b> → خمسة اختبارات xUnit، أولها يبني <code style="all:unset">AppDbcontext</code> فقط<br>
-    <b>نصف ساعة</b> → <code style="all:unset">dotnet ef dbcontext info</code> في <code style="all:unset">build.yml</code> ⇒ العطل يوقف الدمج<br>
-    <b>ثم</b> → وحدة Study
+    <b>جارٍ</b> → وحدة Study (شريحة <code style="all:unset">Subject</code> بدأت)
   </div>
 
   <div class="note" style="margin-top:22px">
-    <b>الخلاصة:</b> يومان يحوّلان UniNet من «نظام لا يقلع بثغرتين حرجتين»
-    إلى أفضل حالة له على الإطلاق — وهو عائد لا تعطيه أي ميزة جديدة.
+    <b>الخلاصة:</b> جولة التحصين نقلت UniNet من «نظام بثغرات عزل حرجة» إلى نظام آمن العزل ومُتحقَّق منه حيًّا —
+    تبقّى إصلاح بناء من دقائق، وبوابة CI تمنع تكراره. هذا عائد لا تعطيه أي ميزة جديدة.
     <b>ولا شيء في هذا الملف يقترح تعقيدًا معماريًا إضافيًا:</b>
     لا Microservices، ولا CQRS، ولا وسيط رسائل، ولا Cache موزّع —
     لأن لا مشكلة قائمة في UniNet تستدعي أيًّا منها.
@@ -1240,8 +1239,8 @@ footer code{font-family:"IBM Plex Mono",monospace;font-size:.9em}
 </section>
 
 <footer>
-  تقييم قائم على الأدلة · <code>d24bef7</code> · <code>refactor/v1Branch</code> · 2026-08-19<br>
-  المصادر: قراءة 225 ملف <code>.cs</code> · <code>dotnet build UniNet.slnx</code> · <code>dotnet ef dbcontext info</code> · <code>dotnet ef migrations script</code> · <code>DEVELOPER_PROFILE.md</code><br>
+  تقييم قائم على الأدلة · <code>d1f0510</code> · <code>refactor/v1Branch</code> · 2026-08-23<br>
+  المصادر: قراءة 233 ملف <code>.cs</code> · <code>dotnet build UniNet.slnx</code> · <code>dotnet ef dbcontext info</code> · <code>dotnet ef migrations script</code> · <code>DEVELOPER_PROFILE.md</code><br>
   لوحة الألوان مُتحقَّق منها آليًا للوضعين (فصل CVD ΔE 27.5 / 25.6). الخطورة مُرمَّزة طباعيًا لا لونيًا لأن الأحمر لا يُميَّز عن لون المطوّر (ΔE 8.7 &lt; 15).
 </footer>
 
@@ -1255,15 +1254,15 @@ const DEV = {
     {n:"EF Core",              s:4, c:"High",   t:"إسقاط عبر Expression، فهارس مُصفّاة، أعمدة محسوبة، TPH"},
     {n:"Database Design",      s:4, c:"High",   t:"مخطط يعكس قواعد العمل حرفيًا؛ لا concurrency token"},
     {n:"Architecture",         s:4, c:"High",   t:"فصل مفروض بمراجع المشاريع؛ تجريدات ميتة"},
-    {n:"Authorization Design", s:4, c:"High",   t:"إعادة تصميم البدائية؛ لكن IsGlobal هو fail-open"},
+    {n:"Authorization Design", s:4, c:"High",   t:"أعاد تصميم البدائية؛ IsGlobal صار fail-closed؛ طبّق فحص الملكية"},
     {n:"Debugging",            s:4, c:"High",   t:"يشخّص فئة الخطأ لا حالته — أربع مرات موثّقة"},
     {n:"C# / .NET",            s:4, c:"High",   t:"NRT، pattern matching، expression trees، MSBuild"},
     {n:"ASP.NET Core",         s:3, c:"High",   t:"JWT وتفويض المورد؛ أخطاء في ترتيب الـ pipeline"},
     {n:"REST API Design",      s:3, c:"High",   t:"توجيه متّسق؛ فهم ناقص لرموز الحالة"},
     {n:"Code Quality",         s:3, c:"High",   t:"اتساق عالٍ؛ كود ميت متراكم وأخطاء إملائية عامة"},
     {n:"Performance",          s:3, c:"Medium", t:"صفر N+1 وasync متّسق؛ لا دليل على قياس"},
-    {n:"Domain Modeling",      s:2, c:"Medium", t:"كيانات بنيوية؛ SetGrades أول سلوك وقابل للتجاوز"},
-    {n:"Testing &",            n2:"Verification", s:1, c:"High", t:"وعي موجود وممارسة صفر — CI يقيس التصريف لا التشغيل"}
+    {n:"Domain Modeling",      s:3, c:"Medium", t:"SetGrades يفرض private set + GradeConstants؛ لكن بنيوي في الغالب"},
+    {n:"Testing &",            n2:"Verification", s:1, c:"High", t:"صفر اختبارات؛ البناء الأحمر الحالي كان CI سيمسكه"}
   ]
 };
 
@@ -1272,17 +1271,17 @@ const SYS = {
   words:["N/A","Poor","Weak","Acceptable","Strong","Excellent"],
   axes:[
     {n:"Architecture",       s:4, c:"High",   t:"اتجاه اعتماد صحيح مفروض على مستوى csproj"},
-    {n:"Database Design",    s:4, c:"High",   t:"فهرسة ممتازة؛ الهجرة الثانية تفشل"},
+    {n:"Database Design",    s:4, c:"High",   t:"فهرسة ممتازة؛ الهجرة موحّدة وتعمل من الصفر"},
     {n:"Data Access",        s:4, c:"High",   t:"صفر N+1؛ AsNoTracking غير متسق"},
     {n:"Performance",        s:4, c:"Medium", t:"إسقاط فعّال؛ PageSize بلا حدّ أعلى"},
     {n:"Application Layer",  s:3, c:"High",   t:"نمط موحّد؛ Service Locator وتكرار"},
     {n:"API Design",         s:3, c:"High",   t:"متحكمات رفيعة؛ 409 كـ400 و201 غير مُنفَّذ"},
-    {n:"Validation &",       n2:"Errors", s:3, c:"High", t:"فصل ثلاثي واعٍ؛ ثغرات تغطية تُنتج 500"},
-    {n:"Business Logic",     s:3, c:"High",   t:"معظمها صحيح؛ إعادة الحالة قسرًا وميزتان معطّلتان"},
-    {n:"Authentication",     s:3, c:"High",   t:"تدوير وhash سليمان؛ refresh بلا فحص IsActive"},
-    {n:"Authorization",      s:2, c:"High",   t:"بدائية ممتازة، وثغرتان حرجتان تلتفّان حولها"},
+    {n:"Validation &",       n2:"Errors", s:3, c:"High", t:"StudentNumber أُصلح؛ انتهاك التفرّد ما زال 500"},
+    {n:"Business Logic",     s:4, c:"High",   t:"إعادة الحالة قسرًا أُصلحت (endpoint صريح)؛ BatchAdmin مزروع"},
+    {n:"Authentication",     s:4, c:"High",   t:"تدوير وhash سليمان؛ refresh صار يفحص IsActive"},
+    {n:"Authorization",      s:4, c:"High",   t:"الثغرتان + تسريب الدفعة مغلقة؛ IsGlobal صار fail-closed"},
     {n:"Concurrency",        s:2, c:"High",   t:"معاملات في مكانها؛ صفر optimistic concurrency"},
-    {n:"Runtime Integrity",  s:2, c:"High",   t:"يُقلع الآن؛ لكن الهجرة تفشل على قاعدة جديدة"}
+    {n:"Runtime Integrity",  s:1, c:"High",   t:"الهجرة تعمل؛ لكن الحل لا يُبنى — SeedData يُسنِد درجات read-only"}
   ]
 };
 

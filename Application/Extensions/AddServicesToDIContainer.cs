@@ -51,6 +51,10 @@ using Domain.Interfaces.StudentStatusInterfaces;
 using Domain.Interfaces.StudentInterfaces;
 using Application.Services;
 using Application.Validators.StudentValidator;
+using Contracts.Requests.StudyRequestes.SubjectRequests;
+using Application.Validators.StudyValidators.SubjectValidators;
+using Domain.Interfaces.StudyInterfaces.SubjectInterfaces;
+using Application.Services.StudyServices;
 
 namespace Application.Extensions
 {
@@ -71,6 +75,7 @@ namespace Application.Extensions
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<IStatusService, StudentStatusService>();
             services.AddScoped<IStudentService, StudentService>();
+            services.AddScoped<ISubjectService, SubjectService>();
             return services;
         }
         public static IServiceCollection Validators(this IServiceCollection services)
@@ -103,6 +108,9 @@ namespace Application.Extensions
             //Student Validators
             services.AddScoped<IValidator<AddStudentDTO>, AddStudentValidator>();
             services.AddScoped<IValidator<UpdateStudentDTO>, UpdateStudentValidator>();
+            //Study Validators
+            services.AddScoped<IValidator<AddSubjectDTO>, AddSubjectValidator>();
+            services.AddScoped<IValidator<UpdateSubjectDTO>, UpdateSubjectValidator>();
             return services;
         }
     }
