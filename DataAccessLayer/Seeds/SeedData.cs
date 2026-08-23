@@ -289,20 +289,21 @@ namespace DataAccessLayer.Seeds
         // 7. النتائج الأكاديمية (Student Results)
         // ----------------------------------------------------------
 
-        public static List<StudentResult> GetStudentResults() => new()
+        public static List<StudentResult> GetStudentResults()
         {
-            new StudentResult
+            // الدرجات صارت private set؛ تُكتب فقط عبر SetGrades الذي يفرض حدود GradeConstants.
+            // Total عمود محسوب في قاعدة البيانات، لا يُعيَّن هنا.
+            var result = new StudentResult
             {
                 StudentResultId = 1,
                 StudentId = 1,
                 SectionSubjectId = 1,
-                Midterm = 45,    // من 50
-                Practical = 10,  // من 10
-                Final = 40,      // من 40
-                // Total هو عمود محسوب في قاعدة البيانات، لا نحتاج لتعيينه هنا.
-                CreatedByUserId =1,
+                CreatedByUserId = 1,
                 CreatedAt = new DateTime(2025, 12, 25, 0, 0, 0, DateTimeKind.Utc)
-            }
-        };
+            };
+            result.SetGrades(27, 16, 45); // ضمن الحدود 30 / 20 / 50 (المجموع من 100)
+
+            return new List<StudentResult> { result };
+        }
     }
 }

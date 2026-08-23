@@ -82,7 +82,11 @@ namespace Application.Services.StudyServices
             if (subject == null)
                 return false;
 
-            return _unitOfWorkRepository.SubjectRepository.Delete(subject);
+            var result = _unitOfWorkRepository.SubjectRepository.Delete(subject);
+            if (result)
+                await _unitOfWorkRepository.CompleteAsync();
+
+            return result;
         }
 
         public async Task<PagedResult<SubjectDTO>> GetAll(SubjectFilterDTO? filter, int pageNumber, int pageSize)
@@ -154,6 +158,7 @@ namespace Application.Services.StudyServices
             subject.UpdatedAt = DateTime.UtcNow;
             subject.UpdatedByUserId = currentUserId;
 
+            await _unitOfWorkRepository.CompleteAsync();
             var subjectDto = await GetDTOById(subject.SubjectId);
             return  AddUpdateServiceResponse<SubjectDTO>.Success(subjectDto!);
         }

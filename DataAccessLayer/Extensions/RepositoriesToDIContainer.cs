@@ -16,7 +16,9 @@ using Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces;
 using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
 using Domain.Interfaces.StudentInterfaces;
 using Domain.Interfaces.StudentStatusInterfaces;
+using Domain.Interfaces.StudyInterfaces.SubjectInterfaces;
 using Domain.Interfaces.UnitOfWork;
+using DataAccessLayer.Repos.StudyRepository;
 using FluentValidation;
 using FluentValidation.Validators;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,6 +47,7 @@ namespace DataAccessLayer.Extensions
             services.AddScoped<IEmployeeRepository, EmployeeRepository>();
             services.AddScoped<IStatusRepository, StudentStatusRepository>();
             services.AddScoped<IStudentRepository, StudentRepository>();
+            services.AddScoped<ISubjectRepository, SubjectRepository>();
             return services;
         }
     }
