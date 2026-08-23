@@ -77,7 +77,7 @@ namespace DataAccessLayer.Repos.StudyRepository
             if (filter == null)
                 filter = new SubjectFilterDTO();
 
-            var query = _context.Subjects.OrderBy(s => s.DepartmentId).
+            var query = _context.Subjects.AsNoTracking().OrderBy(s => s.DepartmentId).
                 ThenBy(s => s.CreatedAt).ThenBy(s => s.CreditHours).AsQueryable();
 
             if(filter.DepartmentId.HasValue)
@@ -126,7 +126,7 @@ namespace DataAccessLayer.Repos.StudyRepository
             if(scope == null)
                 scope = new UserScope();
 
-           var query = _context.Subjects.OrderBy(s => s.DepartmentId).
+           var query = _context.Subjects.AsNoTracking().OrderBy(s => s.DepartmentId).
                 ThenBy(s => s.CreatedAt).ThenBy(s => s.CreditHours).AsQueryable();
 
 

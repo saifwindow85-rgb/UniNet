@@ -2,6 +2,7 @@
 using UniNet.Authorization.AuthorizationHandlers.AcademicAuthorizationHandlers;
 using UniNet.Authorization.AuthorizationHandlers.EmployeeHandlers;
 using UniNet.Authorization.AuthorizationHandlers.StudentHandler;
+using UniNet.Authorization.AuthorizationHandlers.StudyHandlers;
 
 namespace UniNet.Extensions
 {
@@ -19,7 +20,9 @@ namespace UniNet.Extensions
             services.AddScoped<IAuthorizationHandler, EmployeeOwnerHandler>();
             // Student Authorization Handlers
             services.AddScoped<IAuthorizationHandler, StudentOwnerHandler>();
-           
+            // Study Authorization Handlers
+            services.AddScoped<IAuthorizationHandler, SubjectOwnerHandler>();
+
             return services;
         }
     }

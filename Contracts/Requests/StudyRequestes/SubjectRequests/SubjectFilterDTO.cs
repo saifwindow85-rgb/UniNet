@@ -8,10 +8,10 @@ namespace Contracts.Requests.StudyRequestes.SubjectRequests
 {
     public class SubjectFilterDTO
     {
-        public string Code { get; set; } = null!;
+        public string? Code { get; set; }
 
-        public string Name { get; set; } = null!;
+        public string? Name { get; set; }
 
-        public int?DepartmentId { get; set; }
+        public int? DepartmentId { get; set; }
     }
 }
