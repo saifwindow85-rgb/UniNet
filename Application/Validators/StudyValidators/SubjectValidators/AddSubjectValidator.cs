@@ -14,9 +14,9 @@ namespace Application.Validators.StudyValidators.SubjectValidators
         {
             // Code Validation (Format: 3 letters, hyphen, 7 numbers -> e.g., abs-0000000)
             RuleFor(s => s.Code)
-                .NotEmpty().WithMessage("Subject code is required.")
-                .MaximumLength(25).WithMessage("Subject code must not exceed 25 characters.")
-                .Matches(@"^[a-zA-Z]{3}-\d{7}$").WithMessage("Subject code must follow the format 'abs-0000000' (3 letters, a hyphen, and 7 digits).");
+              .NotEmpty().WithMessage("Subject code is required.")
+                   .MaximumLength(25).WithMessage("Subject code must not exceed 25 characters.")
+                        .Matches(@"^[a-zA-Z0-9]+$").WithMessage("Subject code must contain only letters and numbers.");
 
             // Name Validation
             RuleFor(s => s.Name)

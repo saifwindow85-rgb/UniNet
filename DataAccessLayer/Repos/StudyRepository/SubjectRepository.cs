@@ -25,6 +25,7 @@ namespace DataAccessLayer.Repos.StudyRepository
             SubjectId = s.SubjectId,
             SubjectName = s.Name,
             Code = s.Code,
+            CreditHours = s.CreditHours,
             Description = s.Description,
             DepartmentId = s.DepartmentId,
             DepartmentName = s.Department.Name,
