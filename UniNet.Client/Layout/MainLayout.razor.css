@@ -1,0 +1,41 @@
+.shell { min-height: 100vh; display: flex; flex-direction: column; background: #f4f7fb; }
+
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 62px;
+    padding-inline: clamp(1rem, 3vw, 2rem);
+    background: #fff;
+    border-bottom: 1px solid #e6ecf3;
+    box-shadow: 0 1px 3px rgba(15, 30, 48, .04);
+}
+
+.brand { display: inline-flex; align-items: center; gap: .55rem; }
+.brand .glyph {
+    display: grid; place-items: center;
+    width: 34px; height: 34px; border-radius: 10px;
+    font-family: "Inter", sans-serif; font-weight: 700; color: #06232b;
+    background: linear-gradient(140deg, #2ee6d1, #0fa596);
+}
+.brand .name { font-family: "Inter", sans-serif; font-weight: 600; font-size: 1.15rem; color: #0f2a43; }
+
+.user { display: inline-flex; align-items: center; gap: .75rem; }
+.who { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.25; }
+.uname { font-size: .9rem; font-weight: 600; color: #1f3348; }
+.urole { font-size: .74rem; color: #7c8da0; }
+.avatar {
+    display: grid; place-items: center;
+    width: 38px; height: 38px; border-radius: 50%;
+    font-family: "Inter", sans-serif; font-weight: 600; color: #fff;
+    background: linear-gradient(140deg, #16456e, #0f2a43);
+}
+.logout {
+    padding: .45rem .85rem;
+    font-family: inherit; font-size: .84rem; font-weight: 600;
+    color: #b23b4b; background: #fdf1f3; border: 1px solid #f4d0d6;
+    border-radius: 9px; cursor: pointer; transition: background .15s ease;
+}
+.logout:hover { background: #fbe3e7; }
+
+.content { flex: 1; padding: clamp(1.25rem, 3vw, 2.25rem); }

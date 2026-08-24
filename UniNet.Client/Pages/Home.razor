@@ -1,0 +1,27 @@
+﻿@page "/"
+@attribute [Authorize]
+
+<PageTitle>الرئيسية · UniNet</PageTitle>
+
+<section class="welcome">
+    <AuthorizeView>
+        <Authorized>
+            <h1>مرحبًا، @context.User.Identity?.Name 👋</h1>
+            <p>تم تسجيل دخولك بنجاح إلى لوحة إدارة UniNet.</p>
+
+            <div class="claims">
+                <div class="claim"><span>الدور</span><b>@Claim(context, "http://schemas.microsoft.com/ws/2008/06/identity/claims/role")</b></div>
+                <div class="claim"><span>UniversityId</span><b>@Claim(context, "UniversityId")</b></div>
+                <div class="claim"><span>CollegeId</span><b>@Claim(context, "CollegeId")</b></div>
+                <div class="claim"><span>DepartmentId</span><b>@Claim(context, "DepartmentId")</b></div>
+                <div class="claim"><span>BatchId</span><b>@Claim(context, "BatchId")</b></div>
+            </div>
+            <p class="next">هذه صفحة مؤقتة تؤكّد نجاح المصادقة وقراءة النطاق من الـ JWT. الشاشات التالية ستُبنى فوق هذا الأساس.</p>
+        </Authorized>
+    </AuthorizeView>
+</section>
+
+@code {
+    private static string Claim(AuthenticationState state, string type) =>
+        state.User.FindFirst(type)?.Value ?? "—";
+}

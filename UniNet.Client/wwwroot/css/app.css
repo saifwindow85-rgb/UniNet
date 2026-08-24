@@ -1,0 +1,106 @@
+:root {
+    --ink: #0f1e30;
+    --muted: #5b6b7d;
+    --brand-800: #0f2a43;
+    --accent: #17c3b2;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+}
+
+body {
+    font-family: "IBM Plex Sans Arabic", "Segoe UI", system-ui, sans-serif;
+    color: var(--ink);
+    background: #f4f7fb;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3, h4 { text-wrap: balance; }
+
+a { color: var(--accent); }
+
+:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* شاشة الإقلاع */
+.boot {
+    position: fixed;
+    inset: 0;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 1.1rem;
+    background: linear-gradient(155deg, #0f2a43, #081a2c);
+    color: #cfe0f0;
+    font-family: "IBM Plex Sans Arabic", system-ui, sans-serif;
+}
+.boot-glyph {
+    display: grid;
+    place-items: center;
+    width: 58px;
+    height: 58px;
+    border-radius: 16px;
+    font-family: "Inter", sans-serif;
+    font-weight: 700;
+    font-size: 1.8rem;
+    color: #06232b;
+    background: linear-gradient(140deg, #2ee6d1, #0fa596);
+    box-shadow: 0 12px 30px -10px rgba(23, 195, 178, .7);
+}
+.boot-bar {
+    width: 190px;
+    height: 4px;
+    border-radius: 99px;
+    background: rgba(255, 255, 255, .12);
+    overflow: hidden;
+}
+.boot-bar span {
+    display: block;
+    width: 40%;
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, #2ee6d1, #0fa596);
+    animation: boot-slide 1.1s ease-in-out infinite;
+}
+@keyframes boot-slide {
+    0% { transform: translateX(-120%); }
+    100% { transform: translateX(320%); }
+}
+.boot p { margin: 0; font-size: .9rem; color: #90a8c0; }
+
+/* شريط خطأ Blazor */
+#blazor-error-ui {
+    display: none;
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 1000;
+    padding: .7rem 1.1rem;
+    background: #fff3cd;
+    border-top: 1px solid #ffe69c;
+    color: #664d03;
+    box-shadow: 0 -3px 14px rgba(0, 0, 0, .08);
+    font-size: .9rem;
+}
+#blazor-error-ui .dismiss {
+    position: absolute;
+    inset-inline-end: .9rem;
+    top: .6rem;
+    cursor: pointer;
+}
+#blazor-error-ui .reload { color: #0b4a6f; font-weight: 600; }
+
+.app-splash {
+    display: grid;
+    place-content: center;
+    min-height: 60vh;
+    color: var(--muted);
+}

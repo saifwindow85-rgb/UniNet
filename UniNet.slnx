@@ -4,4 +4,5 @@
   <Project Path="DataAccessLayer/DataAccessLayer.csproj" />
   <Project Path="Domain/Domain.csproj" />
   <Project Path="UniNet/UniNet.csproj" />
+  <Project Path="UniNet.Client/UniNet.Client.csproj" />
 </Solution>
