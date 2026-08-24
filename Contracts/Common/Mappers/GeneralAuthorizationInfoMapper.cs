@@ -95,5 +95,13 @@ namespace Contracts.Common.Mappers
                 DepartmentId = authorizationInfo.DepartmentId,
             };
         }
+
+        public static GeneralAuthorizationInfo ToSemesterInfo(this SemesterAuthorizationInfo authorizationInfo)
+        {
+            return new GeneralAuthorizationInfo
+            {
+                UniversityId = authorizationInfo.UniversityId,
+            };
+        }
     }
 }

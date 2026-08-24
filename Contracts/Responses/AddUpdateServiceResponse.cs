@@ -60,5 +60,21 @@ namespace Contracts.Responses
             ErrorType = EnErrorTypes.ExistedResource,
             Errors = new List<string>() { $" {typeof(TEntity).Name} With UserName : {proprty} Already Exists!" }
         };
+
+        // يُرجَع عند محاولة إضافة فصل دراسي جديد بينما يوجد فصل حالي (Current) لم ينتهِ بعد.
+        public static AddUpdateServiceResponse<T> CurrentSemesterExists() => new AddUpdateServiceResponse<T>
+        {
+            IsSuccess = false,
+            ErrorType = EnErrorTypes.ExistedResource,
+            Errors = new List<string>() { "A current semester already exists for this university. End it before opening a new one." }
+        };
+
+        // يُرجَع عند محاولة تعديل فصل دراسي قديم (Not Current) — التعديل مسموح للفصل الحالي فقط.
+        public static AddUpdateServiceResponse<T> SemesterNotCurrent() => new AddUpdateServiceResponse<T>
+        {
+            IsSuccess = false,
+            ErrorType = EnErrorTypes.InvalidData,
+            Errors = new List<string>() { "Only the current semester can be modified. This semester is not current." }
+        };
     }
 }
