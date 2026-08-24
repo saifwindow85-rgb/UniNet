@@ -57,6 +57,9 @@ using Domain.Interfaces.StudyInterfaces.SubjectInterfaces;
 using Contracts.Requests.StudyRequestes.SemesterRequests;
 using Application.Validators.StudyValidators.SemesterValidators;
 using Domain.Interfaces.StudyInterfaces.SemesterInterfaces;
+using Contracts.Requests.StudyRequestes.SectionSubjectRequests;
+using Application.Validators.StudyValidators.SectionSubjectValidators;
+using Domain.Interfaces.StudyInterfaces.SectionSubjectInterfaces;
 using Application.Services.StudyServices;
 
 namespace Application.Extensions
@@ -80,6 +83,7 @@ namespace Application.Extensions
             services.AddScoped<IStudentService, StudentService>();
             services.AddScoped<ISubjectService, SubjectService>();
             services.AddScoped<ISemesterService, SemesterService>();
+            services.AddScoped<ISectionSubjectService, SectionSubjectService>();
             return services;
         }
         public static IServiceCollection Validators(this IServiceCollection services)
@@ -117,6 +121,8 @@ namespace Application.Extensions
             services.AddScoped<IValidator<UpdateSubjectDTO>, UpdateSubjectValidator>();
             services.AddScoped<IValidator<AddSemesterDTO>, AddSemesterValidator>();
             services.AddScoped<IValidator<UpdateSemesterDTO>, UpdateSemesterValidator>();
+            services.AddScoped<IValidator<AddSectionSubjectDTO>, AddSectionSubjectValidator>();
+            services.AddScoped<IValidator<UpdateSectionSubjectDTO>, UpdateSectionSubjectValidator>();
             return services;
         }
     }
