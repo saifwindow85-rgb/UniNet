@@ -13,6 +13,7 @@ using Domain.Interfaces.LoginInterfaces.TokenInterfaces;
 using Domain.Interfaces.StudentInterfaces;
 using Domain.Interfaces.StudentStatusInterfaces;
 using Domain.Interfaces.StudyInterfaces.SubjectInterfaces;
+using Domain.Interfaces.StudyInterfaces.SemesterInterfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -37,6 +38,7 @@ namespace Domain.Interfaces.UnitOfWork
         public IStatusRepository StatusRepository { get; }
         public IStudentRepository StudentRepository { get; }
         public ISubjectRepository SubjectRepository { get; }
+        public ISemesterRepository SemesterRepository { get; }
         public Task<int> CompleteAsync();
         public Task BeginTransactionAsync();
         public Task CommitTransactionAsync();
