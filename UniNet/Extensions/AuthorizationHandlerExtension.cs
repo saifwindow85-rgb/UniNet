@@ -24,6 +24,7 @@ namespace UniNet.Extensions
             services.AddScoped<IAuthorizationHandler, SubjectOwnerHandler>();
             services.AddScoped<IAuthorizationHandler, SemesterOwnerHandler>();
             services.AddScoped<IAuthorizationHandler, SectionSubjectOwnerHandler>();
+            services.AddScoped<IAuthorizationHandler, StudentResultOwnerHandler>();
 
             return services;
         }

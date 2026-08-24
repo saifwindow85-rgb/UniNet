@@ -65,6 +65,12 @@ namespace UniNet.Extensions
                 options.AddPolicy("SectionSubjectOwnerPolicy", policy =>
                     policy.Requirements.Add(new OwnershipRequirement()));
             });
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("StudentResultOwnerPolicy", policy =>
+                    policy.Requirements.Add(new OwnershipRequirement()));
+            });
             return services;
         }
     }

@@ -23,6 +23,7 @@ using Domain.Interfaces.StudentStatusInterfaces;
 using Domain.Interfaces.StudyInterfaces.SubjectInterfaces;
 using Domain.Interfaces.StudyInterfaces.SemesterInterfaces;
 using Domain.Interfaces.StudyInterfaces.SectionSubjectInterfaces;
+using Domain.Interfaces.StudyInterfaces.StudentResultInterfaces;
 using Domain.Interfaces.UnitOfWork;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -65,6 +66,7 @@ namespace DataAccessLayer.Repos
         public ISubjectRepository SubjectRepository { get; private set;  }
         public ISemesterRepository SemesterRepository { get; private set; }
         public ISectionSubjectRepository SectionSubjectRepository { get; private set; }
+        public IStudentResultRepository StudentResultRepository { get; private set; }
 
         public UnitOfWorkRepository(AppDbcontext context)
         {
@@ -85,6 +87,7 @@ namespace DataAccessLayer.Repos
             SubjectRepository = new SubjectRepository(context);
             SemesterRepository = new SemesterRepository(context);
             SectionSubjectRepository = new SectionSubjectRepository(context);
+            StudentResultRepository = new StudentResultRepository(context);
         }
         public async Task<int> CompleteAsync()
         {
