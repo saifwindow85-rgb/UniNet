@@ -107,7 +107,7 @@ namespace DataAccessLayer.Repos.StudyRepository
 
             var query = _context.Semesters.AsNoTracking().OrderBy(s => s.UniversityId).ThenByDescending(s => s.StartDate).AsQueryable();
 
-            if(filter.UniversityId.HasValue)
+            if(filter.UniversityId.HasValue && scope.IsGlobal)
             {
                 query = query.Where(s => s.UniversityId == filter.UniversityId);
             }
