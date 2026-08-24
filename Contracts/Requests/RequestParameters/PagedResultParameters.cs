@@ -95,4 +95,10 @@ namespace Contracts.Requests.RequestParameters
         [Range(1, int.MaxValue, ErrorMessage = "SectionSubjectId  Format!/SectionSubjectId Must Be > 0")]
         public int SectionSubjectId { get; set; }
     }
+
+    public class StudentResultIdParameter
+    {
+        [Range(1, int.MaxValue, ErrorMessage = "StudentResultId  Format!/StudentResultId Must Be > 0")]
+        public int StudentResultId { get; set; }
+    }
 }
