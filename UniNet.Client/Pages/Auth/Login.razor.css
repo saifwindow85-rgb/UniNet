@@ -1,0 +1,311 @@
+/* ===== Login — بنية لوحتين + هوية بصرية حديثة ===== */
+.auth {
+    --brand-900: #0b2138;
+    --brand-800: #0f2a43;
+    --brand-600: #16456e;
+    --brand-400: #2f79b5;
+    --accent: #17c3b2;
+    --accent-strong: #0fa596;
+    --ink: #0f1e30;
+    --muted: #5b6b7d;
+    --line: #e4e9f0;
+    --field: #f5f8fb;
+    --surface: #ffffff;
+    --danger: #c8394a;
+
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    min-height: 100vh;
+    background: var(--surface);
+    color: var(--ink);
+    font-family: "IBM Plex Sans Arabic", "Segoe UI", system-ui, sans-serif;
+}
+
+/* ---------- لوحة الهوية ---------- */
+.brand {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: clamp(2rem, 4vw, 3.75rem);
+    color: #eaf2fb;
+    background:
+        radial-gradient(120% 90% at 85% 0%, rgba(23, 195, 178, .22), transparent 55%),
+        linear-gradient(155deg, var(--brand-800) 0%, var(--brand-900) 55%, #081a2c 100%);
+}
+
+.brand-net {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: .5;
+    pointer-events: none;
+}
+.brand-net .edges line {
+    stroke: rgba(160, 200, 235, .30);
+    stroke-width: 1.2;
+}
+.brand-net .nodes circle {
+    fill: rgba(23, 195, 178, .55);
+}
+.brand-net .nodes circle:nth-child(2n) {
+    fill: rgba(150, 200, 240, .55);
+}
+
+.brand-body { position: relative; z-index: 1; margin-top: auto; }
+
+.brand-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: .6rem;
+    margin-bottom: 2.4rem;
+}
+.brand-glyph {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 13px;
+    font-family: "Inter", sans-serif;
+    font-weight: 700;
+    font-size: 1.35rem;
+    color: #06232b;
+    background: linear-gradient(140deg, #2ee6d1, var(--accent-strong));
+    box-shadow: 0 8px 22px -8px rgba(23, 195, 178, .7);
+}
+.brand-name {
+    font-family: "Inter", sans-serif;
+    font-weight: 600;
+    font-size: 1.5rem;
+    letter-spacing: -.02em;
+}
+
+.brand-title {
+    font-size: clamp(1.7rem, 3vw, 2.5rem);
+    font-weight: 700;
+    line-height: 1.28;
+    margin: 0 0 1rem;
+    text-wrap: balance;
+}
+.brand-tag {
+    max-width: 40ch;
+    color: #b9cbe0;
+    font-size: 1.02rem;
+    line-height: 1.85;
+    margin: 0 0 2rem;
+}
+
+.brand-points { list-style: none; margin: 0; padding: 0; display: grid; gap: .85rem; }
+.brand-points li {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    color: #d4e2f0;
+    font-size: .96rem;
+}
+.brand-points .dot {
+    flex: none;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 4px rgba(23, 195, 178, .18);
+}
+
+.brand-foot {
+    position: relative;
+    z-index: 1;
+    margin: 2.5rem 0 0;
+    font-size: .82rem;
+    color: #7f97b0;
+    font-family: "Inter", sans-serif;
+}
+
+/* ---------- لوحة النموذج ---------- */
+.panel {
+    display: grid;
+    place-items: center;
+    padding: clamp(1.5rem, 4vw, 3rem);
+    background:
+        radial-gradient(90% 60% at 50% -10%, #eef4fb, transparent 60%),
+        var(--surface);
+}
+
+.card {
+    width: 100%;
+    max-width: 400px;
+    animation: rise .5s cubic-bezier(.2, .7, .3, 1) both;
+}
+@keyframes rise {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card-head { margin-bottom: 1.75rem; }
+.card-head h2 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    margin: 0 0 .4rem;
+    letter-spacing: -.01em;
+}
+.card-head p { margin: 0; color: var(--muted); font-size: .96rem; }
+
+/* الحقول */
+.field { margin-bottom: 1.15rem; }
+.field label {
+    display: block;
+    font-size: .86rem;
+    font-weight: 600;
+    color: #34465a;
+    margin-bottom: .5rem;
+}
+.control { position: relative; display: flex; align-items: center; }
+
+.lead-ic {
+    position: absolute;
+    inset-inline-start: 13px;
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: #93a6b8;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    pointer-events: none;
+    transition: stroke .18s ease;
+}
+
+.input {
+    width: 100%;
+    height: 50px;
+    padding-inline: 42px 14px;
+    font-size: .98rem;
+    font-family: "Inter", "IBM Plex Sans Arabic", sans-serif;
+    color: var(--ink);
+    background: var(--field);
+    border: 1.5px solid var(--line);
+    border-radius: 12px;
+    outline: none;
+    transition: border-color .18s ease, background .18s ease, box-shadow .18s ease;
+}
+.input::placeholder { color: #9fb0c0; }
+.input:hover { border-color: #cfd9e5; }
+.input:focus {
+    background: var(--surface);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(23, 195, 178, .16);
+}
+.control:focus-within .lead-ic { stroke: var(--accent-strong); }
+
+/* زر إظهار كلمة المرور */
+.reveal {
+    position: absolute;
+    inset-inline-end: 8px;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: none;
+    background: transparent;
+    color: #8296a8;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: color .15s ease, background .15s ease;
+}
+.reveal:hover { color: var(--brand-600); background: #eef2f7; }
+.reveal svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+
+/* رسائل التحقق */
+.field ::deep .validation-message {
+    display: block;
+    margin-top: .4rem;
+    font-size: .82rem;
+    color: var(--danger);
+}
+.field ::deep .invalid {
+    border-color: #e79aa4;
+    background: #fdf5f6;
+}
+
+/* تنبيه الخطأ */
+.alert {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding: .8rem .95rem;
+    margin-bottom: 1.25rem;
+    font-size: .9rem;
+    color: #8f2231;
+    background: #fdf1f3;
+    border: 1px solid #f4c9d0;
+    border-radius: 11px;
+    animation: shake .4s ease;
+}
+.alert svg { flex: none; width: 20px; height: 20px; fill: none; stroke: var(--danger); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+@keyframes shake {
+    10%, 90% { transform: translateX(-1px); }
+    30%, 70% { transform: translateX(2px); }
+    50% { transform: translateX(-3px); }
+}
+
+/* زر الدخول */
+.submit {
+    width: 100%;
+    height: 52px;
+    margin-top: .35rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: .55rem;
+    font-family: inherit;
+    font-size: 1.02rem;
+    font-weight: 600;
+    color: #052a2a;
+    background: linear-gradient(135deg, #24d6c2, var(--accent-strong));
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 12px 26px -12px rgba(15, 165, 150, .8);
+    transition: transform .12s ease, box-shadow .18s ease, filter .18s ease;
+}
+.submit:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 16px 30px -12px rgba(15, 165, 150, .9); }
+.submit:active:not(:disabled) { transform: translateY(0); }
+.submit:disabled { filter: grayscale(.15) opacity(.75); cursor: default; }
+.submit .arrow { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+.spinner {
+    width: 18px;
+    height: 18px;
+    border: 2.5px solid rgba(5, 42, 42, .3);
+    border-top-color: #052a2a;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.hint {
+    margin: 1.5rem 0 0;
+    text-align: center;
+    font-size: .82rem;
+    color: #93a2b2;
+}
+
+/* ---------- استجابة ---------- */
+@media (max-width: 880px) {
+    .auth { grid-template-columns: 1fr; }
+    .brand {
+        padding: 2rem 1.5rem 2.4rem;
+        min-height: auto;
+    }
+    .brand-body { margin-top: 0; }
+    .brand-title { font-size: 1.5rem; }
+    .brand-tag, .brand-points, .brand-foot { display: none; }
+    .brand-mark { margin-bottom: 1.4rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .card, .alert, .spinner { animation: none; }
+    .submit { transition: none; }
+}

@@ -1,0 +1,23 @@
+﻿<CascadingAuthenticationState>
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)">
+                <NotAuthorized>
+                    <RedirectToLogin />
+                </NotAuthorized>
+                <Authorizing>
+                    <div class="app-splash">جارٍ التحقق…</div>
+                </Authorizing>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <LayoutView Layout="@typeof(Layout.MainLayout)">
+                <section class="app-splash">
+                    <h3>الصفحة غير موجودة</h3>
+                    <p>المحتوى الذي تبحث عنه غير متوفّر.</p>
+                </section>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>
