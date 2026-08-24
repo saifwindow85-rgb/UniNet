@@ -103,5 +103,17 @@ namespace Contracts.Common.Mappers
                 UniversityId = authorizationInfo.UniversityId,
             };
         }
+
+        public static GeneralAuthorizationInfo ToSectionSubjectInfo(this SectionSubjectAuthorizationInfo authorizationInfo)
+        {
+            return new GeneralAuthorizationInfo
+            {
+                UniversityId = authorizationInfo.UniversityId,
+                CollegeId = authorizationInfo.CollegeId,
+                DepartmentId = authorizationInfo.DepartmentId,
+                BatchId = authorizationInfo.BatchId,
+                SectionId = authorizationInfo.SectionId,
+            };
+        }
     }
 }

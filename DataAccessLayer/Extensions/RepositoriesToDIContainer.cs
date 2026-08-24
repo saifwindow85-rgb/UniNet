@@ -18,6 +18,7 @@ using Domain.Interfaces.StudentInterfaces;
 using Domain.Interfaces.StudentStatusInterfaces;
 using Domain.Interfaces.StudyInterfaces.SubjectInterfaces;
 using Domain.Interfaces.StudyInterfaces.SemesterInterfaces;
+using Domain.Interfaces.StudyInterfaces.SectionSubjectInterfaces;
 using Domain.Interfaces.UnitOfWork;
 using DataAccessLayer.Repos.StudyRepository;
 using FluentValidation;
@@ -50,6 +51,7 @@ namespace DataAccessLayer.Extensions
             services.AddScoped<IStudentRepository, StudentRepository>();
             services.AddScoped<ISubjectRepository, SubjectRepository>();
             services.AddScoped<ISemesterRepository, SemesterRepository>();
+            services.AddScoped<ISectionSubjectRepository, SectionSubjectRepository>();
             return services;
         }
     }
