@@ -37,7 +37,7 @@ namespace DataAccessLayer.Configurations.Study_Configuration
       
             builder.ToTable("StudentResults");
 
-            builder.HasData(SeedData.GetStudentResults());
+            //builder.HasData(SeedData.GetStudentResults());
         }
     }
 }

@@ -67,18 +67,6 @@ namespace DataAccessLayer.Migrations
                         .IsUnique();
 
                     b.ToTable("Batches", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            BatchId = 1,
-                            BatchYear = 2025,
-                            CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedByUserId = 1,
-                            DepartmentId = 1,
-                            Description = "First cohort of the new curriculum.",
-                            Name = "Batch 2025"
-                        });
                 });
 
             modelBuilder.Entity("Domain.Entities.Academic_Structure.College", b =>
@@ -123,17 +111,6 @@ namespace DataAccessLayer.Migrations
                         .IsUnique();
 
                     b.ToTable("Colleges", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            CollegeId = 1,
-                            CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedByUserId = 1,
-                            Description = "Specializes in Software Engineering, AI, Cybersecurity, and Data Science.",
-                            Name = "Faculty of Computer Science and Information Technology",
-                            UniversityId = 1
-                        });
                 });
 
             modelBuilder.Entity("Domain.Entities.Academic_Structure.Department", b =>
@@ -178,17 +155,6 @@ namespace DataAccessLayer.Migrations
                         .IsUnique();
 
                     b.ToTable("Departments", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            DepartmentId = 1,
-                            CollegeId = 1,
-                            CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedByUserId = 1,
-                            Description = "Focuses on networking, database management, web development, and system security.",
-                            Name = "Information Technology Department"
-                        });
                 });
 
             modelBuilder.Entity("Domain.Entities.Academic_Structure.Section", b =>
@@ -230,16 +196,6 @@ namespace DataAccessLayer.Migrations
                         .IsUnique();
 
                     b.ToTable("Sections", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            SectionId = 1,
-                            BatchId = 1,
-                            CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedByUserId = 1,
-                            Name = "Section A"
-                        });
                 });
 
             modelBuilder.Entity("Domain.Entities.Academic_Structure.University", b =>
@@ -281,16 +237,6 @@ namespace DataAccessLayer.Migrations
                     b.HasIndex("UpdatedByUserId");
 
                     b.ToTable("Universities", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            UniversityId = 1,
-                            CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedByUserId = 1,
-                            Description = "A leading Yemeni university committed to academic excellence and community development.",
-                            Name = "Hadhramout University"
-                        });
                 });
 
             modelBuilder.Entity("Domain.Entities.Content.ContentItem", b =>
@@ -374,16 +320,6 @@ namespace DataAccessLayer.Migrations
                         .IsUnique();
 
                     b.ToTable("Employees", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            EmployeeId = 1,
-                            CollegeId = 1,
-                            DepartmentId = 1,
-                            UniversityId = 1,
-                            UserId = 1
-                        });
                 });
 
             modelBuilder.Entity("Domain.Entities.Identity.Role", b =>
@@ -405,43 +341,6 @@ namespace DataAccessLayer.Migrations
                         .IsUnique();
 
                     b.ToTable("Roles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            RoleId = 1,
-                            Name = "Super Admin"
-                        },
-                        new
-                        {
-                            RoleId = 2,
-                            Name = "UniversityAdmin"
-                        },
-                        new
-                        {
-                            RoleId = 3,
-                            Name = "CollegeAdmin"
-                        },
-                        new
-                        {
-                            RoleId = 4,
-                            Name = "DepartmentAdmin"
-                        },
-                        new
-                        {
-                            RoleId = 5,
-                            Name = "Lecturer"
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            Name = "Student"
-                        },
-                        new
-                        {
-                            RoleId = 7,
-                            Name = "BatchAdmin"
-                        });
                 });
 
             modelBuilder.Entity("Domain.Entities.Identity.User", b =>
@@ -509,21 +408,6 @@ namespace DataAccessLayer.Migrations
                         .IsUnique();
 
                     b.ToTable("Users", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            UserId = 1,
-                            CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedByUserId = 1,
-                            Email = "ahmed@hu.edu.ye",
-                            FullName = "Dr. Ahmed Al-Hadrami",
-                            IsActive = true,
-                            PasswordHash = "$2a$11$co8IwpHzsf8C.PS/a/ZYUeQA//rUxp2epNB70c5qkNK0YUkS/RO46",
-                            PhoneNumber = "+967 777000111",
-                            UpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            UserName = "Ahmed.HU"
-                        });
                 });
 
             modelBuilder.Entity("Domain.Entities.Identity.UserRole", b =>
@@ -542,13 +426,6 @@ namespace DataAccessLayer.Migrations
                         .IsUnique();
 
                     b.ToTable("UserRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            UserId = 1,
-                            RoleId = 1
-                        });
                 });
 
             modelBuilder.Entity("Domain.Entities.Images.Image", b =>
@@ -644,18 +521,6 @@ namespace DataAccessLayer.Migrations
                         .IsUnique();
 
                     b.ToTable("Students", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            StudentId = 1,
-                            BatchId = 1,
-                            EnrollmentDate = new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Utc),
-                            SectionId = 1,
-                            StatusId = 1,
-                            StudentNumber = "20251001",
-                            UserId = 1
-                        });
                 });
 
             modelBuilder.Entity("Domain.Entities.Students.StudentStatus", b =>
@@ -679,20 +544,6 @@ namespace DataAccessLayer.Migrations
                         .IsUnique();
 
                     b.ToTable("StudentStatuses", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            StatusId = 1,
-                            Description = "Actively enrolled and progressing in studies.",
-                            Name = "Enrolled"
-                        },
-                        new
-                        {
-                            StatusId = 2,
-                            Description = "Completed all academic requirements.",
-                            Name = "Graduated"
-                        });
                 });
 
             modelBuilder.Entity("Domain.Entities.Study.SectionSubject", b =>
@@ -744,18 +595,6 @@ namespace DataAccessLayer.Migrations
                         .IsUnique();
 
                     b.ToTable("SectionSubjects", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            SectionSubjectId = 1,
-                            CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedByUserId = 1,
-                            LecturerName = "Ahmed",
-                            SectionId = 1,
-                            SemesterId = 1,
-                            SubjectId = 1
-                        });
                 });
 
             modelBuilder.Entity("Domain.Entities.Study.Semester", b =>
@@ -810,19 +649,6 @@ namespace DataAccessLayer.Migrations
                         .IsUnique();
 
                     b.ToTable("Semesters", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            SemesterId = 1,
-                            CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedByUserId = 1,
-                            EndDate = new DateTime(2025, 12, 20, 0, 0, 0, 0, DateTimeKind.Utc),
-                            IsCurrent = true,
-                            Name = "Fall 2025",
-                            StartDate = new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            UniversityId = 1
-                        });
                 });
 
             modelBuilder.Entity("Domain.Entities.Study.StudentResult", b =>
@@ -883,20 +709,6 @@ namespace DataAccessLayer.Migrations
                         .IsUnique();
 
                     b.ToTable("StudentResults", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            StudentResultId = 1,
-                            CreatedAt = new DateTime(2025, 12, 25, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedByUserId = 1,
-                            Final = 45m,
-                            Midterm = 27m,
-                            Practical = 16m,
-                            SectionSubjectId = 1,
-                            StudentId = 1,
-                            Total = 0m
-                        });
                 });
 
             modelBuilder.Entity("Domain.Entities.Study.Subject", b =>
@@ -951,30 +763,6 @@ namespace DataAccessLayer.Migrations
                         .IsUnique();
 
                     b.ToTable("Subjects", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            SubjectId = 1,
-                            Code = "CS101",
-                            CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedByUserId = 1,
-                            CreditHours = 3,
-                            DepartmentId = 1,
-                            Description = "Fundamentals of programming using C# and .NET.",
-                            Name = "Introduction to Programming"
-                        },
-                        new
-                        {
-                            SubjectId = 2,
-                            Code = "CS205",
-                            CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedByUserId = 1,
-                            CreditHours = 3,
-                            DepartmentId = 1,
-                            Description = "Relational database design, SQL, and Entity Framework Core.",
-                            Name = "Database Systems"
-                        });
                 });
 
             modelBuilder.Entity("Domain.Entities.Token.RefreshToken", b =>

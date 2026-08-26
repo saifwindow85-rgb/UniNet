@@ -123,15 +123,17 @@
     private bool _showPassword;
     private string? _error;
 
-    // حسابات مزروعة (TestDataSeeder) — واحد من كل نوع/دور، كلمة المرور موحّدة.
+    // حسابات مزروعة (TestDataSeeder) — تغطّي كل الأنواع/الأدوار وجامعات مختلفة، كلمة المرور موحّدة.
     private readonly Demo[] _demos =
     {
-        new("Ahmed.HU",         "مسؤول النظام · Super Admin",      "sys"),
-        new("univadmin.had",    "مسؤول جامعة · UniversityAdmin",   "emp"),
-        new("colladmin.had.1",  "مسؤول كلية · CollegeAdmin",       "emp"),
-        new("deptadmin.had.00", "مسؤول قسم · DepartmentAdmin",     "emp"),
-        new("lecturer1",        "محاضِر · Lecturer",               "emp"),
-        new("student1",         "طالب · Student",                  "stu"),
+        new("Ahmed.HU",         "مسؤول النظام · Super Admin",           "sys"),
+        new("univadmin.had",    "مسؤول جامعة حضرموت · UniversityAdmin", "emp"),
+        new("univadmin.sanaa",  "مسؤول جامعة صنعاء · UniversityAdmin",  "emp"),
+        new("colladmin.had.0",  "مسؤول كلية · CollegeAdmin",            "emp"),
+        new("deptadmin.had.00", "مسؤول قسم · DepartmentAdmin",          "emp"),
+        new("lecturer1",        "محاضِر · Lecturer",                    "emp"),
+        new("student45",        "مدير دفعة · BatchAdmin",               "stu"),
+        new("student1",         "طالب · Student",                       "stu"),
     };
     private const string DemoPassword = "P@ssw0rd123!";
 

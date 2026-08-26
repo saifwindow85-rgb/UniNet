@@ -187,7 +187,15 @@ builder.Configuration.GetConnectionString("DefaultConnection")));
                 using var scop = app.Services.CreateScope();
                 var db = scop.ServiceProvider.GetRequiredService<AppDbcontext>();
                 await db.Database.MigrateAsync();
-                await TestDataSeeder.SeedAsync(db);
+                try
+                {
+                    await TestDataSeeder.SeedAsync(db);
+                }
+                catch (Exception seedEx)
+                {
+                    // لا نُوقف الإقلاع بسبب التغذية؛ المُغذّي قابل للاستئناف فيُكمل الناقص في التشغيل التالي.
+                    Console.WriteLine("[SEED ERROR] " + seedEx);
+                }
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }

@@ -40,7 +40,7 @@ namespace DataAccessLayer.Configurations.Student_Configuration
                 .HasForeignKey(s => s.StatusId).IsRequired().OnDelete(DeleteBehavior.Restrict);
             builder.ToTable("Students");
 
-            builder.HasData(SeedData.GetStudents());
+            //builder.HasData(SeedData.GetStudents());
         }
     }
 }
