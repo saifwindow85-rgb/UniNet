@@ -1,41 +1,64 @@
-.shell { min-height: 100vh; display: flex; flex-direction: column; background: #f4f7fb; }
+.layout {
+    display: grid;
+    grid-template-columns: 264px 1fr; /* dir=rtl ⇒ العمود الأول (الشريط) على اليمين */
+    min-height: 100vh;
+    background: var(--page);
+    transition: grid-template-columns .26s ease;
+}
+/* إخفاء الشريط على سطح المكتب: يُطوى العمود ويأخذ المحتوى العرض كاملًا */
+.layout.collapsed { grid-template-columns: 0 1fr; }
+
+/* تثبيت المحتوى في العمود الثاني صراحةً — وإلا انتقل إلى العمود الأول
+   عند اختفاء الشريط (display:none يُخرجه من الـ auto-placement) فينكمش يمينًا في RTL. */
+@media (min-width: 921px) {
+    .main { grid-column: 2; }
+}
+
+.burger, .collapse-btn {
+    width: 40px; height: 40px; border: 1px solid var(--line);
+    background: #fff; border-radius: 10px; cursor: pointer; color: var(--ink-soft);
+    display: grid; place-items: center; flex: none;
+    transition: border-color .15s ease, color .15s ease, background .15s ease;
+}
+.burger:hover, .collapse-btn:hover { border-color: var(--teal); color: var(--teal-strong); }
+.burger svg, .collapse-btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.burger { display: none; } /* الجوّال فقط */
+
+.main { display: flex; flex-direction: column; min-width: 0; }
 
 .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    height: 62px;
-    padding-inline: clamp(1rem, 3vw, 2rem);
-    background: #fff;
-    border-bottom: 1px solid #e6ecf3;
-    box-shadow: 0 1px 3px rgba(15, 30, 48, .04);
+    gap: 1rem;
+    height: 64px;
+    padding-inline: clamp(1rem, 3vw, 1.75rem);
+    background: rgba(255, 255, 255, .85);
+    backdrop-filter: saturate(1.2) blur(8px);
+    border-bottom: 1px solid var(--line);
 }
 
-.brand { display: inline-flex; align-items: center; gap: .55rem; }
-.brand .glyph {
-    display: grid; place-items: center;
-    width: 34px; height: 34px; border-radius: 10px;
-    font-family: "Inter", sans-serif; font-weight: 700; color: #06232b;
-    background: linear-gradient(140deg, #2ee6d1, #0fa596);
-}
-.brand .name { font-family: "Inter", sans-serif; font-weight: 600; font-size: 1.15rem; color: #0f2a43; }
+.crumb { flex: 1; font-weight: 600; color: var(--ink-soft); font-size: .95rem; }
 
 .user { display: inline-flex; align-items: center; gap: .75rem; }
 .who { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.25; }
-.uname { font-size: .9rem; font-weight: 600; color: #1f3348; }
-.urole { font-size: .74rem; color: #7c8da0; }
+.uname { font-size: .88rem; font-weight: 600; color: #1f3348; }
+.urole { font-size: .72rem; color: var(--muted); font-family: "Inter", sans-serif; }
 .avatar {
-    display: grid; place-items: center;
-    width: 38px; height: 38px; border-radius: 50%;
+    display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%;
     font-family: "Inter", sans-serif; font-weight: 600; color: #fff;
-    background: linear-gradient(140deg, #16456e, #0f2a43);
+    background: linear-gradient(140deg, var(--navy-700), var(--navy-900));
 }
-.logout {
-    padding: .45rem .85rem;
-    font-family: inherit; font-size: .84rem; font-weight: 600;
-    color: #b23b4b; background: #fdf1f3; border: 1px solid #f4d0d6;
-    border-radius: 9px; cursor: pointer; transition: background .15s ease;
-}
-.logout:hover { background: #fbe3e7; }
 
-.content { flex: 1; padding: clamp(1.25rem, 3vw, 2.25rem); }
+.content { flex: 1; padding: clamp(1.25rem, 3vw, 2rem); min-width: 0; }
+
+.nav-scrim { display: none; }
+
+@media (max-width: 920px) {
+    .layout, .layout.collapsed { grid-template-columns: 1fr; }
+    .burger { display: grid; }
+    .collapse-btn { display: none; } /* الإخفاء بالطيّ لسطح المكتب؛ الجوّال يستخدم القائمة المنزلقة */
+    .nav-scrim { display: block; position: fixed; inset: 0; z-index: 40; background: rgba(10, 25, 41, .45); }
+}

@@ -1,0 +1,10 @@
+.al { display: flex; align-items: center; gap: .6rem; padding: .75rem .9rem; border-radius: 11px; font-size: .9rem; margin-bottom: 1rem; animation: fade .2s ease; }
+.al svg { flex: none; width: 20px; height: 20px; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.al span { flex: 1; }
+.al-x { border: none; background: transparent; cursor: pointer; color: inherit; opacity: .6; font-size: .85rem; }
+.al-x:hover { opacity: 1; }
+.al.err { color: #8f2231; background: var(--danger-bg); border: 1px solid #f4c9d0; }
+.al.err svg { stroke: var(--danger); }
+.al.ok { color: #0b6b4a; background: var(--good-bg); border: 1px solid #bfe8d5; }
+.al.ok svg { stroke: var(--good); }
+@keyframes fade { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }

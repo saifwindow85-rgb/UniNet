@@ -1,0 +1,4 @@
+.ph { display: flex; align-items: flex-end; justify-content: space-between; gap: 1rem; margin-bottom: 1.4rem; flex-wrap: wrap; }
+.ph-text h1 { margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--ink); letter-spacing: -.01em; }
+.ph-text p { margin: .35rem 0 0; color: var(--muted); font-size: .95rem; }
+.ph-actions { display: flex; gap: .6rem; }

@@ -1,0 +1,29 @@
+@if (TotalPages > 1)
+{
+    <div class="pager mono">
+        <button class="pg" @onclick="() => Go(Current - 1)" disabled="@(Current <= 1)" aria-label="السابق">
+            <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>
+        </button>
+        <span class="pg-info">صفحة @Current من @TotalPages</span>
+        <button class="pg" @onclick="() => Go(Current + 1)" disabled="@(Current >= TotalPages)" aria-label="التالي">
+            <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+        @if (Total > 0)
+        {
+            <span class="pg-total">@Total سجلًّا</span>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public int Current { get; set; } = 1;
+    [Parameter] public int TotalPages { get; set; }
+    [Parameter] public int Total { get; set; }
+    [Parameter] public EventCallback<int> CurrentChanged { get; set; }
+
+    private Task Go(int page)
+    {
+        if (page < 1 || page > TotalPages || page == Current) return Task.CompletedTask;
+        return CurrentChanged.InvokeAsync(page);
+    }
+}

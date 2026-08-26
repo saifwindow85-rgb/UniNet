@@ -1,0 +1,199 @@
+@page "/identity/roles"
+@attribute [Authorize(Roles = "Super Admin")]
+@using System.ComponentModel.DataAnnotations
+@inject RoleApiService RolesApi
+
+<PageTitle>الأدوار · UniNet</PageTitle>
+
+<PageHeader Title="الأدوار" Subtitle="إدارة أدوار النظام المستخدمة في التفويض.">
+    <Actions>
+        <button class="btn btn-primary" @onclick="OpenAdd">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+            دور جديد
+        </button>
+    </Actions>
+</PageHeader>
+
+<Alert Message="@_notice" Kind="@_noticeKind" OnClose="() => _notice = null" />
+
+@if (_loading)
+{
+    <div class="loading"><span class="spin"></span></div>
+}
+else if (_roles is { Count: > 0 })
+{
+    <div class="table-wrap">
+        <table class="data">
+            <thead>
+                <tr><th style="width:110px">المعرّف</th><th>اسم الدور</th><th style="width:150px"></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var role in _roles)
+                {
+                    <tr>
+                        <td><span class="badge badge-id">#@role.RoleId</span></td>
+                        <td><strong>@role.RoleName</strong></td>
+                        <td class="actions">
+                            <button class="btn btn-ghost btn-sm" @onclick="() => OpenEdit(role)">تعديل</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => OpenDelete(role)">حذف</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <Pager Current="_page" TotalPages="_totalPages" Total="_total" CurrentChanged="ChangePage" />
+}
+else
+{
+    <div class="surface empty">
+        <svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3Z" /></svg>
+        <p>لا توجد أدوار بعد. أنشئ أول دور.</p>
+    </div>
+}
+
+<!-- إضافة/تعديل -->
+<Modal Visible="_formOpen" Title="@(_editing is null ? "دور جديد" : "تعديل الدور")"
+       Subtitle="@(_editing is null ? "أضِف دورًا جديدًا للنظام." : $"تعديل الدور #{_editing.RoleId}")"
+       OnClose="CloseForm">
+    <ChildContent>
+        <EditForm Model="_form" OnValidSubmit="SaveAsync" id="roleForm">
+            <DataAnnotationsValidator />
+            <div class="form-row">
+                <label class="lbl" for="rn">اسم الدور <span class="req">*</span></label>
+                <InputText id="rn" class="inp" @bind-Value="_form.RoleName" placeholder="مثال: Lecturer" disabled="@_saving" />
+                <ValidationMessage For="() => _form.RoleName" />
+            </div>
+        </EditForm>
+    </ChildContent>
+    <Footer>
+        <button class="btn btn-ghost" @onclick="CloseForm" disabled="@_saving">إلغاء</button>
+        <button class="btn btn-primary" type="submit" form="roleForm" disabled="@_saving">
+            @if (_saving) { <span class="spin-btn"></span> }
+            @(_editing is null ? "إضافة" : "حفظ")
+        </button>
+    </Footer>
+</Modal>
+
+<!-- حذف -->
+<ConfirmDialog Visible="_deleteTarget is not null"
+               Subtitle="@(_deleteTarget is null ? null : $"الدور #{_deleteTarget.RoleId}")"
+               Message="@($"سيُحذف الدور «{_deleteTarget?.RoleName}». لا يمكن التراجع.")"
+               Busy="_deleting" OnConfirm="DeleteAsync" OnCancel="() => _deleteTarget = null" />
+
+@code {
+    private List<RoleDTO>? _roles;
+    private bool _loading = true;
+    private int _page = 1, _pageSize = 10, _totalPages = 1, _total;
+
+    private bool _formOpen, _saving;
+    private RoleDTO? _editing;
+    private readonly RoleForm _form = new();
+
+    private RoleDTO? _deleteTarget;
+    private bool _deleting;
+
+    private string? _notice;
+    private string _noticeKind = "ok";
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        var result = await RolesApi.GetRolesAsync(_page, _pageSize);
+        if (result.Success && result.Data is not null)
+        {
+            _roles = result.Data.Data ?? new();
+            _totalPages = Math.Max(1, result.Data.TotalPages);
+            _total = result.Data.TotalRecords;
+        }
+        else
+        {
+            _roles = new();
+            Notify(result.Error ?? "تعذّر جلب الأدوار.", "err");
+        }
+        _loading = false;
+    }
+
+    private async Task ChangePage(int page)
+    {
+        _page = page;
+        await LoadAsync();
+    }
+
+    private void OpenAdd()
+    {
+        _editing = null;
+        _form.RoleName = "";
+        _formOpen = true;
+    }
+
+    private void OpenEdit(RoleDTO role)
+    {
+        _editing = role;
+        _form.RoleName = role.RoleName;
+        _formOpen = true;
+    }
+
+    private void CloseForm()
+    {
+        _formOpen = false;
+        _saving = false;
+    }
+
+    private async Task SaveAsync()
+    {
+        _saving = true;
+        var dto = new AddRoleDTO { RoleName = _form.RoleName.Trim() };
+        var result = _editing is null
+            ? await RolesApi.AddRoleAsync(dto)
+            : await RolesApi.UpdateRoleAsync(_editing.RoleId, dto);
+
+        _saving = false;
+        if (result.Success)
+        {
+            CloseForm();
+            Notify(_editing is null ? "تمت إضافة الدور." : "تم حفظ التعديلات.", "ok");
+            await LoadAsync();
+        }
+        else
+        {
+            Notify(result.Error ?? "تعذّر الحفظ.", "err");
+        }
+    }
+
+    private void OpenDelete(RoleDTO role) => _deleteTarget = role;
+
+    private async Task DeleteAsync()
+    {
+        if (_deleteTarget is null) return;
+        _deleting = true;
+        var result = await RolesApi.DeleteRoleAsync(_deleteTarget.RoleId);
+        _deleting = false;
+        if (result.Success)
+        {
+            _deleteTarget = null;
+            Notify("تم حذف الدور.", "ok");
+            await LoadAsync();
+        }
+        else
+        {
+            Notify(result.Error ?? "تعذّر الحذف (قد يكون الدور مستخدمًا).", "err");
+            _deleteTarget = null;
+        }
+    }
+
+    private void Notify(string msg, string kind) { _notice = msg; _noticeKind = kind; }
+
+    private sealed class RoleForm
+    {
+        [Required(ErrorMessage = "اسم الدور مطلوب.")]
+        [StringLength(100, MinimumLength = 2, ErrorMessage = "الاسم بين 2 و100 حرفًا.")]
+        public string RoleName { get; set; } = "";
+    }
+}
+
+<style>
+    .spin-btn { width: 14px; height: 14px; border: 2px solid rgba(5,42,42,.3); border-top-color: #052a2a; border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; }
+</style>
