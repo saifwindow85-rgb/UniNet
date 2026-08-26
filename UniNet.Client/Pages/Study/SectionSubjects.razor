@@ -1,0 +1,288 @@
+@page "/study/section-subjects"
+@attribute [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin,BatchAdmin")]
+@using System.ComponentModel.DataAnnotations
+@inject SectionSubjectApiService LinksApi
+@inject SectionApiService SectionsApi
+@inject SubjectApiService SubjectsApi
+@inject SemesterApiService SemestersApi
+@inject ScopeContext Scope
+
+<PageTitle>مواد الشُّعَب · UniNet</PageTitle>
+
+<PageHeader Title="مواد الشُّعَب" Subtitle="إسناد المواد إلى الشُّعَب ضمن فصل دراسي، مع المحاضِر.">
+    <Actions>
+        <button class="btn btn-primary" @onclick="OpenAdd">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+            إسناد جديد
+        </button>
+    </Actions>
+</PageHeader>
+
+<Alert Message="@_notice" Kind="@_noticeKind" OnClose="() => _notice = null" />
+
+<div class="toolbar">
+    <SearchBox Placeholder="ابحث باسم المحاضِر…" OnSearch="OnSearch" />
+    <div style="min-width:260px">
+        <Combobox Items="_subjectItems" Value="_filterSubjectId" ValueChanged="OnFilterSubject"
+                  Loading="_subjectsLoading" Placeholder="تصفية حسب المادة (الكل)" />
+    </div>
+</div>
+
+@if (_loading)
+{
+    <div class="loading"><span class="spin"></span></div>
+}
+else if (_items is { Count: > 0 })
+{
+    <div class="table-wrap">
+        <table class="data">
+            <thead>
+                <tr><th style="width:80px">المعرّف</th><th>الشعبة</th><th>المادة</th><th>الفصل</th><th>المحاضِر</th><th style="width:150px"></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var x in _items)
+                {
+                    <tr>
+                        <td><span class="badge badge-id">#@x.SectionSubjectId</span></td>
+                        <td><strong>@x.SectionName</strong></td>
+                        <td>@x.SubjectName <span class="badge badge-code mono">@x.SubjectCode</span></td>
+                        <td>@x.SemesterName</td>
+                        <td>@x.LecturerName</td>
+                        <td class="actions">
+                            <button class="btn btn-ghost btn-sm" @onclick="() => OpenEdit(x)">تعديل</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => _deleteTarget = x">حذف</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <Pager Current="_page" TotalPages="_totalPages" Total="_total" CurrentChanged="ChangePage" />
+}
+else
+{
+    <div class="surface empty">
+        <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 10h16M10 10v10" /></svg>
+        <p>لا توجد إسنادات ضمن نطاقك بعد.</p>
+    </div>
+}
+
+<Modal Visible="_formOpen" MaxWidth="560px"
+       Title="@(_editing is null ? "إسناد مادة لشعبة" : "تعديل المحاضِر")"
+       Subtitle="@(_editing is null ? "اربط مادة بشعبة ضمن فصل دراسي." : $"الإسناد #{_editing.SectionSubjectId}")"
+       OnClose="CloseForm">
+    <ChildContent>
+        <Alert Message="@_formError" Kind="err" OnClose="() => _formError = null" />
+        <EditForm Model="_form" OnValidSubmit="SaveAsync" id="ssForm">
+            <DataAnnotationsValidator />
+            <div class="form-grid">
+                @if (_editing is null)
+                {
+                    <div class="form-row">
+                        <label class="lbl">الشعبة <span class="req">*</span></label>
+                        <Combobox Items="_sectionItems" Value="_form.SectionId" ValueChanged="v => _form.SectionId = v"
+                                  Loading="_sectionsLoading" Placeholder="ابحث واختر الشعبة" Disabled="@_saving" />
+                    </div>
+                    <div class="form-row">
+                        <label class="lbl">المادة <span class="req">*</span></label>
+                        <Combobox Items="_subjectItems" Value="_form.SubjectId" ValueChanged="v => _form.SubjectId = v"
+                                  Loading="_subjectsLoading" Placeholder="ابحث واختر المادة" Disabled="@_saving" />
+                    </div>
+                    <div class="form-row">
+                        <label class="lbl">الفصل الدراسي <span class="req">*</span></label>
+                        @if (_canListSemesters)
+                        {
+                            <Combobox Items="_semesterItems" Value="_form.SemesterId" ValueChanged="v => _form.SemesterId = v"
+                                      Loading="_semestersLoading" Placeholder="ابحث واختر الفصل" Disabled="@_saving" />
+                        }
+                        else
+                        {
+                            <InputNumber class="inp mono" @bind-Value="_form.SemesterId" placeholder="معرّف الفصل (SemesterId)" disabled="@_saving" />
+                            <span class="hint-inline">قائمة الفصول متاحة لمسؤول الجامعة؛ أدخِل رقم الفصل الذي زوّدك به.</span>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="form-row">
+                        <label class="lbl">الشعبة / المادة / الفصل</label>
+                        <input class="inp" value="@($"{_editing.SectionName} · {_editing.SubjectName} · {_editing.SemesterName}")" disabled />
+                        <span class="hint-inline">لا يمكن تغيير الإسناد؛ يمكن تعديل المحاضِر فقط.</span>
+                    </div>
+                }
+
+                <div class="form-row">
+                    <label class="lbl">اسم المحاضِر <span class="req">*</span></label>
+                    <InputText class="inp" @bind-Value="_form.LecturerName" placeholder="مثال: د. أحمد صالح" disabled="@_saving" />
+                    <ValidationMessage For="() => _form.LecturerName" />
+                </div>
+            </div>
+        </EditForm>
+    </ChildContent>
+    <Footer>
+        <button class="btn btn-ghost" @onclick="CloseForm" disabled="@_saving">إلغاء</button>
+        <button class="btn btn-primary" type="submit" form="ssForm" disabled="@_saving">
+            @if (_saving) { <span class="spin-btn"></span> }
+            @(_editing is null ? "إسناد" : "حفظ")
+        </button>
+    </Footer>
+</Modal>
+
+<ConfirmDialog Visible="_deleteTarget is not null"
+               Subtitle="@(_deleteTarget is null ? null : $"الإسناد #{_deleteTarget.SectionSubjectId}")"
+               Message="@($"سيُحذف إسناد «{_deleteTarget?.SubjectName}» لـ«{_deleteTarget?.SectionName}». لا يمكن الحذف إن كانت له نتائج.")"
+               Busy="_deleting" OnConfirm="DeleteAsync" OnCancel="() => _deleteTarget = null" />
+
+@code {
+    private List<SectionSubjectDTO>? _items;
+    private bool _loading = true;
+    private int _page = 1, _pageSize = 10, _totalPages = 1, _total;
+    private string _search = "";
+    private int _filterSubjectId;
+    private string? _formError;
+
+    private bool _canListSemesters;
+    private List<Combobox.ComboItem> _sectionItems = new();
+    private List<Combobox.ComboItem> _subjectItems = new();
+    private List<Combobox.ComboItem> _semesterItems = new();
+    private bool _sectionsLoading, _subjectsLoading, _semestersLoading;
+
+    private bool _formOpen, _saving;
+    private SectionSubjectDTO? _editing;
+    private readonly SsForm _form = new();
+
+    private SectionSubjectDTO? _deleteTarget;
+    private bool _deleting;
+
+    private string? _notice;
+    private string _noticeKind = "ok";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Scope.EnsureAsync();
+        _canListSemesters = Scope.IsSuperAdmin || Scope.Role == "UniversityAdmin";
+
+        await Task.WhenAll(LoadSectionsAsync(), LoadSubjectsAsync(), _canListSemesters ? LoadSemestersAsync() : Task.CompletedTask);
+        await LoadAsync();
+    }
+
+    private async Task LoadSectionsAsync()
+    {
+        _sectionsLoading = true;
+        var res = Scope.IsSuperAdmin ? await SectionsApi.GetAllAsync(1, 200) : await SectionsApi.GetPerBatchAsync(null, 1, 200);
+        if (res.Success && res.Data?.Data is not null)
+            _sectionItems = res.Data.Data.Select(s => new Combobox.ComboItem(s.SectionId, s.SectionName, s.BatchName)).ToList();
+        _sectionsLoading = false;
+    }
+
+    private async Task LoadSubjectsAsync()
+    {
+        _subjectsLoading = true;
+        var res = Scope.IsSuperAdmin ? await SubjectsApi.GetAllAsync(1, 200) : await SubjectsApi.GetPerDepartmentAsync(1, 200);
+        if (res.Success && res.Data?.Data is not null)
+            _subjectItems = res.Data.Data.Select(s => new Combobox.ComboItem(s.SubjectId, s.SubjectName, s.Code)).ToList();
+        _subjectsLoading = false;
+    }
+
+    private async Task LoadSemestersAsync()
+    {
+        _semestersLoading = true;
+        var res = Scope.IsSuperAdmin ? await SemestersApi.GetAllAsync(1, 200) : await SemestersApi.GetPerUniversityAsync(1, 200);
+        if (res.Success && res.Data?.Data is not null)
+            _semesterItems = res.Data.Data.Select(s => new Combobox.ComboItem(s.SemesterId, s.Name, s.UniversityName)).ToList();
+        _semestersLoading = false;
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        ApiResult<Contracts.Results.PagedResult<SectionSubjectDTO>> res;
+        int? subj = _filterSubjectId > 0 ? _filterSubjectId : null;
+        if (Scope.IsSuperAdmin)
+            res = await LinksApi.GetAllAsync(_page, _pageSize, subjectId: subj, lecturer: _search);
+        else
+            res = await LinksApi.GetPerScopeAsync(_page, _pageSize, subjectId: subj, lecturer: _search);
+
+        if (res.Success && res.Data is not null)
+        {
+            _items = res.Data.Data ?? new();
+            _totalPages = Math.Max(1, res.Data.TotalPages);
+            _total = res.Data.TotalRecords;
+        }
+        else { _items = new(); Notify(res.Error ?? "تعذّر جلب الإسنادات.", "err"); }
+        _loading = false;
+    }
+
+    private async Task OnFilterSubject(int id) { _filterSubjectId = id; _page = 1; await LoadAsync(); }
+    private async Task OnSearch(string term) { _search = term; _page = 1; await LoadAsync(); }
+    private async Task ChangePage(int p) { _page = p; await LoadAsync(); }
+
+    private void OpenAdd() { _editing = null; _form.Reset(); _formError = null; _formOpen = true; }
+
+    private void OpenEdit(SectionSubjectDTO x)
+    {
+        _editing = x;
+        _form.LecturerName = x.LecturerName;
+        _formError = null;
+        _formOpen = true;
+    }
+
+    private void CloseForm() { _formOpen = false; _saving = false; _formError = null; }
+
+    private async Task SaveAsync()
+    {
+        if (_editing is null)
+        {
+            if (_form.SectionId <= 0) { _formError = "اختر الشعبة."; return; }
+            if (_form.SubjectId <= 0) { _formError = "اختر المادة."; return; }
+            if (_form.SemesterId <= 0) { _formError = "اختر/أدخِل الفصل الدراسي."; return; }
+        }
+        _saving = true;
+
+        ApiResult<SectionSubjectDTO> res;
+        if (_editing is null)
+            res = await LinksApi.AddAsync(new AddSectionSubjectDTO
+            {
+                SectionId = _form.SectionId,
+                SubjectId = _form.SubjectId,
+                SemesterId = _form.SemesterId,
+                LecturerName = _form.LecturerName.Trim()
+            });
+        else
+            res = await LinksApi.UpdateAsync(_editing.SectionSubjectId, new UpdateSectionSubjectDTO { LecturerName = _form.LecturerName.Trim() });
+
+        _saving = false;
+        if (res.Success) { CloseForm(); Notify(_editing is null ? "تم الإسناد." : "تم الحفظ.", "ok"); await LoadAsync(); }
+        else _formError = res.Error ?? "تعذّر الحفظ.";
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (_deleteTarget is null) return;
+        _deleting = true;
+        var res = await LinksApi.DeleteAsync(_deleteTarget.SectionSubjectId);
+        _deleting = false;
+        _deleteTarget = null;
+        if (res.Success) { Notify("تم حذف الإسناد.", "ok"); await LoadAsync(); }
+        else Notify(res.Error ?? "تعذّر الحذف.", "err");
+    }
+
+    private void Notify(string m, string k) { _notice = m; _noticeKind = k; }
+
+    private sealed class SsForm
+    {
+        public int SectionId { get; set; }
+        public int SubjectId { get; set; }
+        public int SemesterId { get; set; }
+        [Required(ErrorMessage = "اسم المحاضِر مطلوب.")]
+        [StringLength(150, MinimumLength = 2, ErrorMessage = "الاسم بين 2 و150 حرفًا.")]
+        public string LecturerName { get; set; } = "";
+        public void Reset() { SectionId = 0; SubjectId = 0; SemesterId = 0; LecturerName = ""; }
+    }
+}
+
+<style>
+    .hint-inline { font-size: .78rem; color: var(--muted); }
+    .spin-btn { width: 14px; height: 14px; border: 2px solid rgba(5,42,42,.3); border-top-color: #052a2a; border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; }
+    .badge-code { background: #eef2f7; color: var(--navy-700); margin-inline-start: .35rem; }
+</style>

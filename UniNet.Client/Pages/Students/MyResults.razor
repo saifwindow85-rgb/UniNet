@@ -1,0 +1,129 @@
+@page "/my-results"
+@attribute [Authorize(Roles = "Student,BatchAdmin")]
+@inject StudentResultApiService ResultsApi
+@inject ScopeContext Scope
+
+<PageTitle>كشف درجاتي · UniNet</PageTitle>
+
+<PageHeader Title="كشف درجاتي" Subtitle="نتائجك مجمّعة حسب الفصل الدراسي." />
+
+<Alert Message="@_notice" Kind="err" OnClose="() => _notice = null" />
+
+@if (_loading)
+{
+    <div class="loading"><span class="spin"></span></div>
+}
+else if (Scope.StudentId is null)
+{
+    <div class="surface empty">
+        <svg viewBox="0 0 24 24"><path d="M12 8v5M12 16h.01M10.3 3.7 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.7a2 2 0 0 0-3.4 0Z" /></svg>
+        <p>هذا الحساب لا يحمل هوية طالب.</p>
+    </div>
+}
+else if (_semesters is { Count: > 0 })
+{
+    <div class="summary-strip surface">
+        <div class="sm-item"><span>عدد الفصول</span><b>@_semesters.Count</b></div>
+        <div class="sm-item"><span>عدد المقررات</span><b>@_semesters.Sum(s => s.Results.Count)</b></div>
+        <div class="sm-item accent"><span>المعدّل التراكمي</span><b>@_overall.ToString("0.##")</b></div>
+    </div>
+
+    @foreach (var sem in _semesters.OrderBy(s => s.SemesterId))
+    {
+        <div class="surface sem-card">
+            <div class="sem-head">
+                <span class="sem-name">@sem.SemesterName</span>
+                <span class="sem-gpa @(sem.Grade >= 60 ? "ok" : "low")">معدّل الفصل: <b>@sem.Grade.ToString("0.##")</b></span>
+            </div>
+            <div class="table-wrap">
+                <table class="data grades">
+                    <thead>
+                        <tr>
+                            <th style="width:100px">الرمز</th>
+                            <th>المادة</th>
+                            <th>المحاضِر</th>
+                            <th style="width:80px">نصفي</th>
+                            <th style="width:80px">عملي</th>
+                            <th style="width:80px">نهائي</th>
+                            <th style="width:90px">المجموع</th>
+                            <th style="width:90px">التقدير</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in sem.Results)
+                        {
+                            <tr>
+                                <td><span class="badge badge-code mono">@r.SubjectCode</span></td>
+                                <td><strong>@r.SubjectName</strong></td>
+                                <td>@r.LecturerName</td>
+                                <td class="mono">@r.Midterm.ToString("0.##")</td>
+                                <td class="mono">@r.Practical.ToString("0.##")</td>
+                                <td class="mono">@r.Final.ToString("0.##")</td>
+                                <td class="mono"><strong class="@(r.Total >= 60 ? "pass" : "fail")">@r.Total.ToString("0.##")</strong></td>
+                                <td><span class="badge @GradeClass(r.Total)">@GradeLetter(r.Total)</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div class="surface empty">
+        <svg viewBox="0 0 24 24"><path d="M9 11l3 3 8-8M4 6h9M4 12h5M4 18h9" /></svg>
+        <p>لا توجد نتائج مُسجّلة بعد.</p>
+    </div>
+}
+
+@code {
+    private List<StudentSemesterResultDTO>? _semesters;
+    private decimal _overall;
+    private bool _loading = true;
+    private string? _notice;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Scope.EnsureAsync();
+        if (Scope.StudentId is int sid)
+        {
+            var res = await ResultsApi.GetPerStudentAsync(sid);
+            if (res.Success && res.Data is not null)
+            {
+                _semesters = res.Data;
+                _overall = _semesters.Count > 0 ? _semesters.Average(s => s.Grade) : 0;
+            }
+            else { _semesters = new(); _notice = res.Error ?? "تعذّر جلب النتائج."; }
+        }
+        _loading = false;
+    }
+
+    private static string GradeLetter(decimal t) => t switch
+    {
+        >= 90 => "A", >= 80 => "B", >= 70 => "C", >= 60 => "D", _ => "F"
+    };
+    private static string GradeClass(decimal t) => t >= 60 ? "g-pass" : "g-fail";
+}
+
+<style>
+    .summary-strip { display: flex; gap: 2rem; padding: 1.1rem 1.4rem; margin-bottom: 1.15rem; flex-wrap: wrap; }
+    .sm-item { display: flex; flex-direction: column; gap: .2rem; }
+    .sm-item span { font-size: .78rem; color: var(--muted); font-family: "Inter",sans-serif; }
+    .sm-item b { font-size: 1.5rem; color: var(--navy-700); }
+    .sm-item.accent b { color: var(--teal-strong); }
+
+    .sem-card { padding: 1rem 1.25rem 1.25rem; margin-bottom: 1.1rem; }
+    .sem-head { display: flex; align-items: center; justify-content: space-between; padding-bottom: .7rem; margin-bottom: .3rem; border-bottom: 1px solid var(--line); }
+    .sem-name { font-weight: 600; font-size: 1.05rem; }
+    .sem-gpa { font-size: .88rem; color: var(--muted); }
+    .sem-gpa b { font-size: 1.05rem; }
+    .sem-gpa.ok b { color: #0b6b4a; }
+    .sem-gpa.low b { color: #b23838; }
+
+    table.grades .pass { color: #0b6b4a; }
+    table.grades .fail { color: #b23838; }
+    .badge-code { background: #eef2f7; color: var(--navy-700); }
+    .g-pass { background: var(--good-bg); color: #0b6b4a; }
+    .g-fail { background: #fdeaea; color: #b23838; }
+</style>

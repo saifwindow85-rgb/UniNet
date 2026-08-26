@@ -1,0 +1,175 @@
+@page "/academic/universities"
+@attribute [Authorize(Roles = "Super Admin")]
+@using System.ComponentModel.DataAnnotations
+@inject UniversityApiService UniversitiesApi
+
+<PageTitle>الجامعات · UniNet</PageTitle>
+
+<PageHeader Title="الجامعات" Subtitle="إدارة الجامعات (المستوى الأعلى في الهيكل).">
+    <Actions>
+        <button class="btn btn-primary" @onclick="OpenAdd">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+            جامعة جديدة
+        </button>
+    </Actions>
+</PageHeader>
+
+<Alert Message="@_notice" Kind="@_noticeKind" OnClose="() => _notice = null" />
+
+<div class="toolbar">
+    <SearchBox Placeholder="ابحث باسم الجامعة…" OnSearch="OnSearch" />
+</div>
+
+@if (_loading)
+{
+    <div class="loading"><span class="spin"></span></div>
+}
+else if (_items is { Count: > 0 })
+{
+    <div class="table-wrap">
+        <table class="data">
+            <thead>
+                <tr><th style="width:90px">المعرّف</th><th>الجامعة</th><th style="width:150px"></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var u in _items)
+                {
+                    <tr>
+                        <td><span class="badge badge-id">#@u.UniversityId</span></td>
+                        <td><strong>@u.UniversityName</strong>@if (!string.IsNullOrEmpty(u.Description)) { <div class="row-sub">@u.Description</div> }</td>
+                        <td class="actions">
+                            <button class="btn btn-ghost btn-sm" @onclick="() => OpenEdit(u)">تعديل</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => _deleteTarget = u">حذف</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <Pager Current="_page" TotalPages="_totalPages" Total="_total" CurrentChanged="ChangePage" />
+}
+else
+{
+    <div class="surface empty">
+        <svg viewBox="0 0 24 24"><path d="M3 21h18M6 21V9l6-4 6 4v12M10 21v-4h4v4M9 12h.01M15 12h.01" /></svg>
+        <p>لا توجد جامعات مطابقة.</p>
+    </div>
+}
+
+<Modal Visible="_formOpen" MaxWidth="520px"
+       Title="@(_editing is null ? "جامعة جديدة" : "تعديل الجامعة")"
+       Subtitle="@(_editing is null ? "أضِف جامعة إلى النظام." : $"تعديل الجامعة #{_editing.UniversityId}")"
+       OnClose="CloseForm">
+    <ChildContent>
+        <Alert Message="@_formError" Kind="err" OnClose="() => _formError = null" />
+        <EditForm Model="_form" OnValidSubmit="SaveAsync" id="uniForm">
+            <DataAnnotationsValidator />
+            <div class="form-grid">
+                <div class="form-row">
+                    <label class="lbl">اسم الجامعة <span class="req">*</span></label>
+                    <InputText class="inp" @bind-Value="_form.UniversityName" placeholder="مثال: جامعة حضرموت" disabled="@_saving" />
+                    <ValidationMessage For="() => _form.UniversityName" />
+                </div>
+                <div class="form-row">
+                    <label class="lbl">الوصف</label>
+                    <InputTextArea class="inp txt" @bind-Value="_form.Description" rows="3" disabled="@_saving" />
+                </div>
+            </div>
+        </EditForm>
+    </ChildContent>
+    <Footer>
+        <button class="btn btn-ghost" @onclick="CloseForm" disabled="@_saving">إلغاء</button>
+        <button class="btn btn-primary" type="submit" form="uniForm" disabled="@_saving">
+            @if (_saving) { <span class="spin-btn"></span> }
+            @(_editing is null ? "إضافة" : "حفظ")
+        </button>
+    </Footer>
+</Modal>
+
+<ConfirmDialog Visible="_deleteTarget is not null"
+               Subtitle="@(_deleteTarget is null ? null : $"الجامعة #{_deleteTarget.UniversityId}")"
+               Message="@($"ستُحذف «{_deleteTarget?.UniversityName}». لا يمكن الحذف إن كانت لها كليات.")"
+               Busy="_deleting" OnConfirm="DeleteAsync" OnCancel="() => _deleteTarget = null" />
+
+@code {
+    private List<UniversityDTO>? _items;
+    private bool _loading = true;
+    private int _page = 1, _pageSize = 10, _totalPages = 1, _total;
+    private string _search = "";
+
+    private bool _formOpen, _saving;
+    private UniversityDTO? _editing;
+    private readonly UniForm _form = new();
+    private string? _formError;
+
+    private UniversityDTO? _deleteTarget;
+    private bool _deleting;
+
+    private string? _notice;
+    private string _noticeKind = "ok";
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        var res = await UniversitiesApi.GetAllAsync(_page, _pageSize, _search);
+        if (res.Success && res.Data is not null)
+        {
+            _items = res.Data.Data ?? new();
+            _totalPages = Math.Max(1, res.Data.TotalPages);
+            _total = res.Data.TotalRecords;
+        }
+        else { _items = new(); Notify(res.Error ?? "تعذّر جلب الجامعات.", "err"); }
+        _loading = false;
+    }
+
+    private async Task OnSearch(string term) { _search = term; _page = 1; await LoadAsync(); }
+    private async Task ChangePage(int p) { _page = p; await LoadAsync(); }
+
+    private void OpenAdd() { _editing = null; _form.Reset(); _formError = null; _formOpen = true; }
+    private void OpenEdit(UniversityDTO u) { _editing = u; _form.UniversityName = u.UniversityName; _form.Description = u.Description; _formError = null; _formOpen = true; }
+    private void CloseForm() { _formOpen = false; _saving = false; _formError = null; }
+
+    private async Task SaveAsync()
+    {
+        _saving = true;
+        _formError = null;
+        ApiResult<UniversityDTO> res = _editing is null
+            ? await UniversitiesApi.AddAsync(new AddUniversityDTO { UniversityName = _form.UniversityName.Trim(), Description = Clean(_form.Description) })
+            : await UniversitiesApi.UpdateAsync(_editing.UniversityId, new UpdateUniversityDTO { UniversityName = _form.UniversityName.Trim(), Description = Clean(_form.Description) });
+
+        _saving = false;
+        if (res.Success) { CloseForm(); Notify(_editing is null ? "تمت إضافة الجامعة." : "تم الحفظ.", "ok"); await LoadAsync(); }
+        else _formError = res.Error ?? "تعذّر الحفظ.";
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (_deleteTarget is null) return;
+        _deleting = true;
+        var res = await UniversitiesApi.DeleteAsync(_deleteTarget.UniversityId);
+        _deleting = false;
+        _deleteTarget = null;
+        if (res.Success) { Notify("تم حذف الجامعة.", "ok"); await LoadAsync(); }
+        else Notify(res.Error ?? "تعذّر الحذف.", "err");
+    }
+
+    private static string? Clean(string? s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
+    private void Notify(string m, string k) { _notice = m; _noticeKind = k; }
+
+    private sealed class UniForm
+    {
+        [Required(ErrorMessage = "اسم الجامعة مطلوب.")]
+        [StringLength(200, MinimumLength = 2, ErrorMessage = "الاسم بين 2 و200 حرفًا.")]
+        public string UniversityName { get; set; } = "";
+        public string? Description { get; set; }
+        public void Reset() { UniversityName = ""; Description = null; }
+    }
+}
+
+<style>
+    .row-sub { font-size: .8rem; color: var(--muted); margin-top: .15rem; }
+    .txt { height: auto; min-height: 84px; padding: .7rem .85rem; resize: vertical; line-height: 1.6; }
+    .spin-btn { width: 14px; height: 14px; border: 2px solid rgba(5,42,42,.3); border-top-color: #052a2a; border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; }
+</style>

@@ -1,0 +1,80 @@
+@* Combobox قابل للبحث (Smart Select / Autocomplete) *@
+<div class="cbx @(Disabled ? "is-disabled" : "")">
+    <div class="cbx-control" @onclick="Open">
+        <svg class="cbx-lead" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+        <input class="cbx-input" @bind="_search" @bind:event="oninput" @onfocus="Open"
+               placeholder="@CurrentPlaceholder" disabled="@Disabled" @onclick:stopPropagation="true" />
+        @if (Value > 0 && !Disabled)
+        {
+            <button type="button" class="cbx-clear" @onclick="Clear" @onclick:stopPropagation="true" aria-label="مسح">✕</button>
+        }
+        <svg class="cbx-caret @(_open ? "up" : "")" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" /></svg>
+    </div>
+
+    @if (_open && !Disabled)
+    {
+        <div class="cbx-scrim" @onclick="Close"></div>
+        <div class="cbx-menu">
+            @if (Loading)
+            {
+                <div class="cbx-note">جارٍ التحميل…</div>
+            }
+            else if (Filtered.Count == 0)
+            {
+                <div class="cbx-note">لا نتائج</div>
+            }
+            else
+            {
+                @foreach (var item in Filtered)
+                {
+                    <button type="button" class="cbx-item @(item.Id == Value ? "sel" : "")" @onclick="() => Select(item)">
+                        <span class="ci-label">@item.Label</span>
+                        @if (!string.IsNullOrEmpty(item.Sub))
+                        {
+                            <span class="ci-sub">@item.Sub</span>
+                        }
+                    </button>
+                }
+            }
+        </div>
+    }
+</div>
+
+@code {
+    public record ComboItem(int Id, string Label, string? Sub = null);
+
+    [Parameter] public IReadOnlyList<ComboItem> Items { get; set; } = Array.Empty<ComboItem>();
+    [Parameter] public int Value { get; set; }
+    [Parameter] public EventCallback<int> ValueChanged { get; set; }
+    [Parameter] public string Placeholder { get; set; } = "اختر…";
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool Loading { get; set; }
+
+    private bool _open;
+    private string _search = "";
+
+    private string CurrentPlaceholder =>
+        Value > 0 ? (Items.FirstOrDefault(i => i.Id == Value)?.Label ?? Placeholder) : Placeholder;
+
+    private List<ComboItem> Filtered =>
+        string.IsNullOrWhiteSpace(_search)
+            ? Items.ToList()
+            : Items.Where(i => i.Label.Contains(_search, StringComparison.OrdinalIgnoreCase)
+                            || (i.Sub?.Contains(_search, StringComparison.OrdinalIgnoreCase) ?? false)).ToList();
+
+    private void Open() { if (!Disabled) { _open = true; _search = ""; } }
+    private void Close() => _open = false;
+
+    private async Task Select(ComboItem item)
+    {
+        _open = false;
+        _search = "";
+        await ValueChanged.InvokeAsync(item.Id);
+    }
+
+    private async Task Clear()
+    {
+        _search = "";
+        await ValueChanged.InvokeAsync(0);
+    }
+}

@@ -5,6 +5,10 @@ using UniNet.Client;
 using UniNet.Client.Services.Http;
 using UniNet.Client.Services.Identity;
 using UniNet.Client.State;
+using UniNet.Client.Services.Academic;
+using UniNet.Client.Services.Employee;
+using UniNet.Client.Services.Study;
+using UniNet.Client.Services.Students;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -30,6 +34,28 @@ builder.Services.AddHttpClient("Api", c => c.BaseAddress = new Uri(apiBaseUrl))
 builder.Services.AddScoped<RoleApiService>();
 builder.Services.AddScoped<UserApiService>();
 builder.Services.AddScoped<UserRoleApiService>();
+
+// النطاق + خدمات الهيكل الأكاديمي.
+builder.Services.AddScoped<ScopeContext>();
+builder.Services.AddScoped<UniversityApiService>();
+builder.Services.AddScoped<CollegeApiService>();
+builder.Services.AddScoped<DepartmentApiService>();
+builder.Services.AddScoped<BatchApiService>();
+builder.Services.AddScoped<SectionApiService>();
+
+// خدمة الموظفين (مسؤولو الجامعة/الكلية/القسم) — مُدركة للنطاق في الخادم.
+builder.Services.AddScoped<EmployeeApiService>();
+
+// وحدة الدراسة (المواد/الفصول/الربط/النتائج) + الطلاب وحالاتهم.
+builder.Services.AddScoped<SubjectApiService>();
+builder.Services.AddScoped<SemesterApiService>();
+builder.Services.AddScoped<SectionSubjectApiService>();
+builder.Services.AddScoped<StudentResultApiService>();
+builder.Services.AddScoped<StudentApiService>();
+builder.Services.AddScoped<StudentStatusApiService>();
+
+// مساعد قوائم الاختيار المُدركة للنطاق (يعالج قيد endpoint الأقسام).
+builder.Services.AddScoped<UniNet.Client.Services.Lookups.ScopeLookups>();
 
 builder.Services.AddScoped(sp => new AuthApiService(
     sp.GetRequiredService<IHttpClientFactory>().CreateClient("PublicApi"),

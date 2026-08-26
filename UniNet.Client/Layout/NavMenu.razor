@@ -15,6 +15,20 @@
             <span>الرئيسية</span>
         </NavLink>
 
+        <AuthorizeView Roles="Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin">
+            <NavLink class="link" href="/employees" @onclick="OnNavigate">
+                <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+                <span>الموظفون</span>
+            </NavLink>
+        </AuthorizeView>
+
+        <AuthorizeView Roles="Student,BatchAdmin">
+            <NavLink class="link" href="/my-results" @onclick="OnNavigate">
+                <svg viewBox="0 0 24 24"><path d="M9 11l3 3 8-8M4 6h9M4 12h5M4 18h9" /></svg>
+                <span>كشف درجاتي</span>
+            </NavLink>
+        </AuthorizeView>
+
         <AuthorizeView Roles="Super Admin">
             <section class="group">
                 <button class="group-head" @onclick="() => _identityOpen = !_identityOpen">
@@ -50,6 +64,107 @@
                 </div>
             </section>
         </AuthorizeView>
+
+        <AuthorizeView Roles="Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin,BatchAdmin">
+            <section class="group">
+                <button class="group-head" @onclick="() => _academicOpen = !_academicOpen">
+                    <span class="gh-main">
+                        <svg viewBox="0 0 24 24"><path d="M3 9.5 12 4l9 5.5-9 5.5-9-5.5ZM7 12v4c0 1 2.2 2.5 5 2.5s5-1.5 5-2.5v-4M21 9.5V15" /></svg>
+                        <span>الهيكل الأكاديمي</span>
+                    </span>
+                    <svg class="chev @(_academicOpen ? "up" : "")" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" /></svg>
+                </button>
+
+                <div class="group-body @(_academicOpen ? "open" : "")">
+                    <AuthorizeView Roles="Super Admin" Context="cx">
+                        <NavLink class="sublink" href="/academic/universities" @onclick="OnNavigate">
+                            <span class="sub-ic"><svg viewBox="0 0 24 24"><path d="M3 21h18M6 21V9l6-4 6 4v12M10 21v-4h4v4M9 12h.01M15 12h.01" /></svg></span>
+                            <span>الجامعات</span>
+                        </NavLink>
+                    </AuthorizeView>
+                    <AuthorizeView Roles="Super Admin,UniversityAdmin" Context="cx">
+                        <NavLink class="sublink" href="/academic/colleges" @onclick="OnNavigate">
+                            <span class="sub-ic"><svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-5h6v5" /></svg></span>
+                            <span>الكليات</span>
+                        </NavLink>
+                    </AuthorizeView>
+                    <AuthorizeView Roles="Super Admin,UniversityAdmin,CollegeAdmin" Context="cx">
+                        <NavLink class="sublink" href="/academic/departments" @onclick="OnNavigate">
+                            <span class="sub-ic"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 10h16M10 10v10" /></svg></span>
+                            <span>الأقسام</span>
+                        </NavLink>
+                    </AuthorizeView>
+                    <AuthorizeView Roles="Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin" Context="cx">
+                        <NavLink class="sublink" href="/academic/batches" @onclick="OnNavigate">
+                            <span class="sub-ic"><svg viewBox="0 0 24 24"><path d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" /></svg></span>
+                            <span>الدفعات</span>
+                        </NavLink>
+                    </AuthorizeView>
+                    <AuthorizeView Roles="Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin,BatchAdmin" Context="cx">
+                        <NavLink class="sublink" href="/academic/sections" @onclick="OnNavigate">
+                            <span class="sub-ic"><svg viewBox="0 0 24 24"><path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z" /></svg></span>
+                            <span>الشُعَب</span>
+                        </NavLink>
+                    </AuthorizeView>
+                </div>
+            </section>
+        </AuthorizeView>
+
+        <AuthorizeView Roles="Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin,BatchAdmin">
+            <section class="group">
+                <button class="group-head" @onclick="() => _studyOpen = !_studyOpen">
+                    <span class="gh-main">
+                        <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z" /></svg>
+                        <span>الدراسة</span>
+                    </span>
+                    <svg class="chev @(_studyOpen ? "up" : "")" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" /></svg>
+                </button>
+
+                <div class="group-body @(_studyOpen ? "open" : "")">
+                    <AuthorizeView Roles="Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin" Context="cx">
+                        <NavLink class="sublink" href="/study/subjects" @onclick="OnNavigate">
+                            <span class="sub-ic"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 10h16M10 10v10" /></svg></span>
+                            <span>المواد</span>
+                        </NavLink>
+                    </AuthorizeView>
+                    <AuthorizeView Roles="Super Admin,UniversityAdmin" Context="cx">
+                        <NavLink class="sublink" href="/study/semesters" @onclick="OnNavigate">
+                            <span class="sub-ic"><svg viewBox="0 0 24 24"><path d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" /></svg></span>
+                            <span>الفصول الدراسية</span>
+                        </NavLink>
+                    </AuthorizeView>
+                    <AuthorizeView Roles="Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin,BatchAdmin" Context="cx">
+                        <NavLink class="sublink" href="/study/section-subjects" @onclick="OnNavigate">
+                            <span class="sub-ic"><svg viewBox="0 0 24 24"><path d="M3 12h4l3 8 4-16 3 8h4" /></svg></span>
+                            <span>مواد الشُّعَب</span>
+                        </NavLink>
+                    </AuthorizeView>
+                </div>
+            </section>
+        </AuthorizeView>
+
+        <AuthorizeView Roles="Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin,BatchAdmin">
+            <section class="group">
+                <button class="group-head" @onclick="() => _studentsOpen = !_studentsOpen">
+                    <span class="gh-main">
+                        <svg viewBox="0 0 24 24"><path d="M22 10 12 5 2 10l10 5 10-5ZM6 12v5c0 1 2.7 3 6 3s6-2 6-3v-5M22 10v6" /></svg>
+                        <span>شؤون الطلاب</span>
+                    </span>
+                    <svg class="chev @(_studentsOpen ? "up" : "")" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" /></svg>
+                </button>
+
+                <div class="group-body @(_studentsOpen ? "open" : "")">
+                    <NavLink class="sublink" href="/students" @onclick="OnNavigate">
+                        <span class="sub-ic"><svg viewBox="0 0 24 24"><path d="M20 21a8 8 0 1 0-16 0M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" /></svg></span>
+                        <span>الطلاب</span>
+                    </NavLink>
+                    <NavLink class="sublink" href="/study/results" @onclick="OnNavigate">
+                        <span class="sub-ic"><svg viewBox="0 0 24 24"><path d="M9 11l3 3 8-8M4 6h9M4 12h5M4 18h9" /></svg></span>
+                        <span>النتائج</span>
+                    </NavLink>
+                </div>
+            </section>
+        </AuthorizeView>
     </div>
 
     <div class="foot mono">© 2026 UniNet</div>
@@ -60,7 +175,10 @@
     [Parameter] public bool Collapsed { get; set; }
     [Parameter] public EventCallback OnNavigate { get; set; }
 
-    private bool _identityOpen = true;
+    private bool _identityOpen;
+    private bool _academicOpen;
+    private bool _studyOpen;
+    private bool _studentsOpen;
 
     private void Go(string url)
     {

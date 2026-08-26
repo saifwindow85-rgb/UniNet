@@ -1,0 +1,346 @@
+@page "/study/results"
+@attribute [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin,BatchAdmin")]
+@using System.ComponentModel.DataAnnotations
+@inject StudentResultApiService ResultsApi
+@inject StudentApiService StudentsApi
+@inject SectionSubjectApiService LinksApi
+@inject ScopeContext Scope
+
+<PageTitle>نتائج الطلاب · UniNet</PageTitle>
+
+<PageHeader Title="نتائج الطلاب" Subtitle="كشوف الدرجات مجمّعة حسب الطالب والفصل الدراسي.">
+    <Actions>
+        <button class="btn btn-primary" @onclick="OpenAddResult">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+            نتيجة جديدة
+        </button>
+    </Actions>
+</PageHeader>
+
+<Alert Message="@_notice" Kind="@_noticeKind" OnClose="() => _notice = null" />
+
+<div class="toolbar wrap">
+    <SearchBox Placeholder="ابحث باسم الطالب…" OnSearch="OnSearchName" />
+    <input class="inp flt mono" placeholder="الرقم الجامعي" @bind="_fStudentNumber" @bind:event="oninput" />
+    <input class="inp flt mono" placeholder="رمز المادة" @bind="_fSubjectCode" @bind:event="oninput" />
+    <input class="inp flt mono" placeholder="رقم الفصل" @bind="_fSemesterId" @bind:event="oninput" style="width:120px" />
+    <button class="btn btn-ghost" @onclick="ApplyFilters">تطبيق</button>
+</div>
+
+@if (_loading)
+{
+    <div class="loading"><span class="spin"></span></div>
+}
+else if (_groups is { Count: > 0 })
+{
+    <div class="report-meta">عدد الطلاب: <b>@_groups.Count</b> · عدد الكشوف: <b>@_report!.Count</b></div>
+
+    @foreach (var g in _groups)
+    {
+        var head = g.First();
+        <div class="surface student-block">
+            <div class="sb-head">
+                <div class="sb-avatar">@Initials(head.StudentName)</div>
+                <div class="sb-info">
+                    <strong>@head.StudentName</strong>
+                    <div class="sb-meta">
+                        <span class="badge badge-code mono">@head.StudentNumber</span>
+                        <span>@head.DepartmentName</span>
+                        <span>· @head.BatchName</span>
+                        @if (!string.IsNullOrEmpty(head.SectionName)) { <span>· شعبة @head.SectionName</span> }
+                    </div>
+                </div>
+            </div>
+
+            @foreach (var sem in g.OrderBy(s => s.SemesterId))
+            {
+                <div class="sem-block">
+                    <div class="sem-head">
+                        <span class="sem-name">@sem.SemesterName</span>
+                        <span class="sem-gpa">المعدّل: <b>@sem.Grade.ToString("0.##")</b></span>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="data grades">
+                            <thead>
+                                <tr>
+                                    <th style="width:100px">الرمز</th>
+                                    <th>المادة</th>
+                                    <th>المحاضِر</th>
+                                    <th style="width:90px">نصفي</th>
+                                    <th style="width:90px">عملي</th>
+                                    <th style="width:90px">نهائي</th>
+                                    <th style="width:90px">المجموع</th>
+                                    <th style="width:120px"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var r in sem.Results)
+                                {
+                                    <tr>
+                                        <td><span class="badge badge-code mono">@r.SubjectCode</span></td>
+                                        <td><strong>@r.SubjectName</strong></td>
+                                        <td>@r.LecturerName</td>
+                                        <td class="mono">@r.Midterm.ToString("0.##")</td>
+                                        <td class="mono">@r.Practical.ToString("0.##")</td>
+                                        <td class="mono">@r.Final.ToString("0.##")</td>
+                                        <td class="mono"><strong class="@TotalClass(r.Total)">@r.Total.ToString("0.##")</strong></td>
+                                        <td class="actions">
+                                            <button class="btn btn-ghost btn-sm" @onclick="() => OpenEditResult(r)">تعديل</button>
+                                            <button class="btn btn-danger btn-sm" @onclick="() => _deleteTarget = r">حذف</button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+}
+else
+{
+    <div class="surface empty">
+        <svg viewBox="0 0 24 24"><path d="M9 11l3 3 8-8M4 6h9M4 12h5M4 18h9" /></svg>
+        <p>لا توجد نتائج مطابقة. جرّب تعديل الفلاتر أو أضِف نتيجة جديدة.</p>
+    </div>
+}
+
+@* ===== إضافة / تعديل نتيجة ===== *@
+<Modal Visible="_formOpen" MaxWidth="520px"
+       Title="@(_editing is null ? "نتيجة جديدة" : "تعديل النتيجة")"
+       Subtitle="@(_editing is null ? "أدخِل درجات طالب في مادة شعبة." : $"النتيجة #{_editing.StudentResultId}")"
+       OnClose="CloseForm">
+    <ChildContent>
+        <Alert Message="@_formError" Kind="err" OnClose="() => _formError = null" />
+        <EditForm Model="_form" OnValidSubmit="SaveAsync" id="resForm">
+            <DataAnnotationsValidator />
+            <div class="form-grid">
+                @if (_editing is null)
+                {
+                    <div class="form-row">
+                        <label class="lbl">الطالب <span class="req">*</span></label>
+                        <Combobox Items="_studentItems" Value="_form.StudentId" ValueChanged="v => _form.StudentId = v"
+                                  Loading="_studentsLoading" Placeholder="ابحث واختر الطالب" Disabled="@_saving" />
+                    </div>
+                    <div class="form-row">
+                        <label class="lbl">مادة الشعبة <span class="req">*</span></label>
+                        <Combobox Items="_linkItems" Value="_form.SectionSubjectId" ValueChanged="v => _form.SectionSubjectId = v"
+                                  Loading="_linksLoading" Placeholder="ابحث واختر مادة الشعبة" Disabled="@_saving" />
+                    </div>
+                }
+                else
+                {
+                    <div class="form-row">
+                        <label class="lbl">المادة</label>
+                        <input class="inp" value="@($"{_editing.SubjectName} ({_editing.SubjectCode})")" disabled />
+                    </div>
+                }
+
+                <div class="form-row three">
+                    <div class="form-row">
+                        <label class="lbl">نصفي</label>
+                        <InputNumber class="inp mono" @bind-Value="_form.Midterm" disabled="@_saving" />
+                    </div>
+                    <div class="form-row">
+                        <label class="lbl">عملي</label>
+                        <InputNumber class="inp mono" @bind-Value="_form.Practical" disabled="@_saving" />
+                    </div>
+                    <div class="form-row">
+                        <label class="lbl">نهائي</label>
+                        <InputNumber class="inp mono" @bind-Value="_form.Final" disabled="@_saving" />
+                    </div>
+                </div>
+                <div class="total-preview">المجموع المتوقّع: <b>@(( _form.Midterm + _form.Practical + _form.Final).ToString("0.##"))</b></div>
+            </div>
+        </EditForm>
+    </ChildContent>
+    <Footer>
+        <button class="btn btn-ghost" @onclick="CloseForm" disabled="@_saving">إلغاء</button>
+        <button class="btn btn-primary" type="submit" form="resForm" disabled="@_saving">
+            @if (_saving) { <span class="spin-btn"></span> }
+            @(_editing is null ? "إضافة" : "حفظ")
+        </button>
+    </Footer>
+</Modal>
+
+<ConfirmDialog Visible="_deleteTarget is not null"
+               Subtitle="@(_deleteTarget is null ? null : $"النتيجة #{_deleteTarget.StudentResultId}")"
+               Message="@($"ستُحذف نتيجة «{_deleteTarget?.SubjectName}». لا يمكن التراجع.")"
+               Busy="_deleting" OnConfirm="DeleteAsync" OnCancel="() => _deleteTarget = null" />
+
+@code {
+    private List<StudentSemesterResultDTO>? _report;
+    private List<IGrouping<int, StudentSemesterResultDTO>>? _groups;
+    private bool _loading = true;
+
+    private string _fName = "", _fStudentNumber = "", _fSubjectCode = "", _fSemesterId = "";
+
+    private List<Combobox.ComboItem> _studentItems = new();
+    private List<Combobox.ComboItem> _linkItems = new();
+    private bool _studentsLoading, _linksLoading, _lookupsLoaded;
+
+    private bool _formOpen, _saving;
+    private StudentResultItemDTO? _editing;
+    private readonly ResForm _form = new();
+    private string? _formError;
+
+    private StudentResultItemDTO? _deleteTarget;
+    private bool _deleting;
+
+    private string? _notice;
+    private string _noticeKind = "ok";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Scope.EnsureAsync();
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        var filter = new StudentResultFilterDTO
+        {
+            StudentName = Blank(_fName),
+            StudentNumber = Blank(_fStudentNumber),
+            SubjectCode = Blank(_fSubjectCode),
+            SemesterId = int.TryParse(_fSemesterId, out var sid) && sid > 0 ? sid : null
+        };
+        var res = await ResultsApi.GetReportAsync(filter);
+        if (res.Success && res.Data is not null)
+        {
+            _report = res.Data;
+            _groups = _report.GroupBy(r => r.StudentId).OrderBy(g => g.First().StudentName).ToList();
+        }
+        else { _report = new(); _groups = new(); Notify(res.Error ?? "تعذّر جلب النتائج.", "err"); }
+        _loading = false;
+    }
+
+    private static string? Blank(string s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
+
+    private async Task OnSearchName(string term) { _fName = term; await LoadAsync(); }
+    private async Task ApplyFilters() { await LoadAsync(); }
+
+    private async Task EnsureLookupsAsync()
+    {
+        if (_lookupsLoaded) return;
+        _studentsLoading = _linksLoading = true;
+        var st = await StudentsApi.GetStudentsAsync(1, 300);
+        if (st.Success && st.Data?.Data is not null)
+            _studentItems = st.Data.Data.Select(s => new Combobox.ComboItem(s.StudentId, s.FullName, s.StudentNumber)).ToList();
+        _studentsLoading = false;
+
+        var lk = Scope.IsSuperAdmin ? await LinksApi.GetAllAsync(1, 300) : await LinksApi.GetPerScopeAsync(1, 300);
+        if (lk.Success && lk.Data?.Data is not null)
+            _linkItems = lk.Data.Data.Select(x => new Combobox.ComboItem(x.SectionSubjectId, $"{x.SubjectName} · {x.SectionName}", $"{x.SemesterName} · {x.SubjectCode}")).ToList();
+        _linksLoading = false;
+        _lookupsLoaded = true;
+    }
+
+    private async Task OpenAddResult()
+    {
+        _editing = null;
+        _form.Reset();
+        _formError = null;
+        _formOpen = true;
+        await EnsureLookupsAsync();
+    }
+
+    private void OpenEditResult(StudentResultItemDTO r)
+    {
+        _editing = r;
+        _form.Midterm = r.Midterm; _form.Practical = r.Practical; _form.Final = r.Final;
+        _formError = null;
+        _formOpen = true;
+    }
+
+    private void CloseForm() { _formOpen = false; _saving = false; _formError = null; }
+
+    private async Task SaveAsync()
+    {
+        if (_editing is null)
+        {
+            if (_form.StudentId <= 0) { _formError = "اختر الطالب."; return; }
+            if (_form.SectionSubjectId <= 0) { _formError = "اختر مادة الشعبة."; return; }
+        }
+        _saving = true;
+
+        ApiResult<DetaieldStudentResultDTO> res;
+        if (_editing is null)
+            res = await ResultsApi.AddAsync(new AddStudentResultDTO
+            {
+                StudentId = _form.StudentId,
+                SectionSubjectId = _form.SectionSubjectId,
+                Midterm = _form.Midterm, Practical = _form.Practical, Final = _form.Final
+            });
+        else
+            res = await ResultsApi.UpdateAsync(_editing.StudentResultId, new UpdateStudentResultDTO
+            {
+                Midterm = _form.Midterm, Practical = _form.Practical, Final = _form.Final
+            });
+
+        _saving = false;
+        if (res.Success) { CloseForm(); Notify(_editing is null ? "تمت إضافة النتيجة." : "تم الحفظ.", "ok"); await LoadAsync(); }
+        else _formError = res.Error ?? "تعذّر الحفظ.";
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (_deleteTarget is null) return;
+        _deleting = true;
+        var res = await ResultsApi.DeleteAsync(_deleteTarget.StudentResultId);
+        _deleting = false;
+        _deleteTarget = null;
+        if (res.Success) { Notify("تم حذف النتيجة.", "ok"); await LoadAsync(); }
+        else Notify(res.Error ?? "تعذّر الحذف.", "err");
+    }
+
+    private void Notify(string m, string k) { _notice = m; _noticeKind = k; }
+
+    private static string Initials(string name)
+    {
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length switch { 0 => "؟", 1 => parts[0][..1], _ => $"{parts[0][..1]}{parts[1][..1]}" };
+    }
+    private static string TotalClass(decimal total) => total >= 60 ? "pass" : "fail";
+
+    private sealed class ResForm
+    {
+        public int StudentId { get; set; }
+        public int SectionSubjectId { get; set; }
+        public decimal Midterm { get; set; }
+        public decimal Practical { get; set; }
+        public decimal Final { get; set; }
+        public void Reset() { StudentId = 0; SectionSubjectId = 0; Midterm = 0; Practical = 0; Final = 0; }
+    }
+}
+
+<style>
+    .toolbar.wrap { flex-wrap: wrap; gap: .6rem; }
+    .inp.flt { height: 42px; width: 150px; }
+    .report-meta { font-size: .86rem; color: var(--muted); margin-bottom: 1rem; }
+    .report-meta b { color: var(--navy-700); }
+
+    .student-block { padding: 1.1rem 1.25rem 1.35rem; margin-bottom: 1.15rem; }
+    .sb-head { display: flex; align-items: center; gap: .85rem; padding-bottom: .9rem; border-bottom: 1px solid var(--line); margin-bottom: .9rem; }
+    .sb-avatar { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 13px; flex: none; font-weight: 700; color: #06232b; background: linear-gradient(140deg,#2ee6d1,var(--teal-strong)); }
+    .sb-info strong { font-size: 1.08rem; }
+    .sb-meta { display: flex; align-items: center; gap: .45rem; flex-wrap: wrap; margin-top: .25rem; font-size: .84rem; color: var(--muted); }
+
+    .sem-block { margin-top: .9rem; }
+    .sem-head { display: flex; align-items: center; justify-content: space-between; padding: .35rem .1rem .5rem; }
+    .sem-name { font-weight: 600; color: var(--ink); }
+    .sem-gpa { font-size: .88rem; color: var(--muted); }
+    .sem-gpa b { color: var(--teal-strong); font-size: 1rem; }
+
+    table.grades thead th { font-size: .78rem; }
+    table.grades .pass { color: #0b6b4a; }
+    table.grades .fail { color: #b23838; }
+
+    .three { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .8rem; }
+    .total-preview { font-size: .9rem; color: var(--muted); margin-top: .3rem; }
+    .total-preview b { color: var(--navy-700); }
+    .spin-btn { width: 14px; height: 14px; border: 2px solid rgba(5,42,42,.3); border-top-color: #052a2a; border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; }
+    .badge-code { background: #eef2f7; color: var(--navy-700); }
+</style>

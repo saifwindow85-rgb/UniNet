@@ -1,0 +1,464 @@
+@page "/students"
+@attribute [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin,BatchAdmin")]
+@using System.ComponentModel.DataAnnotations
+@inject StudentApiService StudentsApi
+@inject StudentStatusApiService StatusesApi
+@inject BatchApiService BatchesApi
+@inject SectionApiService SectionsApi
+@inject ScopeContext Scope
+
+<PageTitle>الطلاب · UniNet</PageTitle>
+
+<PageHeader Title="الطلاب" Subtitle="إدارة طلاب الدفعة ضمن نطاقك.">
+    <Actions>
+        <button class="btn btn-primary" @onclick="OpenAdd">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+            طالب جديد
+        </button>
+    </Actions>
+</PageHeader>
+
+<Alert Message="@_notice" Kind="@_noticeKind" OnClose="() => _notice = null" />
+
+<div class="toolbar">
+    <SearchBox Placeholder="ابحث بالاسم…" OnSearch="OnSearch" />
+    <div class="ctx-field">
+        <span class="ctx-lbl">الحالة</span>
+        <select class="inp" value="@_activeFilter" @onchange="OnFilterActive">
+            <option value="all">الكل</option>
+            <option value="active">النشِط</option>
+            <option value="inactive">الموقوف</option>
+        </select>
+    </div>
+    @if (Scope.BatchId is null)
+    {
+        <div style="min-width:240px">
+            <Combobox Items="_batchItems" Value="_filterBatchId" ValueChanged="OnFilterBatch"
+                      Loading="_batchesLoading" Placeholder="تصفية حسب الدفعة (الكل)" />
+        </div>
+    }
+</div>
+
+@if (_loading)
+{
+    <div class="loading"><span class="spin"></span></div>
+}
+else if (_items is { Count: > 0 })
+{
+    <div class="table-wrap">
+        <table class="data">
+            <thead>
+                <tr><th style="width:120px">الرقم الجامعي</th><th>الطالب</th><th>الدفعة</th><th>الشعبة</th><th style="width:110px">الحالة</th><th style="width:190px"></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var s in _items)
+                {
+                    <tr>
+                        <td><span class="badge badge-code mono">@s.StudentNumber</span></td>
+                        <td><strong>@s.FullName</strong><div class="row-sub mono">@@@s.UserName</div></td>
+                        <td>@s.BatchName</td>
+                        <td>@(s.SectionName ?? "—")</td>
+                        <td><span class="badge badge-status">@s.StatusName</span></td>
+                        <td class="actions">
+                            <button class="btn btn-ghost btn-sm" @onclick="() => OpenEdit(s)">تعديل</button>
+                            <button class="btn btn-ghost btn-sm" @onclick="() => OpenStatus(s)">الحالة</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <Pager Current="_page" TotalPages="_totalPages" Total="_total" CurrentChanged="ChangePage" />
+}
+else
+{
+    <div class="surface empty">
+        <svg viewBox="0 0 24 24"><path d="M22 10 12 5 2 10l10 5 10-5ZM6 12v5c0 1 2.7 3 6 3s6-2 6-3v-5" /></svg>
+        <p>لا يوجد طلاب ضمن نطاقك بعد.</p>
+    </div>
+}
+
+@* ===== إضافة / تعديل ===== *@
+<Modal Visible="_formOpen" MaxWidth="600px"
+       Title="@(_editing is null ? "طالب جديد" : "تعديل بيانات الطالب")"
+       Subtitle="@(_editing is null ? "أنشئ حساب طالب ضمن دفعتك." : $"الطالب #{_editing.StudentId}")"
+       OnClose="CloseForm">
+    <ChildContent>
+        <Alert Message="@_formError" Kind="err" OnClose="() => _formError = null" />
+        <EditForm Model="_form" OnValidSubmit="SaveAsync" id="stdForm">
+            <DataAnnotationsValidator />
+            <div class="form-grid">
+                @if (_editing is null && _kinds.Count > 1)
+                {
+                    <div class="form-row">
+                        <label class="lbl">النوع <span class="req">*</span></label>
+                        <div class="seg">
+                            @foreach (var k in _kinds)
+                            {
+                                <button type="button" class="seg-btn @(_form.Kind == k ? "on" : "")" @onclick="() => _form.Kind = k" disabled="@_saving">
+                                    @(k == "student" ? "طالب" : "مدير دفعة")
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @if (_editing is null)
+                {
+                    <div class="form-row two">
+                        <div class="form-row">
+                            <label class="lbl">الدفعة <span class="req">*</span></label>
+                            @if (Scope.BatchId is int bid)
+                            {
+                                <input class="inp" value="دفعتك · #@bid" disabled />
+                            }
+                            else
+                            {
+                                <Combobox Items="_batchItems" Value="_form.BatchId" ValueChanged="OnFormBatchChanged"
+                                          Loading="_batchesLoading" Placeholder="ابحث واختر الدفعة" Disabled="@_saving" />
+                            }
+                        </div>
+                        <div class="form-row">
+                            <label class="lbl">الرقم الجامعي <span class="req">*</span></label>
+                            <InputText class="inp mono" @bind-Value="_form.StudentNumber" placeholder="2025-0001" disabled="@_saving" />
+                            <ValidationMessage For="() => _form.StudentNumber" />
+                        </div>
+                    </div>
+                }
+
+                <div class="form-row two">
+                    <div class="form-row">
+                        <label class="lbl">الشعبة</label>
+                        <Combobox Items="_sectionItems" Value="_form.SectionId" ValueChanged="v => _form.SectionId = v"
+                                  Loading="_sectionsLoading" Placeholder="بدون شعبة (اختياري)" Disabled="@_saving" />
+                    </div>
+                    @if (_editing is null)
+                    {
+                        <div class="form-row">
+                            <label class="lbl">الحالة <span class="req">*</span></label>
+                            @if (_canListStatuses)
+                            {
+                                <Combobox Items="_statusItems" Value="_form.StatusId" ValueChanged="v => _form.StatusId = v"
+                                          Loading="_statusesLoading" Placeholder="اختر الحالة" Disabled="@_saving" />
+                            }
+                            else
+                            {
+                                <InputNumber class="inp mono" @bind-Value="_form.StatusId" placeholder="رقم الحالة (StatusId)" disabled="@_saving" />
+                                <span class="hint-inline">قائمة الحالات لمسؤول النظام؛ أدخِل رقم الحالة.</span>
+                            }
+                        </div>
+                    }
+                </div>
+
+                <div class="form-row two">
+                    <div class="form-row">
+                        <label class="lbl">الاسم الكامل <span class="req">*</span></label>
+                        <InputText class="inp" @bind-Value="_form.FullName" placeholder="مثال: سارة علي" disabled="@_saving" />
+                        <ValidationMessage For="() => _form.FullName" />
+                    </div>
+                    <div class="form-row">
+                        <label class="lbl">اسم المستخدم <span class="req">*</span></label>
+                        <InputText class="inp mono" @bind-Value="_form.UserName" placeholder="username" disabled="@_saving" />
+                        <ValidationMessage For="() => _form.UserName" />
+                    </div>
+                </div>
+
+                @if (_editing is null)
+                {
+                    <div class="form-row">
+                        <label class="lbl">كلمة المرور <span class="req">*</span></label>
+                        <InputText type="password" class="inp mono" @bind-Value="_form.Password" placeholder="٦ أحرف على الأقل" disabled="@_saving" />
+                    </div>
+                }
+                else
+                {
+                    <div class="note-inline">
+                        <svg viewBox="0 0 24 24"><path d="M12 8v5M12 16h.01M10.3 3.7 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.7a2 2 0 0 0-3.4 0Z" /></svg>
+                        البريد والهاتف غير مُتاحَين في العرض؛ اترُكهما فارغَين للإبقاء عليهما أو أعِد إدخالهما للتحديث.
+                    </div>
+                }
+
+                <div class="form-row two">
+                    <div class="form-row">
+                        <label class="lbl">البريد الإلكتروني</label>
+                        <InputText class="inp mono" @bind-Value="_form.Email" placeholder="name@example.com" disabled="@_saving" />
+                        <ValidationMessage For="() => _form.Email" />
+                    </div>
+                    <div class="form-row">
+                        <label class="lbl">رقم الهاتف</label>
+                        <InputText class="inp mono" @bind-Value="_form.PhoneNumber" placeholder="7xxxxxxxx" disabled="@_saving" />
+                    </div>
+                </div>
+
+                <label class="switch">
+                    <InputCheckbox @bind-Value="_form.IsActive" disabled="@_saving" />
+                    <span>الحساب نشِط</span>
+                </label>
+            </div>
+        </EditForm>
+    </ChildContent>
+    <Footer>
+        <button class="btn btn-ghost" @onclick="CloseForm" disabled="@_saving">إلغاء</button>
+        <button class="btn btn-primary" type="submit" form="stdForm" disabled="@_saving">
+            @if (_saving) { <span class="spin-btn"></span> }
+            @(_editing is null ? "إنشاء" : "حفظ")
+        </button>
+    </Footer>
+</Modal>
+
+@* ===== تغيير الحالة ===== *@
+<Modal Visible="_statusOpen" MaxWidth="420px"
+       Title="تغيير حالة الطالب"
+       Subtitle="@(_statusTarget is null ? null : _statusTarget.FullName)"
+       OnClose="() => _statusOpen = false">
+    <ChildContent>
+        <Alert Message="@_statusError" Kind="err" OnClose="() => _statusError = null" />
+        <div class="form-row">
+            <label class="lbl">الحالة الجديدة <span class="req">*</span></label>
+            @if (_canListStatuses)
+            {
+                <Combobox Items="_statusItems" Value="_statusValue" ValueChanged="v => _statusValue = v"
+                          Loading="_statusesLoading" Placeholder="اختر الحالة" Disabled="@_statusSaving" />
+            }
+            else
+            {
+                <InputNumber class="inp mono" @bind-Value="_statusValue" placeholder="رقم الحالة (StatusId)" disabled="@_statusSaving" />
+            }
+            <span class="hint-inline">الحالة الحالية: @_statusTarget?.StatusName</span>
+        </div>
+    </ChildContent>
+    <Footer>
+        <button class="btn btn-ghost" @onclick="() => _statusOpen = false" disabled="@_statusSaving">إلغاء</button>
+        <button class="btn btn-primary" @onclick="SaveStatusAsync" disabled="@_statusSaving">
+            @if (_statusSaving) { <span class="spin-btn"></span> }
+            حفظ الحالة
+        </button>
+    </Footer>
+</Modal>
+
+@code {
+    private List<StudentDTO>? _items;
+    private bool _loading = true;
+    private int _page = 1, _pageSize = 10, _totalPages = 1, _total;
+    private string _search = "";
+    private string _activeFilter = "all";
+    private int _filterBatchId;
+
+    private readonly List<string> _kinds = new();
+    private bool _canListStatuses;
+
+    private List<Combobox.ComboItem> _batchItems = new();
+    private List<Combobox.ComboItem> _sectionItems = new();
+    private List<Combobox.ComboItem> _statusItems = new();
+    private bool _batchesLoading, _sectionsLoading, _statusesLoading;
+
+    private bool _formOpen, _saving;
+    private StudentDTO? _editing;
+    private readonly StudentForm _form = new();
+    private string? _formError;
+
+    private bool _statusOpen, _statusSaving;
+    private StudentDTO? _statusTarget;
+    private int _statusValue;
+    private string? _statusError;
+
+    private string? _notice;
+    private string _noticeKind = "ok";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Scope.EnsureAsync();
+        _kinds.Add("student");
+        if (Scope.Role != "BatchAdmin") _kinds.Add("batch_admin");
+        _canListStatuses = Scope.IsSuperAdmin;
+
+        var tasks = new List<Task>();
+        if (Scope.BatchId is null) tasks.Add(LoadBatchesAsync());
+        if (_canListStatuses) tasks.Add(LoadStatusesAsync());
+        await Task.WhenAll(tasks);
+        await LoadAsync();
+    }
+
+    private async Task LoadBatchesAsync()
+    {
+        _batchesLoading = true;
+        var res = Scope.IsSuperAdmin ? await BatchesApi.GetAllAsync(1, 200) : await BatchesApi.GetPerDepartmentAsync(null, 1, 200);
+        if (res.Success && res.Data?.Data is not null)
+            _batchItems = res.Data.Data.Select(b => new Combobox.ComboItem(b.BatchId, b.BatchName, b.DepartmentName)).ToList();
+        _batchesLoading = false;
+    }
+
+    private async Task LoadStatusesAsync()
+    {
+        _statusesLoading = true;
+        var res = await StatusesApi.GetAllAsync(1, 200);
+        if (res.Success && res.Data?.Data is not null)
+            _statusItems = res.Data.Data.Select(s => new Combobox.ComboItem(s.StatusId, s.StatusName)).ToList();
+        _statusesLoading = false;
+    }
+
+    private async Task LoadSectionsForBatchAsync(int batchId)
+    {
+        _sectionItems = new();
+        if (batchId <= 0) return;
+        _sectionsLoading = true;
+        var res = await SectionsApi.GetPerBatchAsync(batchId, 1, 200);
+        if (res.Success && res.Data?.Data is not null)
+            _sectionItems = res.Data.Data.Select(s => new Combobox.ComboItem(s.SectionId, s.SectionName)).ToList();
+        _sectionsLoading = false;
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        bool? active = _activeFilter switch { "active" => true, "inactive" => false, _ => null };
+        var res = await StudentsApi.GetStudentsAsync(_page, _pageSize, fullName: _search, isActive: active, batchId: _filterBatchId > 0 ? _filterBatchId : null);
+        if (res.Success && res.Data is not null)
+        {
+            _items = res.Data.Data ?? new();
+            _totalPages = Math.Max(1, res.Data.TotalPages);
+            _total = res.Data.TotalRecords;
+        }
+        else { _items = new(); Notify(res.Error ?? "تعذّر جلب الطلاب.", "err"); }
+        _loading = false;
+    }
+
+    private async Task OnSearch(string term) { _search = term; _page = 1; await LoadAsync(); }
+    private async Task OnFilterActive(ChangeEventArgs e) { _activeFilter = e.Value?.ToString() ?? "all"; _page = 1; await LoadAsync(); }
+    private async Task OnFilterBatch(int bid) { _filterBatchId = bid; _page = 1; await LoadAsync(); }
+    private async Task ChangePage(int p) { _page = p; await LoadAsync(); }
+
+    private async Task OnFormBatchChanged(int bid) { _form.BatchId = bid; _form.SectionId = 0; await LoadSectionsForBatchAsync(bid); }
+
+    private async Task OpenAdd()
+    {
+        _editing = null;
+        _form.Reset();
+        _form.Kind = _kinds.First();
+        _formError = null;
+        _sectionItems = new();
+        if (Scope.BatchId is int bid) { _form.BatchId = bid; await LoadSectionsForBatchAsync(bid); }
+        _formOpen = true;
+    }
+
+    private async Task OpenEdit(StudentDTO s)
+    {
+        _editing = s;
+        _form.Reset();
+        _form.FullName = s.FullName;
+        _form.UserName = s.UserName;
+        _form.BatchId = s.BatchId;
+        _form.SectionId = s.SectionId ?? 0;
+        _form.IsActive = true;
+        _formError = null;
+        await LoadSectionsForBatchAsync(s.BatchId);
+        _formOpen = true;
+    }
+
+    private void CloseForm() { _formOpen = false; _saving = false; _formError = null; }
+
+    private async Task SaveAsync()
+    {
+        if (_editing is null)
+        {
+            if (_form.BatchId <= 0) { _formError = "اختر الدفعة."; return; }
+            if (_form.StatusId <= 0) { _formError = "اختر/أدخِل الحالة."; return; }
+            if ((_form.Password?.Length ?? 0) < 6) { _formError = "كلمة المرور ٦ أحرف على الأقل."; return; }
+        }
+        _saving = true;
+        var name = _form.FullName.Trim();
+        var user = _form.UserName.Trim();
+        var email = string.IsNullOrWhiteSpace(_form.Email) ? null : _form.Email!.Trim();
+        var phone = string.IsNullOrWhiteSpace(_form.PhoneNumber) ? null : _form.PhoneNumber!.Trim();
+        int? section = _form.SectionId > 0 ? _form.SectionId : null;
+
+        ApiResult<StudentDTO> res;
+        if (_editing is null)
+        {
+            var dto = new AddStudentDTO
+            {
+                StudentNumber = _form.StudentNumber.Trim(),
+                BatchId = _form.BatchId,
+                SectionId = section,
+                StatusId = _form.StatusId,
+                FullName = name, UserName = user, Password = _form.Password ?? "",
+                Email = email, PhoneNumber = phone, IsActive = _form.IsActive
+            };
+            res = _form.Kind == "batch_admin" ? await StudentsApi.AddBatchAdminAsync(dto) : await StudentsApi.AddStudentAsync(dto);
+        }
+        else
+        {
+            var dto = new UpdateStudentDTO
+            {
+                SectionId = section,
+                FullName = name, UserName = user, Email = email, PhoneNumber = phone, IsActive = _form.IsActive
+            };
+            res = await StudentsApi.UpdateStudentAsync(_editing.StudentId, dto);
+        }
+
+        _saving = false;
+        if (res.Success) { CloseForm(); Notify(_editing is null ? "تم إنشاء الطالب." : "تم الحفظ.", "ok"); await LoadAsync(); }
+        else _formError = res.Error ?? "تعذّر الحفظ.";
+    }
+
+    private void OpenStatus(StudentDTO s) { _statusTarget = s; _statusValue = 0; _statusError = null; _statusOpen = true; }
+
+    private async Task SaveStatusAsync()
+    {
+        if (_statusTarget is null) return;
+        if (_statusValue <= 0) { _statusError = "اختر/أدخِل الحالة."; return; }
+        _statusSaving = true;
+        var res = await StudentsApi.UpdateStatusAsync(_statusTarget.StudentId, _statusValue);
+        _statusSaving = false;
+        if (res.Success) { _statusOpen = false; Notify("تم تحديث الحالة.", "ok"); await LoadAsync(); }
+        else _statusError = res.Error ?? "تعذّر تحديث الحالة.";
+    }
+
+    private void Notify(string m, string k) { _notice = m; _noticeKind = k; }
+
+    private sealed class StudentForm
+    {
+        public string Kind { get; set; } = "student";
+        public int BatchId { get; set; }
+        public int SectionId { get; set; }
+        public int StatusId { get; set; }
+        [Required(ErrorMessage = "الرقم الجامعي مطلوب.")]
+        public string StudentNumber { get; set; } = "";
+        [Required(ErrorMessage = "الاسم الكامل مطلوب.")]
+        [StringLength(150, MinimumLength = 2, ErrorMessage = "الاسم بين 2 و150 حرفًا.")]
+        public string FullName { get; set; } = "";
+        [Required(ErrorMessage = "اسم المستخدم مطلوب.")]
+        [StringLength(60, MinimumLength = 3, ErrorMessage = "اسم المستخدم بين 3 و60 حرفًا.")]
+        public string UserName { get; set; } = "";
+        public string Password { get; set; } = "";
+        [EmailAddress(ErrorMessage = "بريد إلكتروني غير صالح.")]
+        public string? Email { get; set; }
+        public string? PhoneNumber { get; set; }
+        public bool IsActive { get; set; } = true;
+
+        public void Reset()
+        {
+            Kind = "student"; BatchId = 0; SectionId = 0; StatusId = 0; StudentNumber = "";
+            FullName = ""; UserName = ""; Password = ""; Email = null; PhoneNumber = null; IsActive = true;
+        }
+    }
+}
+
+<style>
+    .row-sub { font-size: .8rem; color: var(--muted); margin-top: .15rem; }
+    .hint-inline { font-size: .78rem; color: var(--muted); }
+    .spin-btn { width: 14px; height: 14px; border: 2px solid rgba(5,42,42,.3); border-top-color: #052a2a; border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; }
+    .ctx-field { display: flex; flex-direction: column; gap: .25rem; min-width: 160px; }
+    .ctx-lbl { font-size: .72rem; color: var(--muted); font-family: "Inter", sans-serif; }
+    .ctx-field .inp { height: 42px; }
+    .seg { display: inline-flex; gap: .3rem; background: #eef2f7; padding: .3rem; border-radius: 12px; }
+    .seg-btn { border: none; background: transparent; padding: .45rem .9rem; border-radius: 9px; font: inherit; font-size: .88rem; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .14s ease; }
+    .seg-btn.on { background: #fff; color: var(--teal-strong); box-shadow: 0 1px 4px rgba(15,42,67,.12); }
+    .seg-btn:disabled { cursor: default; opacity: .6; }
+    .switch { display: inline-flex; align-items: center; gap: .5rem; cursor: pointer; font-size: .9rem; }
+    .switch input { width: 17px; height: 17px; accent-color: var(--teal-strong); }
+    .badge-code { background: #eef2f7; color: var(--navy-700); }
+    .badge-status { background: #e2f3fb; color: #0b6b8f; }
+    .note-inline { display: flex; align-items: center; gap: .5rem; padding: .6rem .8rem; font-size: .82rem; color: #8a5a10; background: #fdf3e2; border-radius: 10px; }
+    .note-inline svg { flex: none; width: 17px; height: 17px; fill: none; stroke: #e08a1e; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+</style>
