@@ -26,6 +26,11 @@ builder.Services.AddHttpClient("PublicApi", c => c.BaseAddress = new Uri(apiBase
 builder.Services.AddHttpClient("Api", c => c.BaseAddress = new Uri(apiBaseUrl))
     .AddHttpMessageHandler<AuthTokenHandler>();
 
+// خدمات الهوية (تستخدم العميل المُصادَق "Api").
+builder.Services.AddScoped<RoleApiService>();
+builder.Services.AddScoped<UserApiService>();
+builder.Services.AddScoped<UserRoleApiService>();
+
 builder.Services.AddScoped(sp => new AuthApiService(
     sp.GetRequiredService<IHttpClientFactory>().CreateClient("PublicApi"),
     sp.GetRequiredService<TokenStore>(),

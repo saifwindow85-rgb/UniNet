@@ -1,0 +1,28 @@
+<Modal Visible="Visible" Title="@Title" Subtitle="@Subtitle" MaxWidth="420px" OnClose="OnCancel">
+    <ChildContent>
+        <div class="confirm">
+            <div class="confirm-ic">
+                <svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01M10.3 3.7 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.7a2 2 0 0 0-3.4 0Z"/></svg>
+            </div>
+            <p>@Message</p>
+        </div>
+    </ChildContent>
+    <Footer>
+        <button class="btn btn-ghost" @onclick="OnCancel" disabled="@Busy">إلغاء</button>
+        <button class="btn btn-danger" @onclick="OnConfirm" disabled="@Busy">
+            @if (Busy) { <span class="spin-sm"></span> }
+            @ConfirmText
+        </button>
+    </Footer>
+</Modal>
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public string Title { get; set; } = "تأكيد الحذف";
+    [Parameter] public string? Subtitle { get; set; }
+    [Parameter] public string Message { get; set; } = "هل أنت متأكد؟ لا يمكن التراجع عن هذه العملية.";
+    [Parameter] public string ConfirmText { get; set; } = "حذف";
+    [Parameter] public bool Busy { get; set; }
+    [Parameter] public EventCallback OnConfirm { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+}

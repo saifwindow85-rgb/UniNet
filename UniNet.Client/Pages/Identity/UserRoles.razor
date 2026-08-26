@@ -1,0 +1,225 @@
+@page "/identity/user-roles"
+@attribute [Authorize(Roles = "Super Admin")]
+@using System.ComponentModel.DataAnnotations
+@inject UserRoleApiService UserRolesApi
+@inject RoleApiService RolesApi
+
+<PageTitle>أدوار المستخدمين · UniNet</PageTitle>
+
+<PageHeader Title="أدوار المستخدمين" Subtitle="إسناد الأدوار للمستخدمين وإزالتها.">
+    <Actions>
+        <button class="btn btn-primary" @onclick="OpenAssign">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+            إسناد دور
+        </button>
+    </Actions>
+</PageHeader>
+
+<Alert Message="@_notice" Kind="@_noticeKind" OnClose="() => _notice = null" />
+
+<div class="toolbar">
+    <div class="filter">
+        <svg viewBox="0 0 24 24"><path d="M22 3H2l8 9.5V19l4 2v-8.5L22 3Z" /></svg>
+        <select class="inp" @bind="_filterRoleId" @bind:after="ApplyFilter">
+            <option value="0">كل الأدوار</option>
+            @if (_roles is not null)
+            {
+                @foreach (var r in _roles)
+                {
+                    <option value="@r.RoleId">@r.RoleName</option>
+                }
+            }
+        </select>
+    </div>
+</div>
+
+@if (_loading)
+{
+    <div class="loading"><span class="spin"></span></div>
+}
+else if (_items is { Count: > 0 })
+{
+    <div class="table-wrap">
+        <table class="data">
+            <thead>
+                <tr>
+                    <th style="width:90px">المستخدم</th>
+                    <th>اسم المستخدم</th>
+                    <th>الدور</th>
+                    <th style="width:110px"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var it in _items)
+                {
+                    <tr>
+                        <td><span class="badge badge-id">#@it.UserId</span></td>
+                        <td class="mono">@it.UserName</td>
+                        <td><span class="role-chip">@it.RoleName</span></td>
+                        <td class="actions">
+                            <button class="btn btn-danger btn-sm" @onclick="() => _removeTarget = it">إزالة</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <Pager Current="_page" TotalPages="_totalPages" Total="_total" CurrentChanged="ChangePage" />
+}
+else
+{
+    <div class="surface empty">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+        <p>لا توجد إسنادات مطابقة.</p>
+    </div>
+}
+
+<!-- إسناد -->
+<Modal Visible="_assignOpen" Title="إسناد دور لمستخدم" Subtitle="أدخل معرّف المستخدم واختر الدور." OnClose="CloseAssign">
+    <ChildContent>
+        <EditForm Model="_form" OnValidSubmit="AssignAsync" id="assignForm">
+            <DataAnnotationsValidator />
+            <div class="form-grid">
+                <div class="form-row">
+                    <label class="lbl" for="uid">معرّف المستخدم (UserId) <span class="req">*</span></label>
+                    <InputNumber id="uid" class="inp mono" @bind-Value="_form.UserId" placeholder="مثال: 12" disabled="@_saving" />
+                    <ValidationMessage For="() => _form.UserId" />
+                </div>
+                <div class="form-row">
+                    <label class="lbl" for="rid">الدور <span class="req">*</span></label>
+                    <InputSelect id="rid" class="inp" @bind-Value="_form.RoleId" disabled="@_saving">
+                        <option value="0" disabled>— اختر دورًا —</option>
+                        @if (_roles is not null)
+                        {
+                            @foreach (var r in _roles)
+                            {
+                                <option value="@r.RoleId">@r.RoleName</option>
+                            }
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => _form.RoleId" />
+                </div>
+            </div>
+        </EditForm>
+    </ChildContent>
+    <Footer>
+        <button class="btn btn-ghost" @onclick="CloseAssign" disabled="@_saving">إلغاء</button>
+        <button class="btn btn-primary" type="submit" form="assignForm" disabled="@_saving">
+            @if (_saving) { <span class="spin-btn"></span> }
+            إسناد
+        </button>
+    </Footer>
+</Modal>
+
+<!-- إزالة -->
+<ConfirmDialog Visible="_removeTarget is not null"
+               Title="إزالة الإسناد" ConfirmText="إزالة"
+               Message="@($"إزالة الدور «{_removeTarget?.RoleName}» من المستخدم «{_removeTarget?.UserName}»؟")"
+               Busy="_removing" OnConfirm="RemoveAsync" OnCancel="() => _removeTarget = null" />
+
+@code {
+    private List<UserRoleDTO>? _items;
+    private List<RoleDTO>? _roles;
+    private bool _loading = true;
+    private int _page = 1, _pageSize = 10, _totalPages = 1, _total;
+    private int _filterRoleId;
+
+    private bool _assignOpen, _saving;
+    private readonly AssignForm _form = new();
+
+    private UserRoleDTO? _removeTarget;
+    private bool _removing;
+
+    private string? _notice;
+    private string _noticeKind = "ok";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var roles = await RolesApi.GetRolesAsync(1, 100);
+        _roles = roles.Success && roles.Data is not null ? roles.Data.Data ?? new() : new();
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        var result = _filterRoleId > 0
+            ? await UserRolesApi.GetByRoleAsync(_filterRoleId, _page, _pageSize)
+            : await UserRolesApi.GetAllAsync(_page, _pageSize);
+
+        if (result.Success && result.Data is not null)
+        {
+            _items = result.Data.Data ?? new();
+            _totalPages = Math.Max(1, result.Data.TotalPages);
+            _total = result.Data.TotalRecords;
+        }
+        else
+        {
+            _items = new();
+            Notify(result.Error ?? "تعذّر جلب البيانات.", "err");
+        }
+        _loading = false;
+    }
+
+    private async Task ApplyFilter() { _page = 1; await LoadAsync(); }
+
+    private async Task ChangePage(int page) { _page = page; await LoadAsync(); }
+
+    private void OpenAssign() { _form.UserId = 0; _form.RoleId = 0; _assignOpen = true; }
+    private void CloseAssign() { _assignOpen = false; _saving = false; }
+
+    private async Task AssignAsync()
+    {
+        _saving = true;
+        var result = await UserRolesApi.AddAsync(new AddUserRoleDTO { UserId = _form.UserId, RoleId = _form.RoleId });
+        _saving = false;
+        if (result.Success)
+        {
+            CloseAssign();
+            Notify("تم إسناد الدور.", "ok");
+            await LoadAsync();
+        }
+        else
+        {
+            Notify(result.Error ?? "تعذّر الإسناد.", "err");
+        }
+    }
+
+    private async Task RemoveAsync()
+    {
+        if (_removeTarget is null) return;
+        _removing = true;
+        var result = await UserRolesApi.DeleteAsync(_removeTarget.UserId, _removeTarget.RoleId);
+        _removing = false;
+        if (result.Success)
+        {
+            _removeTarget = null;
+            Notify("تمت إزالة الإسناد.", "ok");
+            await LoadAsync();
+        }
+        else
+        {
+            Notify(result.Error ?? "تعذّر الإزالة.", "err");
+            _removeTarget = null;
+        }
+    }
+
+    private void Notify(string msg, string kind) { _notice = msg; _noticeKind = kind; }
+
+    private sealed class AssignForm
+    {
+        [Range(1, int.MaxValue, ErrorMessage = "معرّف المستخدم مطلوب ويجب أن يكون أكبر من صفر.")]
+        public int UserId { get; set; }
+
+        [Range(1, int.MaxValue, ErrorMessage = "اختر دورًا.")]
+        public int RoleId { get; set; }
+    }
+}
+
+<style>
+    .filter { position: relative; display: flex; align-items: center; min-width: 220px; }
+    .filter svg { position: absolute; inset-inline-start: 12px; width: 17px; height: 17px; fill: none; stroke: #93a6b8; stroke-width: 1.8; pointer-events: none; }
+    .filter .inp { padding-inline-start: 38px; height: 42px; }
+    .role-chip { display: inline-flex; align-items: center; height: 26px; padding: 0 .7rem; font-size: .82rem; font-weight: 600; color: var(--navy-700); background: #eaf1f8; border-radius: 99px; }
+    .spin-btn { width: 14px; height: 14px; border: 2px solid rgba(5,42,42,.3); border-top-color: #052a2a; border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; }
+</style>

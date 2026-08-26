@@ -1,0 +1,40 @@
+@if (Visible)
+{
+    <div class="modal-scrim" @onclick="OnCloseAsync">
+        <div class="modal-card" @onclick:stopPropagation="true" style="max-width:@(MaxWidth)">
+            <header class="modal-head">
+                <div>
+                    <h3>@Title</h3>
+                    @if (!string.IsNullOrEmpty(Subtitle))
+                    {
+                        <p>@Subtitle</p>
+                    }
+                </div>
+                <button class="x" @onclick="OnCloseAsync" aria-label="إغلاق">
+                    <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" /></svg>
+                </button>
+            </header>
+
+            <div class="modal-body">
+                @ChildContent
+            </div>
+
+            @if (Footer is not null)
+            {
+                <footer class="modal-foot">@Footer</footer>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string? Subtitle { get; set; }
+    [Parameter] public string MaxWidth { get; set; } = "460px";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public RenderFragment? Footer { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private Task OnCloseAsync() => OnClose.InvokeAsync();
+}

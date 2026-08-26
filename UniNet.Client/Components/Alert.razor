@@ -1,0 +1,23 @@
+@if (!string.IsNullOrEmpty(Message))
+{
+    <div class="al @(Kind)" role="alert">
+        <svg viewBox="0 0 24 24">
+            @if (Kind == "ok")
+            {
+                <path d="M20 6 9 17l-5-5"/>
+            }
+            else
+            {
+                <path d="M12 8v5M12 16h.01M10.3 3.7 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.7a2 2 0 0 0-3.4 0Z"/>
+            }
+        </svg>
+        <span>@Message</span>
+        <button class="al-x" @onclick="() => OnClose.InvokeAsync()" aria-label="إغلاق">✕</button>
+    </div>
+}
+
+@code {
+    [Parameter] public string? Message { get; set; }
+    [Parameter] public string Kind { get; set; } = "err"; // ok | err
+    [Parameter] public EventCallback OnClose { get; set; }
+}

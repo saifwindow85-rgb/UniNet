@@ -1,0 +1,288 @@
+@page "/identity/users"
+@attribute [Authorize(Roles = "Super Admin")]
+@using System.ComponentModel.DataAnnotations
+@inject UserApiService UsersApi
+
+<PageTitle>المستخدمون · UniNet</PageTitle>
+
+<PageHeader Title="المستخدمون" Subtitle="إنشاء المستخدمين والبحث عنهم وتعديلهم.">
+    <Actions>
+        <button class="btn btn-primary" @onclick="OpenAdd">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+            مستخدم جديد
+        </button>
+    </Actions>
+</PageHeader>
+
+<Alert Message="@_notice" Kind="@_noticeKind" OnClose="() => _notice = null" />
+
+<div class="surface lookup">
+    <div class="lookup-head">
+        <h3>بحث عن مستخدم</h3>
+        <p>واجهة الـ API توفّر الجلب بالمعرّف — أدخل رقم المستخدم لعرضه وتعديله.</p>
+    </div>
+    <div class="lookup-bar">
+        <div class="lk-input">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3" /></svg>
+            <input class="inp mono" type="number" min="1" placeholder="معرّف المستخدم (UserId)" @bind="_lookupId" @onkeydown="OnLookupKey" />
+        </div>
+        <button class="btn btn-ghost" @onclick="LookupAsync" disabled="@_lookingUp">
+            @if (_lookingUp) { <span class="spin-btn dark"></span> } جلب
+        </button>
+    </div>
+</div>
+
+@if (_loaded is not null)
+{
+    <div class="surface user-card">
+        <div class="uc-head">
+            <div class="uc-avatar">@Initial(_loaded.FullName)</div>
+            <div class="uc-id">
+                <h2>@_loaded.FullName</h2>
+                <span class="mono">@_loaded.UserName · #@_loaded.UserId</span>
+            </div>
+            <div class="uc-status">
+                @if (_loaded.IsActive)
+                {
+                    <span class="badge badge-on"><span class="d"></span> فعّال</span>
+                }
+                else
+                {
+                    <span class="badge badge-off"><span class="d"></span> موقوف</span>
+                }
+            </div>
+            <button class="btn btn-primary btn-sm" @onclick="() => OpenEdit(_loaded)">تعديل</button>
+        </div>
+        <div class="uc-grid">
+            <div class="uc-item"><span>البريد</span><b>@(string.IsNullOrEmpty(_loaded.Email) ? "—" : _loaded.Email)</b></div>
+            <div class="uc-item"><span>الهاتف</span><b class="mono">@(string.IsNullOrEmpty(_loaded.PhoneNumber) ? "—" : _loaded.PhoneNumber)</b></div>
+            <div class="uc-item"><span>الجامعة</span><b>@(_loaded.UniversityName ?? (_loaded.UniversityId?.ToString() ?? "—"))</b></div>
+            <div class="uc-item"><span>أنشئ في</span><b class="mono">@_loaded.CreatedAt.ToString("yyyy-MM-dd")</b></div>
+        </div>
+    </div>
+}
+
+<!-- إضافة/تعديل -->
+<Modal Visible="_formOpen" MaxWidth="560px"
+       Title="@(_editingId is null ? "مستخدم جديد" : "تعديل المستخدم")"
+       Subtitle="@(_editingId is null ? "أنشئ حساب مستخدم." : $"تعديل المستخدم #{_editingId}")"
+       OnClose="CloseForm">
+    <ChildContent>
+    <EditForm Model="_form" OnValidSubmit="SaveAsync" id="userForm">
+        <DataAnnotationsValidator />
+        <div class="form-grid">
+            <div class="form-row two">
+                <div class="form-row">
+                    <label class="lbl">الاسم الكامل <span class="req">*</span></label>
+                    <InputText class="inp" @bind-Value="_form.FullName" disabled="@_saving" />
+                    <ValidationMessage For="() => _form.FullName" />
+                </div>
+                <div class="form-row">
+                    <label class="lbl">اسم المستخدم <span class="req">*</span></label>
+                    <InputText class="inp mono" @bind-Value="_form.UserName" dir="ltr" disabled="@_saving" />
+                    <ValidationMessage For="() => _form.UserName" />
+                </div>
+            </div>
+
+            @if (_editingId is null)
+            {
+                <div class="form-row">
+                    <label class="lbl">كلمة المرور <span class="req">*</span></label>
+                    <InputText type="password" class="inp mono" @bind-Value="_form.Password" dir="ltr" disabled="@_saving" />
+                    <ValidationMessage For="() => _form.Password" />
+                </div>
+            }
+
+            <div class="form-row two">
+                <div class="form-row">
+                    <label class="lbl">البريد الإلكتروني</label>
+                    <InputText class="inp mono" @bind-Value="_form.Email" dir="ltr" disabled="@_saving" />
+                    <ValidationMessage For="() => _form.Email" />
+                </div>
+                <div class="form-row">
+                    <label class="lbl">رقم الهاتف</label>
+                    <InputText class="inp mono" @bind-Value="_form.PhoneNumber" dir="ltr" disabled="@_saving" />
+                </div>
+            </div>
+
+            <div class="form-row two">
+                <div class="form-row">
+                    <label class="lbl">معرّف الجامعة (اختياري)</label>
+                    <InputNumber class="inp mono" @bind-Value="_form.UniversityId" disabled="@_saving" />
+                </div>
+                <div class="switch-row">
+                    <label class="lbl">الحساب فعّال</label>
+                    <InputCheckbox @bind-Value="_form.IsActive" disabled="@_saving" />
+                </div>
+            </div>
+        </div>
+    </EditForm>
+    </ChildContent>
+    <Footer>
+        <button class="btn btn-ghost" @onclick="CloseForm" disabled="@_saving">إلغاء</button>
+        <button class="btn btn-primary" type="submit" form="userForm" disabled="@_saving">
+            @if (_saving) { <span class="spin-btn"></span> }
+            @(_editingId is null ? "إنشاء" : "حفظ")
+        </button>
+    </Footer>
+</Modal>
+
+@code {
+    private int? _lookupId;
+    private bool _lookingUp;
+    private UserDTO? _loaded;
+
+    private bool _formOpen, _saving;
+    private int? _editingId;
+    private readonly UserForm _form = new();
+
+    private string? _notice;
+    private string _noticeKind = "ok";
+
+    private async Task OnLookupKey(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await LookupAsync();
+    }
+
+    private async Task LookupAsync()
+    {
+        if (_lookupId is null or < 1) { Notify("أدخل معرّفًا صحيحًا.", "err"); return; }
+        _lookingUp = true;
+        var result = await UsersApi.GetUserByIdAsync(_lookupId.Value);
+        _lookingUp = false;
+        if (result.Success && result.Data is not null)
+        {
+            _loaded = result.Data;
+            _notice = null;
+        }
+        else
+        {
+            _loaded = null;
+            Notify(result.Error ?? "لم يُعثر على المستخدم.", "err");
+        }
+    }
+
+    private void OpenAdd()
+    {
+        _editingId = null;
+        _form.Reset();
+        _form.IsActive = true;
+        _formOpen = true;
+    }
+
+    private void OpenEdit(UserDTO user)
+    {
+        _editingId = user.UserId;
+        _form.FullName = user.FullName;
+        _form.UserName = user.UserName;
+        _form.Email = user.Email;
+        _form.PhoneNumber = user.PhoneNumber;
+        _form.UniversityId = user.UniversityId;
+        _form.IsActive = user.IsActive;
+        _form.Password = "";
+        _formOpen = true;
+    }
+
+    private void CloseForm() { _formOpen = false; _saving = false; }
+
+    private async Task SaveAsync()
+    {
+        _saving = true;
+        ApiResult<UserDTO> result;
+        if (_editingId is null)
+        {
+            result = await UsersApi.AddUserAsync(new AddUserDTO
+            {
+                FullName = _form.FullName.Trim(),
+                UserName = _form.UserName.Trim(),
+                Password = _form.Password,
+                Email = string.IsNullOrWhiteSpace(_form.Email) ? null : _form.Email.Trim(),
+                PhoneNumber = string.IsNullOrWhiteSpace(_form.PhoneNumber) ? null : _form.PhoneNumber.Trim(),
+                UniversityId = _form.UniversityId,
+                IsActive = _form.IsActive
+            });
+        }
+        else
+        {
+            result = await UsersApi.UpdateUserAsync(_editingId.Value, new UpdateUserDTO
+            {
+                FullName = _form.FullName.Trim(),
+                UserName = _form.UserName.Trim(),
+                Email = string.IsNullOrWhiteSpace(_form.Email) ? null : _form.Email.Trim(),
+                PhoneNumber = string.IsNullOrWhiteSpace(_form.PhoneNumber) ? null : _form.PhoneNumber.Trim(),
+                UniversityId = _form.UniversityId,
+                IsActive = _form.IsActive
+            });
+        }
+
+        _saving = false;
+        if (result.Success)
+        {
+            CloseForm();
+            Notify(_editingId is null ? "تم إنشاء المستخدم." : "تم حفظ التعديلات.", "ok");
+            if (result.Data is not null) _loaded = result.Data;
+        }
+        else
+        {
+            Notify(result.Error ?? "تعذّر الحفظ.", "err");
+        }
+    }
+
+    private void Notify(string msg, string kind) { _notice = msg; _noticeKind = kind; }
+
+    private static string Initial(string? name) =>
+        string.IsNullOrWhiteSpace(name) ? "؟" : name.Trim()[..1].ToUpperInvariant();
+
+    private sealed class UserForm
+    {
+        [Required(ErrorMessage = "الاسم الكامل مطلوب.")]
+        [StringLength(150, MinimumLength = 2)]
+        public string FullName { get; set; } = "";
+
+        [Required(ErrorMessage = "اسم المستخدم مطلوب.")]
+        [RegularExpression(@"^[a-zA-Z0-9_.]+$", ErrorMessage = "أحرف وأرقام و( _ . ) فقط.")]
+        public string UserName { get; set; } = "";
+
+        [Required(ErrorMessage = "كلمة المرور مطلوبة.")]
+        [MinLength(6, ErrorMessage = "6 أحرف على الأقل.")]
+        public string Password { get; set; } = "";
+
+        [EmailAddress(ErrorMessage = "بريد غير صالح.")]
+        public string? Email { get; set; }
+
+        public string? PhoneNumber { get; set; }
+        public int? UniversityId { get; set; }
+        public bool IsActive { get; set; } = true;
+
+        public void Reset()
+        {
+            FullName = UserName = Password = "";
+            Email = PhoneNumber = null;
+            UniversityId = null;
+            IsActive = true;
+        }
+    }
+}
+
+<style>
+    .lookup { padding: 1.25rem 1.35rem; margin-bottom: 1.25rem; }
+    .lookup-head h3 { margin: 0; font-size: 1.05rem; }
+    .lookup-head p { margin: .3rem 0 1rem; color: var(--muted); font-size: .88rem; }
+    .lookup-bar { display: flex; gap: .6rem; }
+    .lk-input { position: relative; flex: 1; display: flex; align-items: center; }
+    .lk-input svg { position: absolute; inset-inline-start: 12px; width: 18px; height: 18px; fill: none; stroke: #93a6b8; stroke-width: 1.9; }
+    .lk-input .inp { padding-inline-start: 40px; }
+
+    .user-card { padding: 1.35rem; }
+    .uc-head { display: flex; align-items: center; gap: 1rem; padding-bottom: 1.1rem; border-bottom: 1px solid var(--line-soft); flex-wrap: wrap; }
+    .uc-avatar { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 15px; font-family: "Inter",sans-serif; font-weight: 700; font-size: 1.4rem; color: #fff; background: linear-gradient(140deg, var(--navy-700), var(--navy-900)); }
+    .uc-id { flex: 1; min-width: 0; }
+    .uc-id h2 { margin: 0; font-size: 1.2rem; }
+    .uc-id span { color: var(--muted); font-size: .85rem; }
+    .uc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 1rem; padding-top: 1.1rem; }
+    .uc-item { display: flex; flex-direction: column; gap: .25rem; }
+    .uc-item span { font-size: .74rem; color: var(--muted); font-family: "Inter",sans-serif; }
+    .uc-item b { font-size: .98rem; color: var(--ink); }
+    .spin-btn { width: 14px; height: 14px; border: 2px solid rgba(5,42,42,.3); border-top-color: #052a2a; border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; }
+    .spin-btn.dark { border-color: rgba(64,85,107,.3); border-top-color: var(--ink-soft); }
+</style>
