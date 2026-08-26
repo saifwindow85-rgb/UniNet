@@ -29,7 +29,7 @@ namespace DataAccessLayer.Configurations.Study_Configuration
                  .HasForeignKey(s => s.DepartmentId).IsRequired().OnDelete(DeleteBehavior.Restrict);
             builder.ToTable("Subjects");
 
-            builder.HasData(SeedData.GetSubjects());
+            //builder.HasData(SeedData.GetSubjects());
         }
     }
 }

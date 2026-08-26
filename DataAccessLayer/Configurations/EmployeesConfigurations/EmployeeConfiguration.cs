@@ -37,7 +37,7 @@ namespace DataAccessLayer.Configurations.Employees_Configurations
                 .HasForeignKey(e => e.DepartmentId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
             builder.ToTable("Employees");
 
-            builder.HasData(SeedData.GetEmployees());
+            //builder.HasData(SeedData.GetEmployees());
         }
     }
 }

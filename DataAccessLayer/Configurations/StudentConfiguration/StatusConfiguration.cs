@@ -23,7 +23,7 @@ namespace DataAccessLayer.Configurations.Student_Configuration
             builder.HasIndex(s => s.Name).IsUnique();
             builder.ToTable("StudentStatuses");
 
-            builder.HasData(SeedData.GetStudentStatuses());
+            //builder.HasData(SeedData.GetStudentStatuses());
         }
     }
 }

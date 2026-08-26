@@ -28,7 +28,7 @@ namespace DataAccessLayer.Configurations.Academic_Structure
 
             builder.ToTable("Departments");
 
-            builder.HasData(SeedData.GetDepartments());
+            //builder.HasData(SeedData.GetDepartments());
         }
     }
 }

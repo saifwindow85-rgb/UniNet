@@ -3,12 +3,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
-
 namespace DataAccessLayer.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCleanSchema : Migration
+    public partial class InitialCommite : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -442,97 +440,6 @@ namespace DataAccessLayer.Migrations
                         principalColumn: "UserId",
                         onDelete: ReferentialAction.Restrict);
                 });
-
-            migrationBuilder.InsertData(
-                table: "Roles",
-                columns: new[] { "RoleId", "Name" },
-                values: new object[,]
-                {
-                    { 1, "Super Admin" },
-                    { 2, "UniversityAdmin" },
-                    { 3, "CollegeAdmin" },
-                    { 4, "DepartmentAdmin" },
-                    { 5, "Lecturer" },
-                    { 6, "Student" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "StudentStatuses",
-                columns: new[] { "StatusId", "Description", "Name" },
-                values: new object[,]
-                {
-                    { 1, "Actively enrolled and progressing in studies.", "Enrolled" },
-                    { 2, "Completed all academic requirements.", "Graduated" }
-                });
-
-            migrationBuilder.InsertData(
-                table: "Users",
-                columns: new[] { "UserId", "CreatedAt", "CreatedByUserId", "Email", "FullName", "IsActive", "PasswordHash", "PhoneNumber", "Type", "UniversityId", "UpdatedAt", "UpdatedByUserId", "UserName" },
-                values: new object[] { 1, new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, "ahmed@hu.edu.ye", "Dr. Ahmed Al-Hadrami", true, "AQAAAAEAACcQAAAAEP4sN4u5xW9p8oJkzLq2vXy...", "+967 777000111", null, null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), null, "Ahmed.HU" });
-
-            migrationBuilder.InsertData(
-                table: "Universities",
-                columns: new[] { "UniversityId", "CreatedAt", "CreatedByUserId", "Description", "Name", "UpdatedAt", "UpdatedByUserId" },
-                values: new object[] { 1, new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, "A leading Yemeni university committed to academic excellence and community development.", "Hadhramout University", null, null });
-
-            migrationBuilder.InsertData(
-                table: "UserRoles",
-                columns: new[] { "RoleId", "UserId" },
-                values: new object[] { 1, 1 });
-
-            migrationBuilder.InsertData(
-                table: "Colleges",
-                columns: new[] { "CollegeId", "CreatedAt", "CreatedByUserId", "Description", "Name", "UniversityId", "UpdatedAt", "UpdatedByUserId" },
-                values: new object[] { 1, new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, "Specializes in Software Engineering, AI, Cybersecurity, and Data Science.", "Faculty of Computer Science and Information Technology", 1, null, null });
-
-            migrationBuilder.InsertData(
-                table: "Semesters",
-                columns: new[] { "SemesterId", "CreatedAt", "CreatedByUserId", "EndDate", "IsCurrent", "Name", "StartDate", "UniversityId", "UpdatedAt", "UpdatedByUserId" },
-                values: new object[] { 1, new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, new DateTime(2025, 12, 20, 0, 0, 0, 0, DateTimeKind.Utc), true, "Fall 2025", new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, null, null });
-
-            migrationBuilder.InsertData(
-                table: "Departments",
-                columns: new[] { "DepartmentId", "CollegeId", "CreatedAt", "CreatedByUserId", "Description", "Name", "UpdatedAt", "UpdatedByUserId" },
-                values: new object[] { 1, 1, new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, "Focuses on networking, database management, web development, and system security.", "Information Technology Department", null, null });
-
-            migrationBuilder.InsertData(
-                table: "Batches",
-                columns: new[] { "BatchId", "BatchYear", "CreatedAt", "CreatedByUserId", "DepartmentId", "Description", "Name", "UpdatedAt", "UpdatedByUserId" },
-                values: new object[] { 1, 2025, new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, 1, "First cohort of the new curriculum.", "Batch 2025", null, null });
-
-            migrationBuilder.InsertData(
-                table: "Employees",
-                columns: new[] { "EmployeeId", "CollegeId", "DepartmentId", "UniversityId", "UserId" },
-                values: new object[] { 1, 1, 1, 1, 1 });
-
-            migrationBuilder.InsertData(
-                table: "Subjects",
-                columns: new[] { "SubjectId", "Code", "CreatedAt", "CreatedByUserId", "CreditHours", "DepartmentId", "Description", "Name", "UpdatedAt", "UpdatedByUserId" },
-                values: new object[,]
-                {
-                    { 1, "CS101", new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, 3, 1, "Fundamentals of programming using C# and .NET.", "Introduction to Programming", null, null },
-                    { 2, "CS205", new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, 3, 1, "Relational database design, SQL, and Entity Framework Core.", "Database Systems", null, null }
-                });
-
-            migrationBuilder.InsertData(
-                table: "Sections",
-                columns: new[] { "SectionId", "BatchId", "CreatedAt", "CreatedByUserId", "Name", "UpdatedAt", "UpdatedByUserId" },
-                values: new object[] { 1, 1, new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, "Section A", null, null });
-
-            migrationBuilder.InsertData(
-                table: "SectionSubjects",
-                columns: new[] { "SectionSubjectId", "CreatedAt", "CreatedByUserId", "LecturerName", "SectionId", "SemesterId", "SubjectId", "UpdatedAt", "UpdatedByUserId" },
-                values: new object[] { 1, new DateTime(2025, 9, 1, 0, 0, 0, 0, DateTimeKind.Utc), 1, "Ahmed", 1, 1, 1, null, null });
-
-            migrationBuilder.InsertData(
-                table: "Students",
-                columns: new[] { "StudentId", "BatchId", "EnrollmentDate", "SectionId", "StatusId", "StudentNumber", "UserId" },
-                values: new object[] { 1, 1, new DateTime(2025, 9, 15, 0, 0, 0, 0, DateTimeKind.Utc), 1, 1, "20251001", 1 });
-
-            migrationBuilder.InsertData(
-                table: "StudentResults",
-                columns: new[] { "StudentResultId", "CreatedAt", "CreatedByUserId", "Final", "Midterm", "Practical", "SectionSubjectId", "StudentId", "UpdatedAt", "UpdatedByUserId" },
-                values: new object[] { 1, new DateTime(2025, 12, 25, 0, 0, 0, 0, DateTimeKind.Utc), 1, 40m, 45m, 10m, 1, 1, null, null });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Batches_CreatedByUserId",

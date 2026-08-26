@@ -45,7 +45,7 @@ namespace DataAccessLayer.Configurations.Identity_Configurations
 
             builder.ToTable("Users");
 
-            builder.HasData(SeedData.GetUsers());
+            //builder.HasData(SeedData.GetUsers());
         }
 
     }

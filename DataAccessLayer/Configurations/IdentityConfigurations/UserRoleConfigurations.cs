@@ -32,7 +32,7 @@ namespace DataAccessLayer.Configurations.Identity_Configurations
 
             builder.ToTable("UserRoles");
 
-            builder.HasData(SeedData.GetUserRoles());
+            //builder.HasData(SeedData.GetUserRoles());
         }
     }
 }
