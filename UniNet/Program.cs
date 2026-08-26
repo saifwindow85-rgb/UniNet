@@ -171,7 +171,8 @@ builder.Configuration.GetConnectionString("DefaultConnection")));
                             "http://localhost:5500",
                             "http://127.0.0.1:5500",
                             "https://localhost:7175", // UniNet.Client (WASM) — HTTPS profile
-                            "http://localhost:5286"   // UniNet.Client (WASM) — HTTP profile
+                            "http://localhost:5286",  // UniNet.Client (WASM) — HTTP profile
+                            "http://192.168.1.219:5286" // UniNet.Client — الوصول من الجوال عبر شبكة Wi-Fi
                         )
                         .AllowAnyHeader()
                         .AllowAnyMethod();

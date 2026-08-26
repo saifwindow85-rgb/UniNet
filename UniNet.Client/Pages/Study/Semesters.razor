@@ -1,0 +1,316 @@
+@page "/study/semesters"
+@attribute [Authorize(Roles = "Super Admin,UniversityAdmin")]
+@using System.ComponentModel.DataAnnotations
+@inject SemesterApiService SemestersApi
+@inject UniversityApiService UniversitiesApi
+@inject ScopeContext Scope
+
+<PageTitle>الفصول الدراسية · UniNet</PageTitle>
+
+<PageHeader Title="الفصول الدراسية" Subtitle="إدارة الفصول الدراسية للجامعة.">
+    <Actions>
+        <button class="btn btn-primary" @onclick="OpenAdd">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+            فصل جديد
+        </button>
+    </Actions>
+</PageHeader>
+
+<Alert Message="@_notice" Kind="@_noticeKind" OnClose="() => _notice = null" />
+
+<div class="toolbar">
+    <SearchBox Placeholder="ابحث باسم الفصل…" OnSearch="OnSearch" />
+    @if (Scope.IsSuperAdmin)
+    {
+        <div style="min-width:280px">
+            <Combobox Items="_uniItems" Value="_filterUniId" ValueChanged="OnFilterUni"
+                      Loading="_uniLoading" Placeholder="تصفية حسب الجامعة (الكل)" />
+        </div>
+    }
+    else
+    {
+        <div class="ctx-field"><span class="ctx-lbl">الجامعة</span><input class="inp" value="@_scopeUniName" disabled /></div>
+    }
+</div>
+
+@if (_loading)
+{
+    <div class="loading"><span class="spin"></span></div>
+}
+else if (_items is { Count: > 0 })
+{
+    <div class="table-wrap">
+        <table class="data">
+            <thead>
+                <tr><th style="width:80px">المعرّف</th><th>الفصل</th><th>الجامعة</th><th style="width:130px">يبدأ</th><th style="width:130px">ينتهي</th><th style="width:100px">الحالة</th><th style="width:200px"></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var s in _items)
+                {
+                    <tr>
+                        <td><span class="badge badge-id">#@s.SemesterId</span></td>
+                        <td><strong>@s.Name</strong></td>
+                        <td>@s.UniversityName</td>
+                        <td class="mono">@s.StartDate.ToString("yyyy-MM-dd")</td>
+                        <td class="mono">@s.EndDate.ToString("yyyy-MM-dd")</td>
+                        <td>
+                            @if (s.IsCurrent) { <span class="badge badge-ok">حالي</span> }
+                            else { <span class="badge badge-off">منتهٍ</span> }
+                        </td>
+                        <td class="actions">
+                            @if (s.IsCurrent)
+                            {
+                                <button class="btn btn-ghost btn-sm" @onclick="() => _endTarget = s">إنهاء</button>
+                            }
+                            <button class="btn btn-ghost btn-sm" @onclick="() => OpenEdit(s)">تعديل</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => _deleteTarget = s">حذف</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <Pager Current="_page" TotalPages="_totalPages" Total="_total" CurrentChanged="ChangePage" />
+}
+else
+{
+    <div class="surface empty">
+        <svg viewBox="0 0 24 24"><path d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" /></svg>
+        <p>لا توجد فصول دراسية بعد.</p>
+    </div>
+}
+
+<Modal Visible="_formOpen" MaxWidth="540px"
+       Title="@(_editing is null ? "فصل دراسي جديد" : "تعديل الفصل")"
+       Subtitle="@(_editing is null ? "أضِف فصلًا دراسيًا للجامعة." : $"تعديل الفصل #{_editing.SemesterId}")"
+       OnClose="CloseForm">
+    <ChildContent>
+        <Alert Message="@_formError" Kind="err" OnClose="() => _formError = null" />
+        <EditForm Model="_form" OnValidSubmit="SaveAsync" id="semForm">
+            <DataAnnotationsValidator />
+            <div class="form-grid">
+                @if (_editing is null)
+                {
+                    <div class="form-row">
+                        <label class="lbl">الجامعة <span class="req">*</span></label>
+                        @if (Scope.IsSuperAdmin)
+                        {
+                            <Combobox Items="_uniItems" Value="_form.UniversityId" ValueChanged="v => _form.UniversityId = v"
+                                      Loading="_uniLoading" Placeholder="ابحث واختر الجامعة" Disabled="@_saving" />
+                        }
+                        else
+                        {
+                            <input class="inp" value="@_scopeUniName" disabled />
+                            <span class="hint-inline">جامعتك — تُمرَّر تلقائيًا.</span>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="form-row">
+                        <label class="lbl">الجامعة</label>
+                        <input class="inp" value="@_editing.UniversityName" disabled />
+                    </div>
+                }
+
+                <div class="form-row">
+                    <label class="lbl">اسم الفصل <span class="req">*</span></label>
+                    <InputText class="inp" @bind-Value="_form.Name" placeholder="مثال: خريف 2025" disabled="@_saving" />
+                    <ValidationMessage For="() => _form.Name" />
+                </div>
+
+                <div class="form-row two">
+                    <div class="form-row">
+                        <label class="lbl">تاريخ البداية <span class="req">*</span></label>
+                        <InputDate class="inp mono" @bind-Value="_form.StartDate" disabled="@_saving" />
+                    </div>
+                    <div class="form-row">
+                        <label class="lbl">تاريخ النهاية <span class="req">*</span></label>
+                        <InputDate class="inp mono" @bind-Value="_form.EndDate" disabled="@_saving" />
+                    </div>
+                </div>
+            </div>
+        </EditForm>
+    </ChildContent>
+    <Footer>
+        <button class="btn btn-ghost" @onclick="CloseForm" disabled="@_saving">إلغاء</button>
+        <button class="btn btn-primary" type="submit" form="semForm" disabled="@_saving">
+            @if (_saving) { <span class="spin-btn"></span> }
+            @(_editing is null ? "إضافة" : "حفظ")
+        </button>
+    </Footer>
+</Modal>
+
+<ConfirmDialog Visible="_endTarget is not null"
+               Title="إنهاء الفصل"
+               Subtitle="@(_endTarget is null ? null : _endTarget.Name)"
+               Message="@($"سيُعلَّم «{_endTarget?.Name}» كفصل منتهٍ. لا يمكن التراجع بسهولة.")"
+               ConfirmText="إنهاء"
+               Busy="_ending" OnConfirm="EndAsync" OnCancel="() => _endTarget = null" />
+
+<ConfirmDialog Visible="_deleteTarget is not null"
+               Subtitle="@(_deleteTarget is null ? null : $"الفصل #{_deleteTarget.SemesterId}")"
+               Message="@($"سيُحذف «{_deleteTarget?.Name}». لا يمكن الحذف إن كان مرتبطًا بمواد شُعَب أو نتائج.")"
+               Busy="_deleting" OnConfirm="DeleteAsync" OnCancel="() => _deleteTarget = null" />
+
+@code {
+    private List<SemesterDTO>? _items;
+    private bool _loading = true;
+    private int _page = 1, _pageSize = 10, _totalPages = 1, _total;
+    private string _search = "";
+    private string? _formError;
+
+    private List<Combobox.ComboItem> _uniItems = new();
+    private bool _uniLoading;
+    private int _filterUniId;
+    private string _scopeUniName = "—";
+
+    private bool _formOpen, _saving;
+    private SemesterDTO? _editing;
+    private readonly SemForm _form = new();
+
+    private SemesterDTO? _deleteTarget;
+    private bool _deleting;
+    private SemesterDTO? _endTarget;
+    private bool _ending;
+
+    private string? _notice;
+    private string _noticeKind = "ok";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Scope.EnsureAsync();
+        if (Scope.IsSuperAdmin)
+        {
+            _uniLoading = true;
+            var res = await UniversitiesApi.GetAllAsync(1, 200);
+            if (res.Success && res.Data?.Data is not null)
+                _uniItems = res.Data.Data.Select(u => new Combobox.ComboItem(u.UniversityId, u.UniversityName)).ToList();
+            _uniLoading = false;
+        }
+        else if (Scope.UniversityId is int uid)
+        {
+            var u = await UniversitiesApi.GetByIdAsync(uid);
+            if (u.Success && u.Data is not null) _scopeUniName = u.Data.UniversityName;
+        }
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        ApiResult<Contracts.Results.PagedResult<SemesterDTO>> res;
+        if (Scope.IsSuperAdmin)
+            res = await SemestersApi.GetAllAsync(_page, _pageSize, name: _search, universityId: _filterUniId > 0 ? _filterUniId : null);
+        else
+            res = await SemestersApi.GetPerUniversityAsync(_page, _pageSize, name: _search);
+
+        if (res.Success && res.Data is not null)
+        {
+            _items = res.Data.Data ?? new();
+            _totalPages = Math.Max(1, res.Data.TotalPages);
+            _total = res.Data.TotalRecords;
+        }
+        else { _items = new(); Notify(res.Error ?? "تعذّر جلب الفصول.", "err"); }
+        _loading = false;
+    }
+
+    private async Task OnFilterUni(int uid) { _filterUniId = uid; _page = 1; await LoadAsync(); }
+    private async Task OnSearch(string term) { _search = term; _page = 1; await LoadAsync(); }
+    private async Task ChangePage(int p) { _page = p; await LoadAsync(); }
+
+    private void OpenAdd()
+    {
+        _editing = null;
+        _form.Reset();
+        _formError = null;
+        if (!Scope.IsSuperAdmin && Scope.UniversityId is int uid) _form.UniversityId = uid;
+        _formOpen = true;
+    }
+
+    private void OpenEdit(SemesterDTO s)
+    {
+        _editing = s;
+        _form.UniversityId = s.UniversityId;
+        _form.Name = s.Name;
+        _form.StartDate = s.StartDate;
+        _form.EndDate = s.EndDate;
+        _formError = null;
+        _formOpen = true;
+    }
+
+    private void CloseForm() { _formOpen = false; _saving = false; _formError = null; }
+
+    private async Task SaveAsync()
+    {
+        if (_editing is null && Scope.IsSuperAdmin && _form.UniversityId <= 0) { _formError = "اختر الجامعة."; return; }
+        if (_form.EndDate <= _form.StartDate) { _formError = "تاريخ النهاية يجب أن يلي تاريخ البداية."; return; }
+        _saving = true;
+
+        ApiResult<SemesterDTO> res;
+        if (_editing is null)
+            res = await SemestersApi.AddAsync(new AddSemesterDTO
+            {
+                UniversityId = _form.UniversityId,
+                Name = _form.Name.Trim(),
+                StartDate = _form.StartDate,
+                EndDate = _form.EndDate
+            });
+        else
+            res = await SemestersApi.UpdateAsync(_editing.SemesterId, new UpdateSemesterDTO
+            {
+                Name = _form.Name.Trim(),
+                StartDate = _form.StartDate,
+                EndDate = _form.EndDate
+            });
+
+        _saving = false;
+        if (res.Success) { CloseForm(); Notify(_editing is null ? "تمت إضافة الفصل." : "تم الحفظ.", "ok"); await LoadAsync(); }
+        else _formError = res.Error ?? "تعذّر الحفظ.";
+    }
+
+    private async Task EndAsync()
+    {
+        if (_endTarget is null) return;
+        _ending = true;
+        var res = await SemestersApi.EndAsync(_endTarget.SemesterId);
+        _ending = false;
+        _endTarget = null;
+        if (res.Success) { Notify("تم إنهاء الفصل.", "ok"); await LoadAsync(); }
+        else Notify(res.Error ?? "تعذّر إنهاء الفصل.", "err");
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (_deleteTarget is null) return;
+        _deleting = true;
+        var res = await SemestersApi.DeleteAsync(_deleteTarget.SemesterId);
+        _deleting = false;
+        _deleteTarget = null;
+        if (res.Success) { Notify("تم حذف الفصل.", "ok"); await LoadAsync(); }
+        else Notify(res.Error ?? "تعذّر الحذف.", "err");
+    }
+
+    private void Notify(string m, string k) { _notice = m; _noticeKind = k; }
+
+    private sealed class SemForm
+    {
+        public int UniversityId { get; set; }
+        [Required(ErrorMessage = "اسم الفصل مطلوب.")]
+        [StringLength(100, MinimumLength = 2, ErrorMessage = "الاسم بين 2 و100 حرفًا.")]
+        public string Name { get; set; } = "";
+        public DateTime StartDate { get; set; } = new DateTime(2025, 9, 1);
+        public DateTime EndDate { get; set; } = new DateTime(2026, 1, 15);
+        public void Reset() { UniversityId = 0; Name = ""; StartDate = new DateTime(2025, 9, 1); EndDate = new DateTime(2026, 1, 15); }
+    }
+}
+
+<style>
+    .hint-inline { font-size: .78rem; color: var(--muted); }
+    .spin-btn { width: 14px; height: 14px; border: 2px solid rgba(5,42,42,.3); border-top-color: #052a2a; border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; }
+    .ctx-field { display: flex; flex-direction: column; gap: .25rem; min-width: 240px; }
+    .ctx-lbl { font-size: .72rem; color: var(--muted); font-family: "Inter", sans-serif; }
+    .ctx-field .inp { height: 42px; background: #eef2f7; }
+    .badge-ok { background: var(--good-bg); color: #0b6b4a; }
+    .badge-off { background: #eef2f7; color: #64748b; }
+</style>

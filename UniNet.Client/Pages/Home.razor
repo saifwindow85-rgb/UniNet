@@ -1,5 +1,10 @@
 ﻿@page "/"
 @attribute [Authorize]
+@inject ScopeContext Scope
+@inject UniversityApiService UniversitiesApi
+@inject CollegeApiService CollegesApi
+@inject DepartmentApiService DepartmentsApi
+@inject BatchApiService BatchesApi
 
 <PageTitle>الرئيسية · UniNet</PageTitle>
 
@@ -9,44 +14,135 @@
             <div class="hero-text">
                 <span class="eyebrow">لوحة الإدارة</span>
                 <h1>مرحبًا، @auth.User.Identity?.Name 👋</h1>
-                <p>تم تسجيل دخولك بنجاح. صلاحياتك ونطاقك مقروءان مباشرةً من رمز الدخول (JWT).</p>
+                <p>تم تسجيل دخولك بنجاح. هذه هويتك في المنظومة كما يقرؤها رمز الدخول (JWT).</p>
+
+                <div class="identity-chips">
+                    <span class="chip type @TypeClass(auth)">
+                        <svg viewBox="0 0 24 24">@((MarkupString)TypeIcon(auth))</svg>
+                        النوع: @TypeLabel(auth)
+                    </span>
+                    <span class="chip role">
+                        <svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3Z" /></svg>
+                        الدور: @Role(auth)
+                    </span>
+                </div>
             </div>
-            <div class="hero-badge">@Role(auth)</div>
+            <div class="hero-badge @TypeClass(auth)">@TypeLabel(auth)</div>
         </section>
 
-        <div class="scope-row">
-            <div class="scope surface"><span>الجامعة</span><b class="mono">@Claim(auth, "UniversityId")</b></div>
-            <div class="scope surface"><span>الكلية</span><b class="mono">@Claim(auth, "CollegeId")</b></div>
-            <div class="scope surface"><span>القسم</span><b class="mono">@Claim(auth, "DepartmentId")</b></div>
-            <div class="scope surface"><span>الدفعة</span><b class="mono">@Claim(auth, "BatchId")</b></div>
-        </div>
-
-        <AuthorizeView Roles="Super Admin" Context="sa">
-            <h2 class="section-title">الهوية</h2>
-            <div class="cards">
-                <a class="qcard surface" href="/identity/roles">
-                    <div class="qc-ic teal"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3Z" /></svg></div>
-                    <div class="qc-text"><b>الأدوار</b><span>إنشاء وتعديل أدوار النظام</span></div>
-                    <svg class="qc-go" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6" /></svg>
-                </a>
-                <a class="qcard surface" href="/identity/users">
-                    <div class="qc-ic navy"><svg viewBox="0 0 24 24"><path d="M20 21a8 8 0 1 0-16 0M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" /></svg></div>
-                    <div class="qc-text"><b>المستخدمون</b><span>إنشاء المستخدمين وتعديلهم</span></div>
-                    <svg class="qc-go" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6" /></svg>
-                </a>
-                <a class="qcard surface" href="/identity/user-roles">
-                    <div class="qc-ic amber"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg></div>
-                    <div class="qc-text"><b>أدوار المستخدمين</b><span>إسناد الأدوار وإزالتها</span></div>
-                    <svg class="qc-go" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6" /></svg>
-                </a>
+        @if (_scopes.Count > 0)
+        {
+            <div class="scope-row">
+                @foreach (var s in _scopes)
+                {
+                    <div class="scope surface"><span>@s.Label</span><b>@s.Name</b></div>
+                }
             </div>
-        </AuthorizeView>
+        }
+
+        @if (Type(auth) == "Student")
+        {
+            <a class="surface student-note" href="/my-results">
+                <div class="sn-ic"><svg viewBox="0 0 24 24"><path d="M9 11l3 3 8-8M4 6h9M4 12h5M4 18h9" /></svg></div>
+                <div class="sn-text">
+                    <h3>كشف درجاتي</h3>
+                    <p>اطّلع على نتائجك مجمّعة حسب الفصل الدراسي مع المعدّل التراكمي.</p>
+                </div>
+                <svg class="qc-go" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6" /></svg>
+            </a>
+        }
+        else
+        {
+            <h2 class="section-title">وصول سريع</h2>
+            <div class="cards">
+                <AuthorizeView Roles="Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin" Context="e">
+                    <a class="qcard surface" href="/employees">
+                        <div class="qc-ic navy"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg></div>
+                        <div class="qc-text"><b>الموظفون</b><span>إدارة مسؤولي النطاق</span></div>
+                        <svg class="qc-go" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6" /></svg>
+                    </a>
+                </AuthorizeView>
+                <AuthorizeView Roles="Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin,BatchAdmin" Context="r">
+                    <a class="qcard surface" href="/study/results">
+                        <div class="qc-ic teal"><svg viewBox="0 0 24 24"><path d="M9 11l3 3 8-8M4 6h9M4 12h5M4 18h9" /></svg></div>
+                        <div class="qc-text"><b>النتائج</b><span>كشوف درجات الطلاب</span></div>
+                        <svg class="qc-go" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6" /></svg>
+                    </a>
+                </AuthorizeView>
+                <AuthorizeView Roles="Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin,BatchAdmin" Context="st">
+                    <a class="qcard surface" href="/students">
+                        <div class="qc-ic navy"><svg viewBox="0 0 24 24"><path d="M22 10 12 5 2 10l10 5 10-5ZM6 12v5c0 1 2.7 3 6 3s6-2 6-3v-5" /></svg></div>
+                        <div class="qc-text"><b>الطلاب</b><span>إدارة الطلاب</span></div>
+                        <svg class="qc-go" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6" /></svg>
+                    </a>
+                </AuthorizeView>
+                <AuthorizeView Roles="Super Admin" Context="s">
+                    <a class="qcard surface" href="/identity/users">
+                        <div class="qc-ic amber"><svg viewBox="0 0 24 24"><path d="M20 21a8 8 0 1 0-16 0M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" /></svg></div>
+                        <div class="qc-text"><b>المستخدمون</b><span>الهوية والأدوار</span></div>
+                        <svg class="qc-go" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6" /></svg>
+                    </a>
+                </AuthorizeView>
+            </div>
+        }
     </Authorized>
 </AuthorizeView>
 
 @code {
-    private static string Claim(AuthenticationState s, string type) =>
-        s.User.FindFirst(type)?.Value ?? "—";
+    // نطاق المستخدم بالأسماء (لا المعرّفات)، مع إظهار الحقول المتوفّرة فقط.
+    private readonly List<(string Label, string Name)> _scopes = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Scope.EnsureAsync();
+
+        if (Scope.UniversityId is int uid)
+        {
+            var r = await UniversitiesApi.GetByIdAsync(uid);
+            _scopes.Add(("الجامعة", r.Success && r.Data is not null ? r.Data.UniversityName : $"#{uid}"));
+        }
+        if (Scope.CollegeId is int cid)
+        {
+            var r = await CollegesApi.GetByIdAsync(cid);
+            _scopes.Add(("الكلية", r.Success && r.Data is not null ? r.Data.CollegeName : $"#{cid}"));
+        }
+        if (Scope.DepartmentId is int did)
+        {
+            var r = await DepartmentsApi.GetByIdAsync(did);
+            _scopes.Add(("القسم", r.Success && r.Data is not null ? r.Data.DepartmentName : $"#{did}"));
+        }
+        if (Scope.BatchId is int bid)
+        {
+            var r = await BatchesApi.GetByIdAsync(bid);
+            _scopes.Add(("الدفعة", r.Success && r.Data is not null ? r.Data.BatchName : $"#{bid}"));
+        }
+    }
+
+    private static string Type(AuthenticationState s) => s.User.FindFirst("Type")?.Value ?? "";
+
+    private static string TypeLabel(AuthenticationState s) => Type(s) switch
+    {
+        "SystemAdmin" => "مسؤول نظام",
+        "Employee" => "موظف",
+        "Student" => "طالب",
+        _ => "مستخدم"
+    };
+
+    private static string TypeClass(AuthenticationState s) => Type(s) switch
+    {
+        "SystemAdmin" => "t-sys",
+        "Employee" => "t-emp",
+        "Student" => "t-stu",
+        _ => "t-sys"
+    };
+
+    private static string TypeIcon(AuthenticationState s) => Type(s) switch
+    {
+        "SystemAdmin" => "<path d='M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5l-8-3ZM9.5 12l1.8 1.8 3.5-3.6'/>",
+        "Employee" => "<path d='M20 21a8 8 0 1 0-16 0M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z'/>",
+        "Student" => "<path d='M22 10 12 5 2 10l10 5 10-5ZM6 12v5c0 1 2.7 3 6 3s6-2 6-3v-5'/>",
+        _ => "<circle cx='12' cy='12' r='9'/>"
+    };
 
     private static string Role(AuthenticationState s) =>
         s.User.FindFirst("http://schemas.microsoft.com/ws/2008/06/identity/claims/role")?.Value
@@ -57,13 +153,31 @@
     .hero { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding: 1.75rem; margin-bottom: 1.25rem; background: linear-gradient(120deg, #fff 60%, #f0fbfa); flex-wrap: wrap; }
     .hero .eyebrow { font-family: "Inter",sans-serif; font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: var(--teal-strong); font-weight: 700; }
     .hero h1 { margin: .35rem 0 .4rem; font-size: 1.65rem; }
-    .hero p { margin: 0; color: var(--muted); max-width: 60ch; }
-    .hero-badge { padding: .5rem 1rem; border-radius: 99px; font-weight: 600; color: #052a2a; background: linear-gradient(135deg,#2ee6d1,var(--teal-strong)); white-space: nowrap; }
+    .hero p { margin: 0 0 1rem; color: var(--muted); max-width: 60ch; }
+    .identity-chips { display: flex; gap: .6rem; flex-wrap: wrap; }
+    .chip { display: inline-flex; align-items: center; gap: .45rem; height: 32px; padding: 0 .85rem; border-radius: 99px; font-size: .85rem; font-weight: 600; }
+    .chip svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+    .chip.type.t-sys { color: #0b6b8f; background: #e2f3fb; }
+    .chip.type.t-emp { color: #0b6b4a; background: var(--good-bg); }
+    .chip.type.t-stu { color: #8a5a10; background: #fdf3e2; }
+    .chip.role { color: var(--navy-700); background: #eaf1f8; }
+    .hero-badge { padding: .5rem 1rem; border-radius: 99px; font-weight: 700; color: #fff; white-space: nowrap; }
+    .hero-badge.t-sys { background: linear-gradient(135deg,#2aa6d6,#0b6b8f); }
+    .hero-badge.t-emp { background: linear-gradient(135deg,#24d6c2,var(--teal-strong)); color: #052a2a; }
+    .hero-badge.t-stu { background: linear-gradient(135deg,#f6b64b,#e08a1e); color: #3a2408; }
 
     .scope-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px,1fr)); gap: .8rem; margin-bottom: 1.75rem; }
     .scope { padding: .9rem 1.1rem; display: flex; flex-direction: column; gap: .3rem; }
     .scope span { font-size: .74rem; color: var(--muted); font-family: "Inter",sans-serif; }
-    .scope b { font-size: 1.2rem; color: var(--navy-700); }
+    .scope b { font-size: 1.02rem; color: var(--navy-700); }
+
+    .student-note { display: flex; gap: 1rem; align-items: center; padding: 1.5rem; text-decoration: none; color: inherit; transition: transform .12s ease, box-shadow .18s ease, border-color .18s ease; }
+    .student-note:hover { transform: translateY(-2px); box-shadow: var(--shadow); border-color: #d7e4ef; }
+    .sn-ic { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 15px; background: #eafaf8; flex: none; }
+    .sn-ic svg { width: 26px; height: 26px; fill: none; stroke: var(--teal-strong); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+    .sn-text { flex: 1; }
+    .student-note h3 { margin: 0 0 .3rem; font-size: 1.1rem; }
+    .student-note p { margin: 0; color: var(--muted); }
 
     .section-title { font-size: 1.05rem; margin: 0 0 .9rem; color: var(--ink); }
     .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 1rem; }

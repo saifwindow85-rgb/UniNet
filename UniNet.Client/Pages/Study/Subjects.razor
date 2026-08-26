@@ -1,0 +1,298 @@
+@page "/study/subjects"
+@attribute [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+@using System.ComponentModel.DataAnnotations
+@inject SubjectApiService SubjectsApi
+@inject DepartmentApiService DepartmentsApi
+@inject ScopeLookups Lookups
+@inject ScopeContext Scope
+
+<PageTitle>المواد · UniNet</PageTitle>
+
+<PageHeader Title="المواد الدراسية" Subtitle="إدارة مواد القسم ضمن نطاقك.">
+    <Actions>
+        <button class="btn btn-primary" @onclick="OpenAdd">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+            مادة جديدة
+        </button>
+    </Actions>
+</PageHeader>
+
+<Alert Message="@_notice" Kind="@_noticeKind" OnClose="() => _notice = null" />
+
+<div class="toolbar">
+    <SearchBox Placeholder="ابحث باسم المادة…" OnSearch="OnSearch" />
+    @if (Scope.DepartmentId is not null)
+    {
+        <div class="ctx-field"><span class="ctx-lbl">القسم</span><input class="inp" value="@_scopeDeptName" disabled /></div>
+    }
+    else
+    {
+        <div style="min-width:280px">
+            <Combobox Items="_deptItems" Value="_filterDeptId" ValueChanged="OnFilterDept"
+                      Loading="_deptsLoading" Placeholder="تصفية حسب القسم (الكل)" />
+        </div>
+    }
+</div>
+
+@if (_loading)
+{
+    <div class="loading"><span class="spin"></span></div>
+}
+else if (_items is { Count: > 0 })
+{
+    <div class="table-wrap">
+        <table class="data">
+            <thead>
+                <tr><th style="width:110px">الرمز</th><th>المادة</th><th>القسم</th><th style="width:110px">س. معتمدة</th><th style="width:150px"></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var s in _items)
+                {
+                    <tr>
+                        <td><span class="badge badge-code mono">@s.Code</span></td>
+                        <td><strong>@s.SubjectName</strong>@if (!string.IsNullOrEmpty(s.Description)) { <div class="row-sub">@s.Description</div> }</td>
+                        <td>@s.DepartmentName</td>
+                        <td class="mono">@(s.CreditHours?.ToString() ?? "—")</td>
+                        <td class="actions">
+                            <button class="btn btn-ghost btn-sm" @onclick="() => OpenEdit(s)">تعديل</button>
+                            <button class="btn btn-danger btn-sm" @onclick="() => _deleteTarget = s">حذف</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <Pager Current="_page" TotalPages="_totalPages" Total="_total" CurrentChanged="ChangePage" />
+}
+else
+{
+    <div class="surface empty">
+        <svg viewBox="0 0 24 24"><path d="M4 4h16v16H4zM4 10h16M10 10v10" /></svg>
+        <p>لا توجد مواد ضمن نطاقك بعد.</p>
+    </div>
+}
+
+<Modal Visible="_formOpen" MaxWidth="560px"
+       Title="@(_editing is null ? "مادة جديدة" : "تعديل المادة")"
+       Subtitle="@(_editing is null ? "أضِف مادة إلى القسم." : $"تعديل المادة #{_editing.SubjectId}")"
+       OnClose="CloseForm">
+    <ChildContent>
+        <Alert Message="@_formError" Kind="err" OnClose="() => _formError = null" />
+        <EditForm Model="_form" OnValidSubmit="SaveAsync" id="subjectForm">
+            <DataAnnotationsValidator />
+            <div class="form-grid">
+                <div class="form-row">
+                    <label class="lbl">القسم <span class="req">*</span></label>
+                    @if (_editing is not null)
+                    {
+                        <input class="inp" value="@_editing.DepartmentName" disabled />
+                        <span class="hint-inline">لا يمكن نقل المادة بين الأقسام.</span>
+                    }
+                    else if (Scope.DepartmentId is not null)
+                    {
+                        <input class="inp" value="@_scopeDeptName" disabled />
+                        <span class="hint-inline">قسمك — يُمرَّر تلقائيًا.</span>
+                    }
+                    else
+                    {
+                        <Combobox Items="_deptItems" Value="_form.DepartmentId" ValueChanged="v => _form.DepartmentId = v"
+                                  Loading="_deptsLoading" Placeholder="ابحث واختر القسم" Disabled="@_saving" />
+                    }
+                </div>
+
+                <div class="form-row two">
+                    <div class="form-row">
+                        <label class="lbl">الرمز <span class="req">*</span></label>
+                        <InputText class="inp mono" @bind-Value="_form.Code" placeholder="CS101" disabled="@_saving" />
+                        <ValidationMessage For="() => _form.Code" />
+                    </div>
+                    <div class="form-row">
+                        <label class="lbl">الساعات المعتمدة</label>
+                        <InputNumber class="inp mono" @bind-Value="_form.CreditHours" disabled="@_saving" />
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <label class="lbl">اسم المادة <span class="req">*</span></label>
+                    <InputText class="inp" @bind-Value="_form.Name" placeholder="مثال: مقدمة في البرمجة" disabled="@_saving" />
+                    <ValidationMessage For="() => _form.Name" />
+                </div>
+
+                <div class="form-row">
+                    <label class="lbl">الوصف</label>
+                    <InputTextArea class="inp txt" @bind-Value="_form.Description" rows="3" disabled="@_saving" />
+                </div>
+            </div>
+        </EditForm>
+    </ChildContent>
+    <Footer>
+        <button class="btn btn-ghost" @onclick="CloseForm" disabled="@_saving">إلغاء</button>
+        <button class="btn btn-primary" type="submit" form="subjectForm" disabled="@_saving">
+            @if (_saving) { <span class="spin-btn"></span> }
+            @(_editing is null ? "إضافة" : "حفظ")
+        </button>
+    </Footer>
+</Modal>
+
+<ConfirmDialog Visible="_deleteTarget is not null"
+               Subtitle="@(_deleteTarget is null ? null : $"المادة #{_deleteTarget.SubjectId}")"
+               Message="@($"ستُحذف «{_deleteTarget?.SubjectName}». لا يمكن الحذف إن كانت مُسندة لشُعَب.")"
+               Busy="_deleting" OnConfirm="DeleteAsync" OnCancel="() => _deleteTarget = null" />
+
+@code {
+    private List<SubjectDTO>? _items;
+    private bool _loading = true;
+    private int _page = 1, _pageSize = 10, _totalPages = 1, _total;
+    private string _search = "";
+    private string? _formError;
+
+    private List<Combobox.ComboItem> _deptItems = new();
+    private bool _deptsLoading;
+    private int _filterDeptId;
+    private string _scopeDeptName = "—";
+
+    private bool _formOpen, _saving;
+    private SubjectDTO? _editing;
+    private readonly SubjectForm _form = new();
+
+    private SubjectDTO? _deleteTarget;
+    private bool _deleting;
+
+    private string? _notice;
+    private string _noticeKind = "ok";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Scope.EnsureAsync();
+        if (Scope.DepartmentId is int did)
+        {
+            var d = await DepartmentsApi.GetByIdAsync(did);
+            if (d.Success && d.Data is not null) _scopeDeptName = d.Data.DepartmentName;
+        }
+        else
+        {
+            await LoadDeptsAsync();
+        }
+        await LoadAsync();
+    }
+
+    private async Task LoadDeptsAsync()
+    {
+        _deptsLoading = true;
+        _deptItems = await Lookups.DepartmentItemsAsync(); // مُدرك للنطاق: يجمع أقسام كل كليات الجامعة لـ UA
+        _deptsLoading = false;
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        ApiResult<Contracts.Results.PagedResult<SubjectDTO>> res;
+        if (Scope.IsSuperAdmin && _filterDeptId <= 0)
+            res = await SubjectsApi.GetAllAsync(_page, _pageSize, name: _search);
+        else
+            res = await SubjectsApi.GetPerDepartmentAsync(_page, _pageSize, name: _search, deptId: _filterDeptId > 0 ? _filterDeptId : null);
+
+        if (res.Success && res.Data is not null)
+        {
+            _items = res.Data.Data ?? new();
+            _totalPages = Math.Max(1, res.Data.TotalPages);
+            _total = res.Data.TotalRecords;
+        }
+        else { _items = new(); Notify(res.Error ?? "تعذّر جلب المواد.", "err"); }
+        _loading = false;
+    }
+
+    private async Task OnFilterDept(int did) { _filterDeptId = did; _page = 1; await LoadAsync(); }
+    private async Task OnSearch(string term) { _search = term; _page = 1; await LoadAsync(); }
+    private async Task ChangePage(int p) { _page = p; await LoadAsync(); }
+
+    private void OpenAdd()
+    {
+        _editing = null;
+        _form.Reset();
+        _formError = null;
+        if (Scope.DepartmentId is int did) _form.DepartmentId = did;
+        _formOpen = true;
+    }
+
+    private void OpenEdit(SubjectDTO s)
+    {
+        _editing = s;
+        _form.DepartmentId = s.DepartmentId;
+        _form.Code = s.Code;
+        _form.Name = s.SubjectName;
+        _form.Description = s.Description;
+        _form.CreditHours = s.CreditHours;
+        _formError = null;
+        _formOpen = true;
+    }
+
+    private void CloseForm() { _formOpen = false; _saving = false; _formError = null; }
+
+    private async Task SaveAsync()
+    {
+        if (_editing is null && _form.DepartmentId <= 0) { _formError = "اختر القسم."; return; }
+        _saving = true;
+
+        ApiResult<SubjectDTO> res;
+        if (_editing is null)
+            res = await SubjectsApi.AddAsync(new AddSubjectDTO
+            {
+                DepartmentId = _form.DepartmentId,
+                Code = _form.Code.Trim(),
+                Name = _form.Name.Trim(),
+                Description = string.IsNullOrWhiteSpace(_form.Description) ? null : _form.Description!.Trim(),
+                CreditHours = _form.CreditHours
+            });
+        else
+            res = await SubjectsApi.UpdateAsync(_editing.SubjectId, new UpdateSubjectDTO
+            {
+                Code = _form.Code.Trim(),
+                Name = _form.Name.Trim(),
+                Description = string.IsNullOrWhiteSpace(_form.Description) ? null : _form.Description!.Trim(),
+                CreditHours = _form.CreditHours
+            });
+
+        _saving = false;
+        if (res.Success) { CloseForm(); Notify(_editing is null ? "تمت إضافة المادة." : "تم الحفظ.", "ok"); await LoadAsync(); }
+        else _formError = res.Error ?? "تعذّر الحفظ.";
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (_deleteTarget is null) return;
+        _deleting = true;
+        var res = await SubjectsApi.DeleteAsync(_deleteTarget.SubjectId);
+        _deleting = false;
+        _deleteTarget = null;
+        if (res.Success) { Notify("تم حذف المادة.", "ok"); await LoadAsync(); }
+        else Notify(res.Error ?? "تعذّر الحذف.", "err");
+    }
+
+    private void Notify(string m, string k) { _notice = m; _noticeKind = k; }
+
+    private sealed class SubjectForm
+    {
+        public int DepartmentId { get; set; }
+        [Required(ErrorMessage = "الرمز مطلوب.")]
+        [StringLength(20, MinimumLength = 2, ErrorMessage = "الرمز بين 2 و20 حرفًا.")]
+        public string Code { get; set; } = "";
+        [Required(ErrorMessage = "اسم المادة مطلوب.")]
+        [StringLength(150, MinimumLength = 2, ErrorMessage = "الاسم بين 2 و150 حرفًا.")]
+        public string Name { get; set; } = "";
+        public string? Description { get; set; }
+        public int? CreditHours { get; set; } = 3;
+        public void Reset() { DepartmentId = 0; Code = ""; Name = ""; Description = null; CreditHours = 3; }
+    }
+}
+
+<style>
+    .row-sub { font-size: .8rem; color: var(--muted); margin-top: .15rem; }
+    .hint-inline { font-size: .78rem; color: var(--muted); }
+    .txt { height: auto; min-height: 84px; padding: .7rem .85rem; resize: vertical; line-height: 1.6; }
+    .spin-btn { width: 14px; height: 14px; border: 2px solid rgba(5,42,42,.3); border-top-color: #052a2a; border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; }
+    .ctx-field { display: flex; flex-direction: column; gap: .25rem; min-width: 240px; }
+    .ctx-lbl { font-size: .72rem; color: var(--muted); font-family: "Inter", sans-serif; }
+    .ctx-field .inp { height: 42px; background: #eef2f7; }
+    .badge-code { background: #eef2f7; color: var(--navy-700); }
+</style>

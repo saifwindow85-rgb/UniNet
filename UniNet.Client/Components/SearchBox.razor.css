@@ -1,0 +1,12 @@
+.sbx { position: relative; display: flex; align-items: center; min-width: 240px; flex: 1; max-width: 360px; }
+.sbx-ic { position: absolute; inset-inline-start: 12px; width: 18px; height: 18px; fill: none; stroke: #93a6b8; stroke-width: 1.9; pointer-events: none; }
+.sbx-input {
+    width: 100%; height: 42px; padding-inline: 40px 34px; font-size: .92rem;
+    font-family: "IBM Plex Sans Arabic", "Inter", sans-serif; color: var(--ink);
+    background: #fff; border: 1.5px solid var(--line); border-radius: 10px; outline: none;
+    transition: border-color .16s ease, box-shadow .16s ease;
+}
+.sbx-input::placeholder { color: #9fb0c0; }
+.sbx-input:focus { border-color: var(--teal); box-shadow: 0 0 0 4px rgba(23,195,178,.15); }
+.sbx-clear { position: absolute; inset-inline-end: 8px; border: none; background: #e6ecf3; color: #6a7d90; width: 22px; height: 22px; border-radius: 50%; cursor: pointer; font-size: .72rem; }
+.sbx-clear:hover { background: #d8e0ea; }

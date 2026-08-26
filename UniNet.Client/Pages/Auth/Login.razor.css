@@ -35,23 +35,15 @@
         linear-gradient(155deg, var(--brand-800) 0%, var(--brand-900) 55%, #081a2c 100%);
 }
 
+/* كانفاس الخلفية الحيّة "Constellation Mesh" */
 .brand-net {
     position: absolute;
     inset: 0;
+    display: block;
     width: 100%;
     height: 100%;
-    opacity: .5;
+    opacity: .95;
     pointer-events: none;
-}
-.brand-net .edges line {
-    stroke: rgba(160, 200, 235, .30);
-    stroke-width: 1.2;
-}
-.brand-net .nodes circle {
-    fill: rgba(23, 195, 178, .55);
-}
-.brand-net .nodes circle:nth-child(2n) {
-    fill: rgba(150, 200, 240, .55);
 }
 
 .brand-body { position: relative; z-index: 1; margin-top: auto; }
@@ -291,6 +283,69 @@
     font-size: .82rem;
     color: #93a2b2;
 }
+
+/* ---------- حسابات التجربة ---------- */
+.demos {
+    margin-top: 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #fbfdff;
+    overflow: hidden;
+}
+.demos > summary {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    padding: .75rem .9rem;
+    cursor: pointer;
+    font-size: .86rem;
+    font-weight: 600;
+    color: #34465a;
+    list-style: none;
+    user-select: none;
+}
+.demos > summary::-webkit-details-marker { display: none; }
+.demos > summary svg {
+    flex: none; width: 17px; height: 17px;
+    fill: none; stroke: var(--accent-strong); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+}
+.demos-pass {
+    margin-inline-start: auto;
+    font-size: .72rem;
+    color: #8296a8;
+    font-weight: 500;
+    direction: ltr;
+}
+.demos[open] > summary { border-bottom: 1px solid var(--line); }
+
+.demos-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .5rem;
+    padding: .7rem;
+}
+.demo {
+    display: flex;
+    flex-direction: column;
+    gap: .15rem;
+    padding: .55rem .7rem;
+    text-align: start;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-inline-start: 3px solid #cbd5e1;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: border-color .15s ease, box-shadow .15s ease, transform .1s ease;
+}
+.demo:hover:not(:disabled) { box-shadow: 0 4px 12px -6px rgba(15, 42, 67, .3); transform: translateY(-1px); }
+.demo:disabled { cursor: default; opacity: .6; }
+.demo .demo-user { font-size: .84rem; font-weight: 600; color: var(--ink); direction: ltr; }
+.demo .demo-role { font-size: .74rem; color: var(--muted); }
+.demo.k-sys { border-inline-start-color: #2aa6d6; }
+.demo.k-emp { border-inline-start-color: var(--accent-strong); }
+.demo.k-stu { border-inline-start-color: #e08a1e; }
+
+@media (max-width: 460px) { .demos-grid { grid-template-columns: 1fr; } }
 
 /* ---------- استجابة ---------- */
 @media (max-width: 880px) {

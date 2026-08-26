@@ -1,0 +1,453 @@
+@page "/employees"
+@attribute [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin")]
+@using System.ComponentModel.DataAnnotations
+@inject EmployeeApiService EmployeesApi
+@inject UniversityApiService UniversitiesApi
+@inject CollegeApiService CollegesApi
+@inject ScopeLookups Lookups
+@inject ScopeContext Scope
+
+<PageTitle>الموظفون · UniNet</PageTitle>
+
+<PageHeader Title="الموظفون" Subtitle="مسؤولو الجامعات والكليات والأقسام ضمن نطاقك.">
+    <Actions>
+        @if (_creatable.Count > 0)
+        {
+            <button class="btn btn-primary" @onclick="OpenAdd">
+                <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+                موظف جديد
+            </button>
+        }
+    </Actions>
+</PageHeader>
+
+<Alert Message="@_notice" Kind="@_noticeKind" OnClose="() => _notice = null" />
+
+<div class="toolbar">
+    <SearchBox Placeholder="ابحث بالاسم أو اسم المستخدم…" OnSearch="OnSearch" />
+    <div class="ctx-field">
+        <span class="ctx-lbl">الحالة</span>
+        <select class="inp" value="@_activeFilter" @onchange="OnFilterActive">
+            <option value="all">الكل</option>
+            <option value="active">النشِط</option>
+            <option value="inactive">الموقوف</option>
+        </select>
+    </div>
+</div>
+
+@if (_loading)
+{
+    <div class="loading"><span class="spin"></span></div>
+}
+else if (_items is { Count: > 0 })
+{
+    <div class="table-wrap">
+        <table class="data">
+            <thead>
+                <tr>
+                    <th style="width:80px">المعرّف</th>
+                    <th>الموظف</th>
+                    <th style="width:150px">النوع</th>
+                    <th>النطاق</th>
+                    <th style="width:100px">الحالة</th>
+                    <th style="width:110px"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var e in _items)
+                {
+                    var kind = KindOf(e);
+                    <tr>
+                        <td><span class="badge badge-id">#@e.EmployeeId</span></td>
+                        <td>
+                            <strong>@e.FullName</strong>
+                            <div class="row-sub mono">@@@e.UserName</div>
+                        </td>
+                        <td><span class="badge @KindClass(kind)">@KindLabel(kind)</span></td>
+                        <td>
+                            <strong>@ScopeName(e, kind)</strong>
+                            @if (ScopeParent(e, kind) is string p) { <div class="row-sub">@p</div> }
+                        </td>
+                        <td>
+                            @if (e.IsActive) { <span class="badge badge-ok">نشِط</span> }
+                            else { <span class="badge badge-off">موقوف</span> }
+                        </td>
+                        <td class="actions">
+                            @if (CanEditKind(kind))
+                            {
+                                <button class="btn btn-ghost btn-sm" @onclick="() => OpenEdit(e)">تعديل</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <Pager Current="_page" TotalPages="_totalPages" Total="_total" CurrentChanged="ChangePage" />
+}
+else
+{
+    <div class="surface empty">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+        <p>لا يوجد موظفون ضمن نطاقك بعد.</p>
+    </div>
+}
+
+<Modal Visible="_formOpen" MaxWidth="560px"
+       Title="@(_editing is null ? "موظف جديد" : "تعديل الموظف")"
+       Subtitle="@(_editing is null ? "أنشئ حساب مسؤول ضمن نطاقك." : $"تعديل الموظف #{_editing.EmployeeId}")"
+       OnClose="CloseForm">
+    <ChildContent>
+        <Alert Message="@_formError" Kind="err" OnClose="() => _formError = null" />
+        <EditForm Model="_form" OnValidSubmit="SaveAsync" id="empForm">
+            <DataAnnotationsValidator />
+            <div class="form-grid">
+
+                @* نوع المسؤول: قابل للاختيار عند الإضافة (مقيَّد بدور المستخدم)، ثابت عند التعديل. *@
+                <div class="form-row">
+                    <label class="lbl">نوع المسؤول <span class="req">*</span></label>
+                    @if (_editing is null)
+                    {
+                        <div class="seg">
+                            @foreach (var k in _creatable)
+                            {
+                                <button type="button" class="seg-btn @(_form.Kind == k ? "on" : "")"
+                                        @onclick="() => SelectKind(k)" disabled="@_saving">
+                                    @KindLabel(k)
+                                </button>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <input class="inp" value="@KindLabel(_form.Kind)" disabled />
+                        <span class="hint-inline">لا يمكن تغيير نوع المسؤول بعد الإنشاء.</span>
+                    }
+                </div>
+
+                @* الهدف (الجامعة/الكلية/القسم) — Combobox مُدرك للنطاق. *@
+                <div class="form-row">
+                    <label class="lbl">@TargetLabel(_form.Kind) <span class="req">*</span></label>
+                    @if (_editing is not null && _form.Kind == "univ")
+                    {
+                        <input class="inp" value="@_editing.UniversityName" disabled />
+                        <span class="hint-inline">لا يمكن نقل مسؤول الجامعة إلى جامعة أخرى.</span>
+                    }
+                    else if (_form.Kind == "univ")
+                    {
+                        <Combobox Items="_univItems" Value="_form.TargetId" ValueChanged="v => _form.TargetId = v"
+                                  Loading="_univLoading" Placeholder="ابحث واختر الجامعة" Disabled="@_saving" />
+                    }
+                    else if (_form.Kind == "college")
+                    {
+                        <Combobox Items="_collegeItems" Value="_form.TargetId" ValueChanged="v => _form.TargetId = v"
+                                  Loading="_collegeLoading" Placeholder="ابحث واختر الكلية" Disabled="@_saving" />
+                    }
+                    else
+                    {
+                        <Combobox Items="_deptItems" Value="_form.TargetId" ValueChanged="v => _form.TargetId = v"
+                                  Loading="_deptLoading" Placeholder="ابحث واختر القسم" Disabled="@_saving" />
+                    }
+                </div>
+
+                <div class="form-row two">
+                    <div class="form-row">
+                        <label class="lbl">الاسم الكامل <span class="req">*</span></label>
+                        <InputText class="inp" @bind-Value="_form.FullName" placeholder="مثال: أحمد صالح" disabled="@_saving" />
+                        <ValidationMessage For="() => _form.FullName" />
+                    </div>
+                    <div class="form-row">
+                        <label class="lbl">اسم المستخدم <span class="req">*</span></label>
+                        <InputText class="inp mono" @bind-Value="_form.UserName" placeholder="username" disabled="@_saving" />
+                        <ValidationMessage For="() => _form.UserName" />
+                    </div>
+                </div>
+
+                @if (_editing is null)
+                {
+                    <div class="form-row">
+                        <label class="lbl">كلمة المرور <span class="req">*</span></label>
+                        <InputText type="password" class="inp mono" @bind-Value="_form.Password" placeholder="٦ أحرف على الأقل" disabled="@_saving" />
+                    </div>
+                }
+
+                <div class="form-row two">
+                    <div class="form-row">
+                        <label class="lbl">البريد الإلكتروني</label>
+                        <InputText class="inp mono" @bind-Value="_form.Email" placeholder="name@example.com" disabled="@_saving" />
+                        <ValidationMessage For="() => _form.Email" />
+                    </div>
+                    <div class="form-row">
+                        <label class="lbl">رقم الهاتف</label>
+                        <InputText class="inp mono" @bind-Value="_form.PhoneNumber" placeholder="7xxxxxxxx" disabled="@_saving" />
+                    </div>
+                </div>
+
+                <label class="switch">
+                    <InputCheckbox @bind-Value="_form.IsActive" disabled="@_saving" />
+                    <span>الحساب نشِط</span>
+                </label>
+            </div>
+        </EditForm>
+    </ChildContent>
+    <Footer>
+        <button class="btn btn-ghost" @onclick="CloseForm" disabled="@_saving">إلغاء</button>
+        <button class="btn btn-primary" type="submit" form="empForm" disabled="@_saving">
+            @if (_saving) { <span class="spin-btn"></span> }
+            @(_editing is null ? "إنشاء" : "حفظ")
+        </button>
+    </Footer>
+</Modal>
+
+@code {
+    private List<EmployeeDTO>? _items;
+    private bool _loading = true;
+    private int _page = 1, _pageSize = 10, _totalPages = 1, _total;
+    private string _search = "";
+    private string _activeFilter = "all";
+
+    private readonly List<string> _creatable = new(); // univ|college|dept — بحسب دور المستخدم
+
+    private List<Combobox.ComboItem> _univItems = new();
+    private List<Combobox.ComboItem> _collegeItems = new();
+    private List<Combobox.ComboItem> _deptItems = new();
+    private bool _univLoading, _collegeLoading, _deptLoading;
+
+    private bool _formOpen, _saving;
+    private EmployeeDTO? _editing;
+    private readonly EmpForm _form = new();
+    private string? _formError;
+
+    private string? _notice;
+    private string _noticeKind = "ok";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Scope.EnsureAsync();
+
+        // الأنواع التي يجوز لهذا الدور إنشاؤها (نفس مجموعات صلاحيات الخادم).
+        if (CanCreate("univ")) _creatable.Add("univ");
+        if (CanCreate("college")) _creatable.Add("college");
+        if (CanCreate("dept")) _creatable.Add("dept");
+
+        // نُحمّل قوائم الاختيار المطلوبة لأنواع الإنشاء (تكفي أيضًا للتعديل).
+        var tasks = new List<Task>();
+        if (_creatable.Contains("univ")) tasks.Add(LoadUniversitiesAsync());
+        if (_creatable.Contains("college")) tasks.Add(LoadCollegesAsync());
+        if (_creatable.Contains("dept")) tasks.Add(LoadDepartmentsAsync());
+        await Task.WhenAll(tasks);
+
+        await LoadAsync();
+    }
+
+    private async Task LoadUniversitiesAsync()
+    {
+        _univLoading = true;
+        var res = await UniversitiesApi.GetAllAsync(1, 200);
+        if (res.Success && res.Data?.Data is not null)
+            _univItems = res.Data.Data.Select(u => new Combobox.ComboItem(u.UniversityId, u.UniversityName)).ToList();
+        _univLoading = false;
+    }
+
+    private async Task LoadCollegesAsync()
+    {
+        _collegeLoading = true;
+        var res = await CollegesApi.GetPerUniversityAsync(null, 1, 200);
+        if (res.Success && res.Data?.Data is not null)
+            _collegeItems = res.Data.Data.Select(c => new Combobox.ComboItem(c.CollegeId, c.CollegeName, c.UniversityName)).ToList();
+        _collegeLoading = false;
+    }
+
+    private async Task LoadDepartmentsAsync()
+    {
+        _deptLoading = true;
+        _deptItems = await Lookups.DepartmentItemsAsync(); // مُدرك للنطاق: يجمع أقسام كل كليات الجامعة لـ UA
+        _deptLoading = false;
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        bool? active = _activeFilter switch { "active" => true, "inactive" => false, _ => null };
+        var res = await EmployeesApi.GetEmployeesAsync(_page, _pageSize, _search, active);
+        if (res.Success && res.Data is not null)
+        {
+            _items = res.Data.Data ?? new();
+            _totalPages = Math.Max(1, res.Data.TotalPages);
+            _total = res.Data.TotalRecords;
+        }
+        else { _items = new(); Notify(res.Error ?? "تعذّر جلب الموظفين.", "err"); }
+        _loading = false;
+    }
+
+    private async Task OnSearch(string term) { _search = term; _page = 1; await LoadAsync(); }
+    private async Task OnFilterActive(ChangeEventArgs e) { _activeFilter = e.Value?.ToString() ?? "all"; _page = 1; await LoadAsync(); }
+    private async Task ChangePage(int p) { _page = p; await LoadAsync(); }
+
+    private void SelectKind(string k) { _form.Kind = k; _form.TargetId = 0; }
+
+    private void OpenAdd()
+    {
+        _editing = null;
+        _form.Reset();
+        _form.Kind = _creatable.FirstOrDefault() ?? "dept";
+        _formError = null;
+        _formOpen = true;
+    }
+
+    private void OpenEdit(EmployeeDTO e)
+    {
+        _editing = e;
+        _formError = null;
+        _form.Kind = KindOf(e);
+        _form.TargetId = _form.Kind switch { "univ" => e.UniversityId, "college" => e.CollegeId ?? 0, _ => e.DepartmentId ?? 0 };
+        _form.FullName = e.FullName;
+        _form.UserName = e.UserName;
+        _form.Password = "";
+        _form.Email = e.Email;
+        _form.PhoneNumber = e.PhoneNumber;
+        _form.IsActive = e.IsActive;
+        _formOpen = true;
+    }
+
+    private void CloseForm() { _formOpen = false; _saving = false; _formError = null; }
+
+    private async Task SaveAsync()
+    {
+        if (_form.TargetId <= 0) { _formError = $"اختر {TargetLabel(_form.Kind)}."; return; }
+        if (_editing is null && (_form.Password?.Length ?? 0) < 6) { _formError = "كلمة المرور ٦ أحرف على الأقل."; return; }
+
+        _saving = true;
+        var name = _form.FullName.Trim();
+        var user = _form.UserName.Trim();
+        var pass = _form.Password ?? "";
+        var email = string.IsNullOrWhiteSpace(_form.Email) ? null : _form.Email!.Trim();
+        var phone = string.IsNullOrWhiteSpace(_form.PhoneNumber) ? null : _form.PhoneNumber!.Trim();
+
+        ApiResult<EmployeeDTO> res;
+        if (_editing is null)
+        {
+            res = _form.Kind switch
+            {
+                "univ" => await EmployeesApi.AddUniversityAdminAsync(new AddUniversityAdminDTO
+                {
+                    UniversityId = _form.TargetId, FullName = name, UserName = user,
+                    Password = pass, Email = email, PhoneNumber = phone, IsActive = _form.IsActive
+                }),
+                "college" => await EmployeesApi.AddCollegeAdminAsync(new AddCollegeAdminDTO
+                {
+                    CollegeId = _form.TargetId, FullName = name, UserName = user,
+                    Password = pass, Email = email, PhoneNumber = phone, IsActive = _form.IsActive
+                }),
+                _ => await EmployeesApi.AddDepartmentAdminAsync(new AddDepartmentAdminDTO
+                {
+                    DepartmentId = _form.TargetId, FullName = name, UserName = user,
+                    Password = pass, Email = email, PhoneNumber = phone, IsActive = _form.IsActive
+                })
+            };
+        }
+        else
+        {
+            var id = _editing.EmployeeId;
+            res = _form.Kind switch
+            {
+                "univ" => await EmployeesApi.UpdateUniversityAdminAsync(id, new UpdateUniversityAdminDTO
+                {
+                    FullName = name, UserName = user, Email = email, PhoneNumber = phone, IsActive = _form.IsActive
+                }),
+                "college" => await EmployeesApi.UpdateCollegeAdminAsync(id, new UpdateCollegeAdminDTO
+                {
+                    CollegeId = _form.TargetId, FullName = name, UserName = user, Email = email, PhoneNumber = phone, IsActive = _form.IsActive
+                }),
+                _ => await EmployeesApi.UpdateDepartmentAdminAsync(id, new UpdateDepartmentAdminDTO
+                {
+                    DepartmentId = _form.TargetId, FullName = name, UserName = user, Email = email, PhoneNumber = phone, IsActive = _form.IsActive
+                })
+            };
+        }
+
+        _saving = false;
+        if (res.Success) { CloseForm(); Notify(_editing is null ? "تم إنشاء الموظف." : "تم الحفظ.", "ok"); await LoadAsync(); }
+        else _formError = res.Error ?? "تعذّر الحفظ.";
+    }
+
+    private void Notify(string m, string k) { _notice = m; _noticeKind = k; }
+
+    // ---- استدلال النوع من الـ DTO ----
+    private static string KindOf(EmployeeDTO e) =>
+        e.DepartmentId is > 0 ? "dept" : e.CollegeId is > 0 ? "college" : "univ";
+
+    private static string KindLabel(string k) => k switch { "univ" => "مسؤول جامعة", "college" => "مسؤول كلية", "dept" => "مسؤول قسم", _ => "—" };
+    private static string KindClass(string k) => k switch { "univ" => "badge-univ", "college" => "badge-college", _ => "badge-dept" };
+    private static string TargetLabel(string k) => k switch { "univ" => "الجامعة", "college" => "الكلية", _ => "القسم" };
+
+    private static string ScopeName(EmployeeDTO e, string k) => k switch
+    {
+        "univ" => e.UniversityName,
+        "college" => e.CollegeName ?? "—",
+        _ => e.DepartmentName ?? "—"
+    };
+    private static string? ScopeParent(EmployeeDTO e, string k) => k switch
+    {
+        "college" => e.UniversityName,
+        "dept" => e.CollegeName,
+        _ => null
+    };
+
+    // ---- صلاحيات الأدوار (تطابق مجموعات الخادم) ----
+    private bool CanCreate(string kind) => kind switch
+    {
+        "univ" => Scope.Role == "Super Admin",
+        "college" => Scope.Role is "Super Admin" or "UniversityAdmin",
+        "dept" => Scope.Role is "Super Admin" or "UniversityAdmin" or "CollegeAdmin",
+        _ => false
+    };
+    private bool CanEditKind(string kind) => CanCreate(kind);
+
+    private sealed class EmpForm
+    {
+        public string Kind { get; set; } = "dept";
+        public int TargetId { get; set; }
+        [Required(ErrorMessage = "الاسم الكامل مطلوب.")]
+        [StringLength(150, MinimumLength = 2, ErrorMessage = "الاسم بين 2 و150 حرفًا.")]
+        public string FullName { get; set; } = "";
+        [Required(ErrorMessage = "اسم المستخدم مطلوب.")]
+        [StringLength(60, MinimumLength = 3, ErrorMessage = "اسم المستخدم بين 3 و60 حرفًا.")]
+        public string UserName { get; set; } = "";
+        public string Password { get; set; } = "";
+        [EmailAddress(ErrorMessage = "بريد إلكتروني غير صالح.")]
+        public string? Email { get; set; }
+        public string? PhoneNumber { get; set; }
+        public bool IsActive { get; set; } = true;
+
+        public void Reset()
+        {
+            Kind = "dept"; TargetId = 0; FullName = ""; UserName = ""; Password = "";
+            Email = null; PhoneNumber = null; IsActive = true;
+        }
+    }
+}
+
+<style>
+    .row-sub { font-size: .8rem; color: var(--muted); margin-top: .15rem; }
+    .hint-inline { font-size: .78rem; color: var(--muted); }
+    .spin-btn { width: 14px; height: 14px; border: 2px solid rgba(5,42,42,.3); border-top-color: #052a2a; border-radius: 50%; animation: spin .7s linear infinite; display: inline-block; }
+    .ctx-field { display: flex; flex-direction: column; gap: .25rem; min-width: 170px; }
+    .ctx-lbl { font-size: .72rem; color: var(--muted); font-family: "Inter", sans-serif; }
+    .ctx-field .inp { height: 42px; }
+
+    .seg { display: inline-flex; gap: .3rem; background: #eef2f7; padding: .3rem; border-radius: 12px; flex-wrap: wrap; }
+    .seg-btn { border: none; background: transparent; padding: .45rem .9rem; border-radius: 9px; font: inherit; font-size: .88rem; font-weight: 600; color: var(--muted); cursor: pointer; transition: all .14s ease; }
+    .seg-btn:hover:not(:disabled) { color: var(--ink); }
+    .seg-btn.on { background: #fff; color: var(--teal-strong); box-shadow: 0 1px 4px rgba(15,42,67,.12); }
+    .seg-btn:disabled { cursor: default; opacity: .6; }
+
+    .switch { display: inline-flex; align-items: center; gap: .5rem; cursor: pointer; font-size: .9rem; }
+    .switch input { width: 17px; height: 17px; accent-color: var(--teal-strong); }
+
+    .badge-univ { background: #e2f3fb; color: #0b6b8f; }
+    .badge-college { background: var(--good-bg); color: #0b6b4a; }
+    .badge-dept { background: #fdf3e2; color: #8a5a10; }
+    .badge-ok { background: var(--good-bg); color: #0b6b4a; }
+    .badge-off { background: #fdeaea; color: #b23838; }
+</style>
