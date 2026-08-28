@@ -14,8 +14,20 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-// عنوان الـ API من wwwroot/appsettings.json (بديله عنوان الاستضافة نفسه إن غاب).
-var apiBaseUrl = builder.Configuration["ApiBaseUrl"] ?? builder.HostEnvironment.BaseAddress;
+// عنوان الـ API: يُشتقّ من نفس المضيف الذي حُمِّلت منه الواجهة (نفس الاسم/الـ IP) على المنفذ 5126.
+// هكذا يعمل على الكمبيوتر (localhost) وعلى الجوال عبر عنوان الشبكة تلقائيًا — دون تثبيت أي IP.
+// يمكن تجاوزه صراحةً بضبط ApiBaseUrl في wwwroot/appsettings.json عند الحاجة.
+var configuredApi = builder.Configuration["ApiBaseUrl"];
+string apiBaseUrl;
+if (!string.IsNullOrWhiteSpace(configuredApi))
+{
+    apiBaseUrl = configuredApi;
+}
+else
+{
+    var host = new Uri(builder.HostEnvironment.BaseAddress);
+    apiBaseUrl = $"{host.Scheme}://{host.Host}:5126/";
+}
 builder.Services.AddSingleton(new ApiBaseAddress(apiBaseUrl));
 
 // المصادقة والنطاق.
