@@ -20,10 +20,10 @@
 }
 .brand .glyph {
     display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px;
-    font-family: "Inter", sans-serif; font-weight: 700; font-size: 1.2rem; color: #06232b;
-    background: linear-gradient(140deg, #2ee6d1, var(--teal-strong));
-    box-shadow: 0 8px 20px -8px rgba(23, 195, 178, .7);
+    background: #fff; padding: 4px; overflow: hidden;
+    box-shadow: 0 8px 20px -8px rgba(0, 0, 0, .55);
 }
+.brand .glyph img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .brand-text { display: flex; flex-direction: column; line-height: 1.2; }
 .brand-text .name { font-family: "Inter", sans-serif; font-weight: 600; font-size: 1.15rem; color: #fff; }
 .brand-text .sub { font-size: .74rem; color: #8fa8c2; }
