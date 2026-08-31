@@ -1,5 +1,8 @@
-
+﻿
 using Application.Extensions;
+using Contracts.Common.Options;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Options;
 using DataAccessLayer.Configurations.Options;
 using DataAccessLayer.Dbcontext;
 using DataAccessLayer.Extensions;
@@ -27,6 +30,22 @@ namespace UniNet
 
             //JWT Options
             builder.Services.Configure<JWTOption>(builder.Configuration.GetSection("Jwt"));
+
+            //Image storage options
+            builder.Services.Configure<ImageStorageOptions>(options =>
+            {
+                builder.Configuration.GetSection("ImageStorage").Bind(options);
+
+                // المسار النسبي يُحلّ مقابل مجلد عمل العملية، وهو يختلف بين dotnet run و IIS و Docker.
+                // التثبيت على ContentRootPath يجعل موضع الملفات واحدًا في كل بيئة.
+                if (!Path.IsPathRooted(options.RootPath))
+                    options.RootPath = Path.Combine(builder.Environment.ContentRootPath, options.RootPath);
+            });
+
+            // حدّ الجسم قبل القراءة: FluentValidation لا يعمل إلا بعد استقبال الجسم كاملًا،
+            // فبدون هذا الحد يملأ رفعُ ملفٍ ضخم القرصَ قبل أن يقرأ أي مُتحقِّق سطرًا واحدًا.
+            // الافتراضيات أعلى بكثير: Kestrel ~30 ميجابايت، والنموذج المتعدد ~128 ميجابايت.
+            builder.Services.Configure<FormOptions>(options => options.MultipartBodyLengthLimit = 6 * 1024 * 1024);
             var JwtSection = builder.Configuration.GetSection("Jwt");
             var JwtOptions = JwtSection.Get<JWTOption>() ??
                 throw new InvalidOperationException("Jwt configuration section is missing. Set Jwt:Key/Issuer/Audience in user-secrets.");
@@ -120,7 +139,9 @@ builder.Configuration.GetConnectionString("DefaultConnection")));
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+
+            // كان AddSwaggerGen يُستدعى مرتين: الأولى بلا إعدادات فتُسجِّل الخدمة
+            // ثم تُهمَل، والثانية تحمل تعريف الأمان. استدعاء واحد يكفي.
             builder.Services.AddSwaggerGen(options =>
             {
                 // 1. Define the security scheme for JWT Bearer
@@ -169,10 +190,7 @@ builder.Configuration.GetConnectionString("DefaultConnection")));
                             "https://localhost:7082",
                             "http://localhost:5126",
                             "http://localhost:5500",
-                            "http://127.0.0.1:5500",
-                            "https://localhost:7175", // UniNet.Client (WASM) — HTTPS profile
-                            "http://localhost:5286",  // UniNet.Client (WASM) — HTTP profile
-                            "http://192.168.1.219:5286" // UniNet.Client — الوصول من الجوال عبر شبكة Wi-Fi
+                            "http://127.0.0.1:5500"
                         )
                         .AllowAnyHeader()
                         .AllowAnyMethod();
@@ -187,15 +205,8 @@ builder.Configuration.GetConnectionString("DefaultConnection")));
                 using var scop = app.Services.CreateScope();
                 var db = scop.ServiceProvider.GetRequiredService<AppDbcontext>();
                 await db.Database.MigrateAsync();
-                try
-                {
-                    await TestDataSeeder.SeedAsync(db);
-                }
-                catch (Exception seedEx)
-                {
-                    // لا نُوقف الإقلاع بسبب التغذية؛ المُغذّي قابل للاستئناف فيُكمل الناقص في التشغيل التالي.
-                    Console.WriteLine("[SEED ERROR] " + seedEx);
-                }
+                var imageOptions = scop.ServiceProvider.GetRequiredService<IOptions<ImageStorageOptions>>().Value;
+                await TestDataSeeder.SeedAsync(db, imageOptions.RootPath);
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }

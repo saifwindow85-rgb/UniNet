@@ -33,7 +33,7 @@ namespace DataAccessLayer.Configurations.Study_Configuration
 
 
             builder.ToTable("SectionSubjects");
-            //builder.HasData(SeedData.GetSectionSubjects());
+            builder.HasData(SeedData.GetSectionSubjects());
         }
     }
 }

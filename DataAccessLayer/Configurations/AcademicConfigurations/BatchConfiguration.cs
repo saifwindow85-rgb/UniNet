@@ -30,7 +30,7 @@ namespace DataAccessLayer.Configurations.Academic_Structure
 
             builder.ToTable("Batches");
 
-            //builder.HasData(SeedData.GetBatches());
+            builder.HasData(SeedData.GetBatches());
         }
     }
 }

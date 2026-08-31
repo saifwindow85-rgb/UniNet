@@ -26,7 +26,7 @@ namespace DataAccessLayer.Configurations.Academic_Structure
 
             builder.ToTable("Sections");
 
-            //builder.HasData(SeedData.GetSections());
+            builder.HasData(SeedData.GetSections());
         }
     }
 }
