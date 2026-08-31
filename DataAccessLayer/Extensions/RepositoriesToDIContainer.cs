@@ -10,6 +10,7 @@ using Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces;
 using Domain.Interfaces.AcademicStructureInterfaces.SectionInterfaces;
 using Domain.Interfaces.AcademicStructureInterfaces.UniversityInterfaces;
 using Domain.Interfaces.EmployeeInterfaces;
+using Domain.Interfaces.ContentInterfaces;
 using Domain.Interfaces.ImageInterfaces;
 using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
@@ -56,6 +57,7 @@ namespace DataAccessLayer.Extensions
             services.AddScoped<ISectionSubjectRepository, SectionSubjectRepository>();
             services.AddScoped<IStudentResultRepository, StudentResultRepository>();
             services.AddScoped<IImageRepository, Repos.ImageRepository.ImageRepository>();
+            services.AddScoped<IContentRepository, Repos.ContentRepository.ContentRepository>();
             return services;
         }
     }
