@@ -1,0 +1,162 @@
+.cc {
+    background: var(--surface, #fff);
+    border: 1px solid var(--line, #e7edf3);
+    border-radius: var(--radius, 13px);
+    box-shadow: var(--shadow-sm, 0 1px 2px rgba(15, 30, 48, .05));
+    padding: 1rem 1.1rem 1.05rem;
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+    transition: box-shadow .18s ease, transform .18s ease, border-color .18s ease;
+}
+
+.cc:hover {
+    box-shadow: var(--shadow, 0 10px 30px -18px rgba(15, 42, 67, .35));
+    border-color: #dbe5ee;
+    transform: translateY(-1px);
+}
+
+/* ---------------- الترويسة ---------------- */
+
+.cc-head {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    flex-wrap: wrap;
+}
+
+.cc-avatar {
+    width: 34px;
+    height: 34px;
+    flex: none;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, var(--teal, #17c3b2), var(--teal-strong, #0fa596));
+    color: #052a2a;
+    font-weight: 700;
+    font-size: .9rem;
+}
+
+.cc-who {
+    display: flex;
+    flex-direction: column;
+    gap: .05rem;
+    min-width: 0;
+    flex: 1;
+}
+
+.cc-author {
+    font-size: .84rem;
+    font-weight: 600;
+    color: var(--ink, #14263a);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cc-time {
+    font-size: .72rem;
+    color: var(--muted, #7c8da0);
+    cursor: help;
+}
+
+.cc-type,
+.cc-scope {
+    flex: none;
+    padding: .2rem .55rem;
+    border-radius: 999px;
+    font-size: .7rem;
+    font-weight: 600;
+    line-height: 1.6;
+}
+
+/* الإعلان يتميّز لونيًّا عن المنشور: فارق دلالي يستحق فارقًا بصريًا */
+.cc-type.ann {
+    background: #fff4e5;
+    color: #9a5b00;
+}
+
+.cc-type.post {
+    background: var(--line-soft, #eef2f7);
+    color: var(--ink-soft, #40556b);
+}
+
+.cc-scope {
+    background: #eef7fb;
+    color: #1d5a72;
+    font-weight: 500;
+}
+
+/* ---------------- النص ---------------- */
+
+.cc-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--ink, #14263a);
+    line-height: 1.55;
+}
+
+/* القصّ عند 4 أسطر يحفظ إيقاع الخلاصة: بطاقة طويلة واحدة لا تُزيح الباقي */
+.cc-body {
+    margin: 0;
+    font-size: .87rem;
+    line-height: 1.75;
+    color: var(--ink-soft, #40556b);
+    white-space: pre-wrap;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.cc-body.open {
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+    overflow: visible;
+}
+
+.cc-more {
+    align-self: flex-start;
+    border: 0;
+    background: none;
+    padding: 0;
+    font: inherit;
+    font-size: .78rem;
+    font-weight: 600;
+    color: var(--teal-strong, #0fa596);
+    cursor: pointer;
+}
+
+.cc-more:hover {
+    text-decoration: underline;
+}
+
+/* ---------------- الصورة ---------------- */
+
+/* نسبة ثابتة: كل البطاقات المصوَّرة بنفس الارتفاع مهما اختلفت أبعاد الأصل */
+.cc-media {
+    margin-top: .15rem;
+    border-radius: 11px;
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+    background: var(--line-soft, #eef2f7);
+}
+
+.cc-media ::deep .aimg {
+    height: 100%;
+    border-radius: 0;
+}
+
+/* ---------------- التذييل ---------------- */
+
+.cc-foot {
+    display: flex;
+    gap: .4rem;
+    flex-wrap: wrap;
+    padding-top: .55rem;
+    margin-top: .1rem;
+    border-top: 1px solid var(--line-soft, #eef2f7);
+}

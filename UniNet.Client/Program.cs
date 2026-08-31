@@ -9,6 +9,7 @@ using UniNet.Client.Services.Academic;
 using UniNet.Client.Services.Employee;
 using UniNet.Client.Services.Study;
 using UniNet.Client.Services.Students;
+using UniNet.Client.Services.Content;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
@@ -65,6 +66,9 @@ builder.Services.AddScoped<SectionSubjectApiService>();
 builder.Services.AddScoped<StudentResultApiService>();
 builder.Services.AddScoped<StudentApiService>();
 builder.Services.AddScoped<StudentStatusApiService>();
+
+// وحدة المحتوى (المنشورات والإعلانات) — ترفع multipart وتجلب الصور بالرمز.
+builder.Services.AddScoped<ContentApiService>();
 
 // مساعد قوائم الاختيار المُدركة للنطاق (يعالج قيد endpoint الأقسام).
 builder.Services.AddScoped<UniNet.Client.Services.Lookups.ScopeLookups>();

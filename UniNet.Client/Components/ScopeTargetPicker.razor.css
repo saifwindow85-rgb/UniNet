@@ -1,0 +1,127 @@
+.stp {
+    display: flex;
+    flex-direction: column;
+    gap: .95rem;
+}
+
+/* شرائح المستوى: اختيار بصري فوري بدل قائمة منسدلة تُخفي الخيارات */
+.stp-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .45rem;
+}
+
+.stp-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .5rem .8rem;
+    border: 1px solid var(--line, #e7edf3);
+    border-radius: 10px;
+    background: var(--field, #f6f9fc);
+    color: var(--ink-soft, #40556b);
+    font: inherit;
+    font-size: .82rem;
+    cursor: pointer;
+    transition: border-color .15s ease, background .15s ease, color .15s ease, transform .1s ease;
+}
+
+.stp-chip:hover:not(:disabled) {
+    border-color: var(--teal, #17c3b2);
+    transform: translateY(-1px);
+}
+
+.stp-chip.on {
+    background: var(--teal, #17c3b2);
+    border-color: var(--teal, #17c3b2);
+    color: #052a2a;
+    font-weight: 600;
+}
+
+/* مستوى واحد متاح: يظهر مُختارًا لا معطَّلًا باهتًا — القرار محسوم لا ممنوع */
+.stp-chip:disabled {
+    cursor: default;
+}
+
+.stp-chip:disabled:not(.on) {
+    opacity: .45;
+}
+
+.stp-ic {
+    display: inline-grid;
+    place-items: center;
+}
+
+.stp-ic svg {
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.stp-hint {
+    font-size: .76rem;
+    color: var(--muted, #7c8da0);
+}
+
+.stp-warn {
+    font-size: .78rem;
+    color: var(--danger, #c8394a);
+}
+
+.stp-none {
+    font-size: .82rem;
+    color: var(--danger, #c8394a);
+    background: var(--danger-bg, #fdf1f3);
+    padding: .6rem .8rem;
+    border-radius: 10px;
+}
+
+.stp-loading {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .8rem;
+    color: var(--muted, #7c8da0);
+}
+
+.spin-sm {
+    width: 13px;
+    height: 13px;
+    border: 2px solid var(--line, #e7edf3);
+    border-top-color: var(--teal, #17c3b2);
+    border-radius: 50%;
+    animation: stp-spin .7s linear infinite;
+    display: inline-block;
+}
+
+@keyframes stp-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* تنبيه Public: أوسع جمهور ممكن — يستحق تمييزًا بصريًا لا سطر تلميح باهت */
+.stp-public {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    padding: .65rem .8rem;
+    border-radius: 10px;
+    background: #eef7fb;
+    border: 1px solid #d5e9f2;
+    color: #1d5a72;
+    font-size: .8rem;
+    line-height: 1.55;
+}
+
+.stp-public svg {
+    width: 18px;
+    height: 18px;
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+}

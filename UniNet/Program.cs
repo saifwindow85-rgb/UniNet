@@ -190,7 +190,13 @@ builder.Configuration.GetConnectionString("DefaultConnection")));
                             "https://localhost:7082",
                             "http://localhost:5126",
                             "http://localhost:5500",
-                            "http://127.0.0.1:5500"
+                            "http://127.0.0.1:5500",
+                            // UniNet.Client (Blazor WASM) — بروفايلا HTTPS و HTTP.
+                            // فرع WASM وحده يشغّل العميل، فهذه النطاقات تعيش هنا لا على master.
+                            "https://localhost:7175",
+                            "http://localhost:5286",
+                            // الوصول من الجوال عبر شبكة Wi-Fi المحلية.
+                            "http://192.168.1.219:5286"
                         )
                         .AllowAnyHeader()
                         .AllowAnyMethod();

@@ -1,0 +1,172 @@
+@* منتقي جمهور المحتوى: مستوى النطاق + الكيان المستهدف عنده.
+
+   بدل أن يكتب المستخدم رقم TargetId يدويًا — وهو ما يفرضه الـ API نظريًا —
+   يختار مستوى النطاق فتُجلَب تلقائيًا كيانات ذلك المستوى **ضمن نطاقه هو**:
+   مسؤول كلية يرى أقسام كليته فقط، ومسؤول جامعة يرى أقسام كل كلياته.
+
+   ثلاث آليات تجعل الاختيار الخاطئ مستحيلًا قبل أن يصل للخادم:
+     ① قائمة المستويات نفسها مُقلَّصة: لا يُعرض مستوى أعلى من نطاق الفاعل، و Public
+       لمسؤول النظام وحده — لأن الخادم يرفضهما على أي حال (ResolveScopeTargetAsync).
+     ② الأهداف تُجلب من نقاط مُدركة للنطاق، فلا يظهر أصلًا ما لا يملكه.
+     ③ مستوى واحد متاح ⇒ يُختار تلقائيًا؛ وهدف واحد متاح ⇒ يُختار تلقائيًا.
+       فمسؤول الدفعة لا يُسأل سؤالًا له إجابة واحدة ممكنة. *@
+
+@inject ScopeLookups Lookups
+
+<div class="stp">
+    <div class="form-row">
+        <label class="lbl">جمهور المحتوى <span class="req">*</span></label>
+
+        @if (_scopesLoading)
+        {
+            <div class="stp-loading"><span class="spin-sm"></span> جارٍ تحديد صلاحياتك…</div>
+        }
+        else if (_allowed.Count == 0)
+        {
+            <div class="stp-none">لا تملك صلاحية نشر محتوى على أي مستوى.</div>
+        }
+        else
+        {
+            <div class="stp-chips">
+                @foreach (var s in _allowed)
+                {
+                    <button type="button"
+                            class="stp-chip @(Scope == s ? "on" : "")"
+                            disabled="@(Disabled || _allowed.Count == 1)"
+                            @onclick="() => SelectScopeAsync(s)">
+                        <span class="stp-ic">@ScopeIcon(s)</span>
+                        <span>@ScopeLookups.ScopeLabel(s)</span>
+                    </button>
+                }
+            </div>
+
+            @if (_allowed.Count == 1)
+            {
+                <span class="stp-hint">نطاقك يسمح بمستوى واحد — مُختار تلقائيًا.</span>
+            }
+        }
+    </div>
+
+    @if (Scope != EnContentScope.Public && _allowed.Count > 0 && !_scopesLoading)
+    {
+        <div class="form-row">
+            <label class="lbl">@ScopeLookups.TargetLabel(Scope) <span class="req">*</span></label>
+
+            @if (_targets.Count == 1 && !_targetsLoading)
+            {
+                @* هدف وحيد: يُعرض مثبَّتًا لا كقائمة فيها خيار واحد *@
+                <input class="inp" value="@_targets[0].Label" disabled />
+                <span class="stp-hint">الوحيد ضمن نطاقك — يُمرَّر تلقائيًا.</span>
+            }
+            else
+            {
+                <Combobox Items="_targets"
+                          Value="TargetId ?? 0"
+                          ValueChanged="OnTargetChangedAsync"
+                          Loading="_targetsLoading"
+                          Disabled="@Disabled"
+                          Placeholder="@($"ابحث واختر {ScopeLookups.TargetLabel(Scope)}")" />
+
+                @if (!_targetsLoading && _targets.Count == 0)
+                {
+                    <span class="stp-warn">لا توجد عناصر متاحة على هذا المستوى ضمن نطاقك.</span>
+                }
+            }
+        </div>
+    }
+    else if (Scope == EnContentScope.Public && !_scopesLoading)
+    {
+        <div class="stp-public">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18" /></svg>
+            <span>سيظهر هذا المحتوى لكل مستخدمي النظام في جميع الجامعات.</span>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public EnContentScope Scope { get; set; }
+    [Parameter] public EventCallback<EnContentScope> ScopeChanged { get; set; }
+
+    [Parameter] public int? TargetId { get; set; }
+    [Parameter] public EventCallback<int?> TargetIdChanged { get; set; }
+
+    [Parameter] public bool Disabled { get; set; }
+
+    private List<EnContentScope> _allowed = new();
+    private List<Combobox.ComboItem> _targets = new();
+    private bool _scopesLoading = true, _targetsLoading;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _allowed = await Lookups.AllowedScopesAsync();
+        _scopesLoading = false;
+
+        // مستوى واحد متاح ⇒ اختره بدل تركه فارغًا ينتظر نقرة لا معنى لها.
+        if (_allowed.Count == 1 && Scope != _allowed[0])
+        {
+            await SelectScopeAsync(_allowed[0]);
+        }
+        else if (Scope != EnContentScope.Public && _allowed.Contains(Scope))
+        {
+            await LoadTargetsAsync();
+        }
+    }
+
+    private async Task SelectScopeAsync(EnContentScope scope)
+    {
+        if (Disabled || Scope == scope) return;
+
+        Scope = scope;
+        await ScopeChanged.InvokeAsync(scope);
+
+        // تغيير المستوى يُبطل الهدف السابق: قسمٌ ليس كليةً.
+        await SetTargetAsync(null);
+        await LoadTargetsAsync();
+    }
+
+    private async Task LoadTargetsAsync()
+    {
+        _targets = new();
+
+        if (Scope == EnContentScope.Public) return;
+
+        _targetsLoading = true;
+        StateHasChanged();
+
+        _targets = await Lookups.TargetItemsAsync(Scope);
+        _targetsLoading = false;
+
+        // هدف وحيد ⇒ يُمرَّر تلقائيًا؛ لا فائدة من قائمة بخيار واحد.
+        if (_targets.Count == 1) await SetTargetAsync(_targets[0].Id);
+
+        StateHasChanged();
+    }
+
+    private Task OnTargetChangedAsync(int value) => SetTargetAsync(value > 0 ? value : null);
+
+    private async Task SetTargetAsync(int? value)
+    {
+        TargetId = value;
+        await TargetIdChanged.InvokeAsync(value);
+    }
+
+    private static RenderFragment ScopeIcon(EnContentScope scope) => builder =>
+    {
+        var path = scope switch
+        {
+            EnContentScope.Public => "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18ZM3 12h18M12 3a15 15 0 0 1 0 18a15 15 0 0 1 0-18",
+            EnContentScope.University => "M3 9.5 12 4l9 5.5-9 5.5-9-5.5ZM7 12v4c0 1 2.2 2.5 5 2.5s5-1.5 5-2.5v-4",
+            EnContentScope.College => "M4 21V8l8-5 8 5v13M9 21v-6h6v6",
+            EnContentScope.Department => "M4 20V6a2 2 0 0 1 2-2h8l6 6v10M8 12h8M8 16h5",
+            EnContentScope.Batch => "M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M10 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z",
+            _ => "",
+        };
+
+        builder.OpenElement(0, "svg");
+        builder.AddAttribute(1, "viewBox", "0 0 24 24");
+        builder.OpenElement(2, "path");
+        builder.AddAttribute(3, "d", path);
+        builder.CloseElement();
+        builder.CloseElement();
+    };
+}

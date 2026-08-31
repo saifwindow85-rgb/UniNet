@@ -1,0 +1,196 @@
+@page "/content"
+@attribute [Authorize]
+@inject ContentApiService ContentApi
+@inject NavigationManager Nav
+
+<PageTitle>المستجدّات · UniNet</PageTitle>
+
+<PageHeader Title="المستجدّات" Subtitle="المنشورات والإعلانات التي تخصّك ضمن جامعتك وكليتك وقسمك ودفعتك.">
+    <Actions>
+        <AuthorizeView Roles="Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin,BatchAdmin">
+            <button class="btn btn-primary" @onclick='() => Nav.NavigateTo("/content/manage")'>
+                <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+                إدارة المحتوى
+            </button>
+        </AuthorizeView>
+    </Actions>
+</PageHeader>
+
+<Alert Message="@_error" Kind="err" OnClose="() => _error = null" />
+
+<div class="toolbar">
+    <SearchBox Placeholder="ابحث في العناوين…" OnSearch="OnSearch" />
+
+    @* مرشّح النوع كشرائح لا قائمة: ثلاثة خيارات فقط، وإظهارها كلها أسرع من فتح قائمة *@
+    <div class="seg">
+        <button class="seg-b @(_type is null ? "on" : "")" @onclick="() => FilterType(null)">الكل</button>
+        <button class="seg-b @(_type == EnContentType.Post ? "on" : "")" @onclick="() => FilterType(EnContentType.Post)">المنشورات</button>
+        <button class="seg-b @(_type == EnContentType.Announcement ? "on" : "")" @onclick="() => FilterType(EnContentType.Announcement)">الإعلانات</button>
+    </div>
+</div>
+
+@if (_loading)
+{
+    @* هياكل عظمية بعدد بطاقات الصفحة — لا قفزة تخطيط عند الوصول *@
+    <div class="feed">
+        @for (var i = 0; i < 4; i++)
+        {
+            <div class="fsk">
+                <div class="fsk-head"><span class="fsk-dot"></span><span class="fsk-line w40"></span></div>
+                <span class="fsk-line w70"></span>
+                <span class="fsk-line"></span>
+                <span class="fsk-line w85"></span>
+            </div>
+        }
+    </div>
+}
+else if (_items is { Count: > 0 })
+{
+    <div class="feed">
+        @foreach (var item in _items)
+        {
+            <ContentCard ContentItemId="item.ContentItemId"
+                         Title="@item.Title"
+                         Body="@item.Body"
+                         AuthorName="@item.AuthorName"
+                         CreatedAt="item.CreatedAt"
+                         Type="item.Type"
+                         HasImage="item.HasImage"
+                         OnZoom="OpenZoom" />
+        }
+    </div>
+
+    <Pager Current="_page" TotalPages="_totalPages" Total="_total" CurrentChanged="ChangePage" />
+}
+else
+{
+    <div class="surface empty">
+        <svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM4 9h16M9 9v10" /></svg>
+        <p>@(string.IsNullOrEmpty(_search) ? "لا توجد مستجدّات تخصّك بعد." : "لا نتائج مطابقة لبحثك.")</p>
+    </div>
+}
+
+<Lightbox ContentItemId="_zoomId" Caption="@_zoomCaption" OnClose="CloseZoom" />
+
+@code {
+    private List<ContentFeedItemDTO>? _items;
+    private bool _loading = true;
+    private int _page = 1, _totalPages = 1, _total;
+    private const int PageSize = 10;   // الخادم يحدّ PageSize بـ 100
+    private string _search = "";
+    private EnContentType? _type;
+    private string? _error;
+
+    private int? _zoomId;
+    private string? _zoomCaption;
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        var res = await ContentApi.GetFeedAsync(_page, PageSize, _search, _type);
+
+        if (res.Success && res.Data is not null)
+        {
+            _items = res.Data.Data ?? new();
+            _totalPages = Math.Max(1, res.Data.TotalPages);
+            _total = res.Data.TotalRecords;
+        }
+        else
+        {
+            _items = new();
+            _error = res.Error ?? "تعذّر جلب المستجدّات.";
+        }
+
+        _loading = false;
+    }
+
+    private async Task OnSearch(string term) { _search = term; _page = 1; await LoadAsync(); }
+    private async Task FilterType(EnContentType? type) { _type = type; _page = 1; await LoadAsync(); }
+    private async Task ChangePage(int page) { _page = page; await LoadAsync(); }
+
+    private void OpenZoom(int contentItemId)
+    {
+        _zoomId = contentItemId;
+        _zoomCaption = _items?.FirstOrDefault(i => i.ContentItemId == contentItemId)?.Title;
+    }
+
+    private void CloseZoom() { _zoomId = null; _zoomCaption = null; }
+}
+
+<style>
+    /* عمودان على الشاشات الواسعة وعمود على الضيّقة، بعرض أقصى يمنع امتداد السطر
+       إلى ما يُتعب القراءة. البطاقات متساوية العرض ومفصولة بفراغ واضح. */
+    .feed {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 1rem;
+        max-width: 1180px;
+        align-items: start;
+    }
+
+    /* شرائح تصفية النوع */
+    .seg {
+        display: inline-flex;
+        background: var(--field, #f6f9fc);
+        border: 1px solid var(--line, #e7edf3);
+        border-radius: 10px;
+        padding: 3px;
+        gap: 2px;
+    }
+
+    .seg-b {
+        border: 0;
+        background: none;
+        padding: .42rem .8rem;
+        border-radius: 8px;
+        font: inherit;
+        font-size: .8rem;
+        color: var(--ink-soft, #40556b);
+        cursor: pointer;
+        transition: background .15s ease, color .15s ease;
+    }
+
+    .seg-b:hover:not(.on) { background: #fff; }
+
+    .seg-b.on {
+        background: var(--teal, #17c3b2);
+        color: #052a2a;
+        font-weight: 600;
+    }
+
+    /* هيكل عظمي للبطاقة */
+    .fsk {
+        background: var(--surface, #fff);
+        border: 1px solid var(--line, #e7edf3);
+        border-radius: var(--radius, 13px);
+        padding: 1rem 1.1rem;
+        display: flex;
+        flex-direction: column;
+        gap: .6rem;
+    }
+
+    .fsk-head { display: flex; align-items: center; gap: .55rem; }
+
+    .fsk-dot {
+        width: 34px; height: 34px; border-radius: 50%; flex: none;
+        background: var(--line-soft, #eef2f7);
+    }
+
+    .fsk-line {
+        height: 11px; border-radius: 6px;
+        background: linear-gradient(100deg, #eef2f7 30%, #f7fafd 50%, #eef2f7 70%);
+        background-size: 220% 100%;
+        animation: fsk-shimmer 1.3s ease-in-out infinite;
+    }
+
+    .fsk-line.w40 { width: 40%; }
+    .fsk-line.w70 { width: 70%; height: 15px; }
+    .fsk-line.w85 { width: 85%; }
+
+    @@keyframes fsk-shimmer {
+        from { background-position: 180% 0; }
+        to   { background-position: -40% 0; }
+    }
+</style>

@@ -1,0 +1,89 @@
+@* بطاقة محتوى واحدة — وحدة بصرية مغلقة تفصلها عن جارتها بوضوح.
+
+   قرارات التصميم:
+     • عرض أقصى محدود وارتفاع مضبوط: المحتوى لا يبتلع الشاشة مهما طال نصّه.
+     • النص يُقصّ عند 4 أسطر مع زرّ توسيع — فتبقى البطاقات متقاربة الحجم
+       ولا تُفسد بطاقةٌ واحدة طويلة إيقاعَ التصفّح.
+     • الصورة جزء من البطاقة بنسبة ثابتة (16:9) لا صورة حرّة تُغيّر ارتفاع كل بطاقة. *@
+
+<article class="cc">
+    <header class="cc-head">
+        <span class="cc-avatar" title="@AuthorName">@Initial(AuthorName)</span>
+
+        <div class="cc-who">
+            <span class="cc-author">@AuthorName</span>
+            <span class="cc-time" title="@CreatedAt.ToLocalTime().ToString("yyyy/MM/dd HH:mm")">@RelativeTime(CreatedAt)</span>
+        </div>
+
+        <span class="cc-type @(Type == EnContentType.Announcement ? "ann" : "post")">
+            @(Type == EnContentType.Announcement ? "إعلان" : "منشور")
+        </span>
+
+        @if (ScopeBadge is not null)
+        {
+            <span class="cc-scope">@ScopeBadge</span>
+        }
+    </header>
+
+    <h3 class="cc-title">@Title</h3>
+
+    @if (!string.IsNullOrWhiteSpace(Body))
+    {
+        <p class="cc-body @(_expanded ? "open" : "")">@Body</p>
+        @if (IsLongBody)
+        {
+            <button type="button" class="cc-more" @onclick="() => _expanded = !_expanded">
+                @(_expanded ? "عرض أقل" : "قراءة المزيد")
+            </button>
+        }
+    }
+
+    @if (HasImage)
+    {
+        <div class="cc-media">
+            <AuthImage ContentItemId="ContentItemId" Clickable="true" OnZoom="OnZoom" Alt="@Title" />
+        </div>
+    }
+
+    @if (Actions is not null)
+    {
+        <footer class="cc-foot">@Actions</footer>
+    }
+</article>
+
+@code {
+    [Parameter, EditorRequired] public int ContentItemId { get; set; }
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string Body { get; set; } = "";
+    [Parameter] public string AuthorName { get; set; } = "";
+    [Parameter] public DateTime CreatedAt { get; set; }
+    [Parameter] public EnContentType Type { get; set; }
+    [Parameter] public bool HasImage { get; set; }
+    [Parameter] public string? ScopeBadge { get; set; }
+    [Parameter] public RenderFragment? Actions { get; set; }
+    [Parameter] public EventCallback<int> OnZoom { get; set; }
+
+    private bool _expanded;
+
+    // العتبة تقريبية بالحروف لا بالأسطر — القصّ البصري يتولّاه CSS، وهذه تقرّر
+    // فقط إن كان زرّ التوسيع يستحق الظهور أصلًا.
+    private bool IsLongBody => Body.Length > 240 || Body.Count(c => c == '\n') >= 4;
+
+    private static string Initial(string name) =>
+        string.IsNullOrWhiteSpace(name) ? "؟" : name.TrimStart().Substring(0, 1);
+
+    // وقت نسبي بالعربية — أقرب لقراءة الإنسان من طابع زمني كامل في خلاصة.
+    private static string RelativeTime(DateTime utc)
+    {
+        var span = DateTime.UtcNow - utc;
+
+        if (span.TotalMinutes < 1) return "الآن";
+        if (span.TotalMinutes < 60) return $"قبل {(int)span.TotalMinutes} دقيقة";
+        if (span.TotalHours < 24) return $"قبل {(int)span.TotalHours} ساعة";
+        if (span.TotalDays < 7) return $"قبل {(int)span.TotalDays} يوم";
+        if (span.TotalDays < 30) return $"قبل {(int)(span.TotalDays / 7)} أسبوع";
+        if (span.TotalDays < 365) return $"قبل {(int)(span.TotalDays / 30)} شهر";
+
+        return utc.ToLocalTime().ToString("yyyy/MM/dd");
+    }
+}
