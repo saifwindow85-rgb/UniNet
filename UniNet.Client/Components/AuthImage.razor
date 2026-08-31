@@ -1,0 +1,90 @@
+@* صورة محتوى حقيقية — لا رابط ولا أيقونة بديلة.
+
+   المشكلة: نقطة api/content/{id}/image محميّة بـ Bearer، والمتصفح لا يُرفق ترويسة
+   Authorization مع <img src>، فأي ربط مباشر ينتهي بـ 401 وصورة مكسورة.
+
+   الحل هنا: نجلب البايتات عبر HttpClient المُصادَق، ثم نحوّلها إلى Object URL محلّي
+   يصلح لـ src. ويُطلَق العنوان عند التفكيك حتى لا تتراكم الـ Blobs مع كل تصفّح. *@
+
+@implements IAsyncDisposable
+@inject ContentApiService ContentApi
+@inject IJSRuntime JS
+
+<div class="aimg @(Rounded ? "rounded" : "") @(Clickable && _url is not null ? "clickable" : "")"
+     style="@(Height is null ? "" : $"height:{Height}")"
+     @onclick="OnClickAsync">
+
+    @if (_loading)
+    {
+        @* هيكل عظمي بدل قفزة تخطيط: الارتفاع محجوز مسبقًا فلا تهتزّ البطاقة عند الوصول *@
+        <div class="aimg-skeleton"></div>
+    }
+    else if (_url is not null)
+    {
+        <img src="@_url" alt="@Alt" loading="lazy" />
+        @if (Clickable)
+        {
+            <span class="aimg-zoom">
+                <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m21 21-4.3-4.3M11 8v6M8 11h6" /></svg>
+            </span>
+        }
+    }
+    else
+    {
+        <div class="aimg-fail" title="@_error">
+            <svg viewBox="0 0 24 24"><path d="M3 5h18v14H3zM3 16l5-5 4 4 3-3 6 6" /><circle cx="8.5" cy="9" r="1.5" /></svg>
+            <span>@(_error ?? "تعذّر عرض الصورة")</span>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public int ContentItemId { get; set; }
+    [Parameter] public string Alt { get; set; } = "صورة المحتوى";
+    [Parameter] public string? Height { get; set; }
+    [Parameter] public bool Rounded { get; set; } = true;
+    [Parameter] public bool Clickable { get; set; }
+    [Parameter] public EventCallback<int> OnZoom { get; set; }
+
+    private string? _url;
+    private string? _error;
+    private bool _loading = true;
+    private int _loadedFor;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // إعادة الاستخدام بين عناصر مختلفة (Virtualize/تغيير صفحة) تُعيد ضبط المكوّن
+        // بدل الاحتفاظ بصورة العنصر السابق.
+        if (_loadedFor == ContentItemId) return;
+
+        await ReleaseAsync();
+        _loadedFor = ContentItemId;
+        _loading = true;
+        _error = null;
+
+        var res = await ContentApi.GetImageAsync(ContentItemId);
+        if (res.Success && res.Data is not null && res.Data.Bytes.Length > 0)
+        {
+            _url = await JS.InvokeAsync<string>("uninet.createObjectUrl", res.Data.Bytes, res.Data.ContentType);
+        }
+        else
+        {
+            _error = res.Status == 404 ? "الصورة غير متاحة" : res.Error;
+        }
+
+        _loading = false;
+    }
+
+    private Task OnClickAsync() =>
+        Clickable && _url is not null ? OnZoom.InvokeAsync(ContentItemId) : Task.CompletedTask;
+
+    private async Task ReleaseAsync()
+    {
+        if (_url is null) return;
+        try { await JS.InvokeVoidAsync("uninet.revokeObjectUrl", _url); }
+        catch (JSDisconnectedException) { /* الصفحة تُغلق — لا شيء يُطلَق */ }
+        _url = null;
+    }
+
+    public async ValueTask DisposeAsync() => await ReleaseAsync();
+}

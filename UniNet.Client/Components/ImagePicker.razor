@@ -1,0 +1,171 @@
+@* اختيار صورة المحتوى: منطقة إفلات + معاينة فورية + الحالات الثلاث للتعديل.
+
+   المعاينة تُقرأ من الملف محلّيًا (بلا رفع) عبر Object URL — فيرى المستخدم صورته
+   قبل الإرسال لا بعده.
+
+   وفي وضع التعديل تُعرض الحالات الثلاث صراحةً: إبقاء الصورة الحالية، أو استبدالها،
+   أو إزالتها — لأن غياب الملف وحده غامض بين "أبقِها" و"احذفها" في الـ API نفسه. *@
+
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+<div class="ipk">
+    @if (_preview is not null)
+    {
+        @* صورة جديدة مُختارة — معاينة محلّية قبل الرفع *@
+        <div class="ipk-shell">
+            <img src="@_preview" alt="معاينة" />
+            <div class="ipk-badge new">صورة جديدة</div>
+            <button type="button" class="ipk-drop-x" @onclick="ClearSelectionAsync" disabled="@Disabled" aria-label="إلغاء الاختيار">
+                <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" /></svg>
+            </button>
+        </div>
+        <div class="ipk-meta">
+            <span class="ipk-name">@_fileName</span>
+            <span class="ipk-size mono">@FormatSize(_fileSize)</span>
+        </div>
+    }
+    else if (HasExistingImage && !RemoveImage)
+    {
+        @* صورة محفوظة — تُعرض حقيقيةً لا كاسم ملف *@
+        <div class="ipk-shell">
+            <AuthImage ContentItemId="ContentItemId" Height="180px" Rounded="false" />
+            <div class="ipk-badge">الصورة الحالية</div>
+        </div>
+        <div class="ipk-actions">
+            <label class="btn btn-ghost btn-sm ipk-replace">
+                <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4M21 3v6h-6" /></svg>
+                استبدال
+                <InputFile OnChange="OnFileAsync" accept="@Accept" disabled="@Disabled" />
+            </label>
+            <button type="button" class="btn btn-danger btn-sm" @onclick="MarkRemoveAsync" disabled="@Disabled">
+                <svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" /></svg>
+                إزالة الصورة
+            </button>
+        </div>
+    }
+    else if (HasExistingImage && RemoveImage)
+    {
+        @* حالة معلَّقة: القرار اتُّخذ ولم يُحفظ بعد — قابل للتراجع *@
+        <div class="ipk-removed">
+            <svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" /></svg>
+            <div>
+                <strong>ستُحذف الصورة عند الحفظ.</strong>
+                <span>لن يُحذف الملف من الخادم إلا بعد نجاح الحفظ.</span>
+            </div>
+            <button type="button" class="btn btn-ghost btn-sm" @onclick="UndoRemoveAsync" disabled="@Disabled">تراجع</button>
+        </div>
+    }
+    else
+    {
+        @* لا صورة: منطقة إفلات كاملة *@
+        <label class="ipk-drop @(Disabled ? "off" : "")">
+            <InputFile OnChange="OnFileAsync" accept="@Accept" disabled="@Disabled" />
+            <svg class="ipk-drop-ic" viewBox="0 0 24 24">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M12 3v13M7 8l5-5 5 5" />
+            </svg>
+            <span class="ipk-drop-main">اسحب صورة إلى هنا أو اضغط للاختيار</span>
+            <span class="ipk-drop-sub">JPG · PNG · WEBP — حتى @FormatSize(MaxBytes)</span>
+        </label>
+    }
+
+    @if (_error is not null)
+    {
+        <div class="ipk-err">
+            <svg viewBox="0 0 24 24"><path d="M12 8v5M12 16h.01" /><circle cx="12" cy="12" r="9" /></svg>
+            <span>@_error</span>
+        </div>
+    }
+</div>
+
+@code {
+    // القائمة البيضاء نفسها المضبوطة في ImageStorageOptions على الخادم.
+    private const string Accept = "image/jpeg,image/png,image/webp";
+    private static readonly string[] AllowedTypes = { "image/jpeg", "image/png", "image/webp" };
+
+    [Parameter] public IBrowserFile? File { get; set; }
+    [Parameter] public EventCallback<IBrowserFile?> FileChanged { get; set; }
+
+    [Parameter] public bool RemoveImage { get; set; }
+    [Parameter] public EventCallback<bool> RemoveImageChanged { get; set; }
+
+    /// <summary>وضع التعديل: يُعرض ما هو محفوظ فعلًا مع خياري الاستبدال والإزالة.</summary>
+    [Parameter] public bool HasExistingImage { get; set; }
+    [Parameter] public int ContentItemId { get; set; }
+
+    [Parameter] public long MaxBytes { get; set; } = ContentApiService.MaxImageBytes;
+    [Parameter] public bool Disabled { get; set; }
+
+    private string? _preview, _error, _fileName;
+    private long _fileSize;
+
+    private async Task OnFileAsync(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        _error = null;
+
+        // الحجم والنوع يُفحصان هنا قبل أي رحلة شبكة — الخادم يفحصهما ثانيةً
+        // (ومعهما توقيع البايتات)، لكن ردّ الفعل الفوري أفضل من انتظار 400.
+        if (file.Size > MaxBytes)
+        {
+            _error = $"حجم الصورة {FormatSize(file.Size)} — الحد الأقصى {FormatSize(MaxBytes)}.";
+            return;
+        }
+
+        if (!AllowedTypes.Contains(file.ContentType, StringComparer.OrdinalIgnoreCase))
+        {
+            _error = "نوع غير مدعوم. المسموح: JPG أو PNG أو WEBP.";
+            return;
+        }
+
+        await ReleasePreviewAsync();
+
+        var bytes = new byte[file.Size];
+        await using (var stream = file.OpenReadStream(MaxBytes))
+            await stream.ReadExactlyAsync(bytes);
+
+        _preview = await JS.InvokeAsync<string>("uninet.createObjectUrl", bytes, file.ContentType);
+        _fileName = file.Name;
+        _fileSize = file.Size;
+
+        // اختيار صورة جديدة يُلغي نية الإزالة — القراران متناقضان.
+        if (RemoveImage) await SetRemoveAsync(false);
+        await FileChanged.InvokeAsync(file);
+    }
+
+    private async Task ClearSelectionAsync()
+    {
+        await ReleasePreviewAsync();
+        _fileName = null;
+        _fileSize = 0;
+        _error = null;
+        await FileChanged.InvokeAsync(null);
+    }
+
+    private async Task MarkRemoveAsync()
+    {
+        await ClearSelectionAsync();
+        await SetRemoveAsync(true);
+    }
+
+    private Task UndoRemoveAsync() => SetRemoveAsync(false);
+
+    private async Task SetRemoveAsync(bool value)
+    {
+        RemoveImage = value;
+        await RemoveImageChanged.InvokeAsync(value);
+    }
+
+    private async Task ReleasePreviewAsync()
+    {
+        if (_preview is null) return;
+        try { await JS.InvokeVoidAsync("uninet.revokeObjectUrl", _preview); }
+        catch (JSDisconnectedException) { }
+        _preview = null;
+    }
+
+    private static string FormatSize(long bytes) =>
+        bytes >= 1024 * 1024 ? $"{bytes / 1024d / 1024d:0.#} م.ب" : $"{bytes / 1024d:0} ك.ب";
+
+    public async ValueTask DisposeAsync() => await ReleasePreviewAsync();
+}

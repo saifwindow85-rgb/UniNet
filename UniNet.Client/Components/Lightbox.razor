@@ -1,0 +1,55 @@
+@* عارض الصورة المكبَّرة — ينبني فوق AuthImage نفسه فيرث جلبها بالرمز. *@
+
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
+@if (ContentItemId is int id)
+{
+    <div class="lbx" @onclick="CloseAsync">
+        <button type="button" class="lbx-x" @onclick="CloseAsync" aria-label="إغلاق">
+            <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" /></svg>
+        </button>
+
+        <figure class="lbx-figure" @onclick:stopPropagation="true">
+            <AuthImage ContentItemId="id" Rounded="false" Alt="@(Caption ?? "صورة المحتوى")" />
+            @if (!string.IsNullOrWhiteSpace(Caption))
+            {
+                <figcaption>@Caption</figcaption>
+            }
+        </figure>
+    </div>
+}
+
+@code {
+    [Parameter] public int? ContentItemId { get; set; }
+    [Parameter] public string? Caption { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private bool _locked;
+
+    // قفل تمرير الصفحة خلف العارض — بدونه تتحرّك الخلاصة تحت الصورة عند التمرير.
+    protected override async Task OnParametersSetAsync()
+    {
+        var shouldLock = ContentItemId is not null;
+        if (shouldLock == _locked) return;
+
+        _locked = shouldLock;
+        await SafeLockAsync(_locked);
+    }
+
+    private async Task CloseAsync()
+    {
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task SafeLockAsync(bool locked)
+    {
+        try { await JS.InvokeVoidAsync("uninet.lockScroll", locked); }
+        catch (JSDisconnectedException) { /* الصفحة تُغلق */ }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_locked) await SafeLockAsync(false);
+    }
+}

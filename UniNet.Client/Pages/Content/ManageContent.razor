@@ -1,0 +1,434 @@
+@page "/content/manage"
+@attribute [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin,BatchAdmin")]
+@using System.ComponentModel.DataAnnotations
+@inject ContentApiService ContentApi
+@inject ScopeLookups Lookups
+@inject NavigationManager Nav
+
+<PageTitle>إدارة المحتوى · UniNet</PageTitle>
+
+<PageHeader Title="إدارة المحتوى" Subtitle="ما تستطيع تعديله وحذفه ضمن نطاقك الإداري.">
+    <Actions>
+        <button class="btn btn-ghost" @onclick='() => Nav.NavigateTo("/content")'>
+            <svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM4 9h16M9 9v10" /></svg>
+            المستجدّات
+        </button>
+        <button class="btn btn-primary" @onclick="() => OpenAdd(EnContentType.Post)">
+            <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></svg>
+            محتوى جديد
+        </button>
+    </Actions>
+</PageHeader>
+
+<Alert Message="@_notice" Kind="@_noticeKind" OnClose="() => _notice = null" />
+
+<div class="toolbar">
+    <SearchBox Placeholder="ابحث في العناوين…" OnSearch="OnSearch" />
+
+    <div class="seg">
+        <button class="seg-b @(_type is null ? "on" : "")" @onclick="() => FilterType(null)">الكل</button>
+        <button class="seg-b @(_type == EnContentType.Post ? "on" : "")" @onclick="() => FilterType(EnContentType.Post)">منشورات</button>
+        <button class="seg-b @(_type == EnContentType.Announcement ? "on" : "")" @onclick="() => FilterType(EnContentType.Announcement)">إعلانات</button>
+    </div>
+
+    @* "محتواي وحده" مرشّح خادمي (MineOnly) لا تصفية محلّية — يعمل عبر الصفحات كلها *@
+    <label class="mine">
+        <input type="checkbox" checked="@_mineOnly" @onchange="ToggleMine" />
+        <span>محتواي فقط</span>
+    </label>
+</div>
+
+@if (_loading)
+{
+    <div class="loading"><span class="spin"></span></div>
+}
+else if (_items is { Count: > 0 })
+{
+    <div class="feed">
+        @foreach (var item in _items)
+        {
+            <ContentCard ContentItemId="item.ContentItemId"
+                         Title="@item.Title"
+                         Body="@item.Body"
+                         AuthorName="@item.AuthorName"
+                         CreatedAt="item.CreatedAt"
+                         Type="item.Type"
+                         HasImage="item.HasImage"
+                         ScopeBadge="@ScopeLookups.ScopeLabel(item.Scope)"
+                         OnZoom="OpenZoom">
+                <Actions>
+                    <button class="btn btn-ghost btn-sm" @onclick="() => OpenEditAsync(item)">تعديل</button>
+                    <button class="btn btn-danger btn-sm" @onclick="() => _deleteTarget = item">حذف</button>
+                    @if (item.UpdatedAt is not null)
+                    {
+                        <span class="edited">عُدّل</span>
+                    }
+                </Actions>
+            </ContentCard>
+        }
+    </div>
+
+    <Pager Current="_page" TotalPages="_totalPages" Total="_total" CurrentChanged="ChangePage" />
+}
+else
+{
+    <div class="surface empty">
+        <svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM4 9h16M9 9v10" /></svg>
+        <p>لا يوجد محتوى ضمن نطاقك الإداري بعد.</p>
+    </div>
+}
+
+@* ---------------------------------------------------------------- نموذج الإضافة/التعديل *@
+<Modal Visible="_formOpen" MaxWidth="640px"
+       Title="@(_editing is null ? "محتوى جديد" : "تعديل المحتوى")"
+       Subtitle="@FormSubtitle"
+       OnClose="CloseForm">
+    <ChildContent>
+        <Alert Message="@_formError" Kind="err" OnClose="() => _formError = null" />
+
+        <EditForm Model="_form" OnValidSubmit="SaveAsync" id="contentForm">
+            <DataAnnotationsValidator />
+            <div class="form-grid">
+
+                @if (_editing is null)
+                {
+                    <div class="form-row">
+                        <label class="lbl">النوع <span class="req">*</span></label>
+                        <div class="seg wide">
+                            <button type="button" class="seg-b @(_newType == EnContentType.Post ? "on" : "")"
+                                    @onclick="() => _newType = EnContentType.Post" disabled="@_saving">منشور</button>
+                            <button type="button" class="seg-b @(_newType == EnContentType.Announcement ? "on" : "")"
+                                    @onclick="() => _newType = EnContentType.Announcement" disabled="@_saving">إعلان</button>
+                        </div>
+                    </div>
+
+                    <ScopeTargetPicker @bind-Scope="_form.Scope" @bind-TargetId="_form.TargetId" Disabled="@_saving" />
+                }
+                else
+                {
+                    @* النطاق ثابت بعد الإنشاء — الخادم لا يقبله في التحديث أصلًا *@
+                    <div class="form-row">
+                        <label class="lbl">الجمهور</label>
+                        <input class="inp" value="@_editingAudience" disabled />
+                        <span class="hint-inline">لا يمكن تغيير جمهور المحتوى بعد نشره — أنشئ محتوى جديدًا بدل ذلك.</span>
+                    </div>
+                }
+
+                <div class="form-row">
+                    <label class="lbl">العنوان <span class="req">*</span></label>
+                    <InputText class="inp" @bind-Value="_form.Title" placeholder="عنوان واضح ومختصر" disabled="@_saving" />
+                    <ValidationMessage For="() => _form.Title" />
+                </div>
+
+                <div class="form-row">
+                    <label class="lbl">
+                        النص <span class="req">*</span>
+                        <span class="counter @(_form.Body.Length > 1800 ? "warn" : "")">@_form.Body.Length</span>
+                    </label>
+                    <InputTextArea class="inp txt" @bind-Value="_form.Body" rows="6"
+                                   placeholder="اكتب المحتوى هنا…" disabled="@_saving" />
+                    <ValidationMessage For="() => _form.Body" />
+                </div>
+
+                <div class="form-row">
+                    <label class="lbl">الصورة <span class="opt">(اختيارية)</span></label>
+                    <ImagePicker @bind-File="_image"
+                                 @bind-RemoveImage="_form.RemoveImage"
+                                 HasExistingImage="@(_editing?.HasImage ?? false)"
+                                 ContentItemId="@(_editing?.ContentItemId ?? 0)"
+                                 Disabled="@_saving" />
+                </div>
+            </div>
+        </EditForm>
+    </ChildContent>
+
+    <Footer>
+        <button class="btn btn-ghost" @onclick="CloseForm" disabled="@_saving">إلغاء</button>
+        <button class="btn btn-primary" type="submit" form="contentForm" disabled="@_saving">
+            @if (_saving) { <span class="spin-btn"></span> }
+            @(_editing is null ? "نشر" : "حفظ")
+        </button>
+    </Footer>
+</Modal>
+
+<ConfirmDialog Visible="_deleteTarget is not null"
+               Subtitle="@(_deleteTarget is null ? null : $"#{_deleteTarget.ContentItemId}")"
+               Message="@($"سيُحذف «{_deleteTarget?.Title}» نهائيًا، ومعه صورته إن وُجدت.")"
+               Busy="_deleting" OnConfirm="DeleteAsync" OnCancel="() => _deleteTarget = null" />
+
+<Lightbox ContentItemId="_zoomId" Caption="@_zoomCaption" OnClose="() => _zoomId = null" />
+
+@code {
+    private List<ContentItemDTO>? _items;
+    private bool _loading = true;
+    private int _page = 1, _totalPages = 1, _total;
+    private const int PageSize = 10;
+    private string _search = "";
+    private EnContentType? _type;
+    private bool _mineOnly;
+
+    private bool _formOpen, _saving;
+    private ContentItemDTO? _editing;
+    private EnContentType _newType = EnContentType.Post;
+    private readonly ContentForm _form = new();
+    private IBrowserFile? _image;
+    private string _editingAudience = "—";
+    private string? _formError;
+
+    private ContentItemDTO? _deleteTarget;
+    private bool _deleting;
+
+    private int? _zoomId;
+    private string? _zoomCaption;
+
+    private string? _notice;
+    private string _noticeKind = "ok";
+
+    private string FormSubtitle => _editing is null
+        ? "اختر الجمهور ثم اكتب المحتوى."
+        : $"#{_editing.ContentItemId} · {(_editing.Type == EnContentType.Announcement ? "إعلان" : "منشور")}";
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        var res = await ContentApi.GetManagedAsync(_page, PageSize, _search, _type, mineOnly: _mineOnly);
+
+        if (res.Success && res.Data is not null)
+        {
+            _items = res.Data.Data ?? new();
+            _totalPages = Math.Max(1, res.Data.TotalPages);
+            _total = res.Data.TotalRecords;
+        }
+        else
+        {
+            _items = new();
+            Notify(res.Error ?? "تعذّر جلب المحتوى.", "err");
+        }
+
+        _loading = false;
+    }
+
+    private async Task OnSearch(string term) { _search = term; _page = 1; await LoadAsync(); }
+    private async Task FilterType(EnContentType? type) { _type = type; _page = 1; await LoadAsync(); }
+    private async Task ChangePage(int page) { _page = page; await LoadAsync(); }
+
+    private async Task ToggleMine(ChangeEventArgs e)
+    {
+        _mineOnly = e.Value is true;
+        _page = 1;
+        await LoadAsync();
+    }
+
+    private void OpenZoom(int id)
+    {
+        _zoomId = id;
+        _zoomCaption = _items?.FirstOrDefault(i => i.ContentItemId == id)?.Title;
+    }
+
+    // ---------------------------------------------------------------- النموذج
+
+    private void OpenAdd(EnContentType type)
+    {
+        _editing = null;
+        _newType = type;
+        _form.Reset();
+        _image = null;
+        _formError = null;
+        _formOpen = true;
+    }
+
+    private async Task OpenEditAsync(ContentItemDTO item)
+    {
+        _editing = item;
+        _form.Title = item.Title;
+        _form.Body = item.Body;
+        _form.RemoveImage = false;
+        _image = null;
+        _formError = null;
+        _formOpen = true;
+
+        // أسماء كيانات النطاق ليست في DTO القائمة — تُجلب من التفاصيل لعرض جمهور مفهوم
+        // ("قسم تقنية المعلومات") بدل مستوى مجرَّد ("قسم").
+        _editingAudience = ScopeLookups.ScopeLabel(item.Scope);
+        var detail = await ContentApi.GetByIdAsync(item.ContentItemId);
+        if (detail.Success && detail.Data is not null)
+        {
+            var d = detail.Data;
+            var name = d.Scope switch
+            {
+                EnContentScope.University => d.UniversityName,
+                EnContentScope.College => d.CollegeName,
+                EnContentScope.Department => d.DepartmentName,
+                EnContentScope.Batch => d.BatchName,
+                _ => null,
+            };
+            _editingAudience = name is null
+                ? ScopeLookups.ScopeLabel(d.Scope)
+                : $"{ScopeLookups.ScopeLabel(d.Scope)} — {name}";
+        }
+    }
+
+    private void CloseForm()
+    {
+        _formOpen = false;
+        _saving = false;
+        _formError = null;
+        _image = null;
+    }
+
+    private async Task SaveAsync()
+    {
+        // حارس محلّي يوفّر رحلة شبكة تنتهي بـ 400: الخادم يفرض القاعدة نفسها.
+        if (_editing is null && _form.Scope != EnContentScope.Public && _form.TargetId is null)
+        {
+            _formError = "اختر الجهة المستهدفة.";
+            return;
+        }
+
+        _saving = true;
+
+        ApiResult<DetaieldContentItemDTO> res;
+        if (_editing is null)
+        {
+            res = await ContentApi.AddAsync(_newType, new AddContentDTO
+            {
+                Title = _form.Title.Trim(),
+                Body = _form.Body.Trim(),
+                Scope = _form.Scope,
+                TargetId = _form.TargetId,
+            }, _image);
+        }
+        else
+        {
+            res = await ContentApi.UpdateAsync(_editing.ContentItemId, new UpdateContentDTO
+            {
+                Title = _form.Title.Trim(),
+                Body = _form.Body.Trim(),
+                RemoveImage = _form.RemoveImage,
+            }, _image);
+        }
+
+        _saving = false;
+
+        if (res.Success)
+        {
+            var wasNew = _editing is null;
+            CloseForm();
+            Notify(wasNew ? "تم نشر المحتوى." : "تم حفظ التعديلات.", "ok");
+            await LoadAsync();
+        }
+        else
+        {
+            _formError = res.Error ?? "تعذّر الحفظ.";
+        }
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (_deleteTarget is null) return;
+
+        _deleting = true;
+        var res = await ContentApi.DeleteAsync(_deleteTarget.ContentItemId);
+        _deleting = false;
+        _deleteTarget = null;
+
+        if (res.Success) { Notify("تم حذف المحتوى.", "ok"); await LoadAsync(); }
+        else Notify(res.Error ?? "تعذّر الحذف.", "err");
+    }
+
+    private void Notify(string message, string kind) { _notice = message; _noticeKind = kind; }
+
+    private sealed class ContentForm
+    {
+        [Required(ErrorMessage = "العنوان مطلوب.")]
+        [StringLength(500, MinimumLength = 3, ErrorMessage = "العنوان بين 3 و500 حرف.")]
+        public string Title { get; set; } = "";
+
+        [Required(ErrorMessage = "النص مطلوب.")]
+        [MinLength(3, ErrorMessage = "النص قصير جدًّا.")]
+        public string Body { get; set; } = "";
+
+        public EnContentScope Scope { get; set; }
+        public int? TargetId { get; set; }
+        public bool RemoveImage { get; set; }
+
+        public void Reset()
+        {
+            Title = "";
+            Body = "";
+            Scope = default;
+            TargetId = null;
+            RemoveImage = false;
+        }
+    }
+}
+
+<style>
+    .feed {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 1rem;
+        max-width: 1180px;
+        align-items: start;
+    }
+
+    .seg {
+        display: inline-flex;
+        background: var(--field, #f6f9fc);
+        border: 1px solid var(--line, #e7edf3);
+        border-radius: 10px;
+        padding: 3px;
+        gap: 2px;
+    }
+
+    .seg.wide { width: 100%; }
+    .seg.wide .seg-b { flex: 1; }
+
+    .seg-b {
+        border: 0; background: none; padding: .42rem .8rem; border-radius: 8px;
+        font: inherit; font-size: .8rem; color: var(--ink-soft, #40556b);
+        cursor: pointer; transition: background .15s ease, color .15s ease;
+    }
+
+    .seg-b:hover:not(.on):not(:disabled) { background: #fff; }
+    .seg-b:disabled { opacity: .5; cursor: not-allowed; }
+
+    .seg-b.on {
+        background: var(--teal, #17c3b2);
+        color: #052a2a;
+        font-weight: 600;
+    }
+
+    .mine {
+        display: inline-flex; align-items: center; gap: .4rem;
+        font-size: .82rem; color: var(--ink-soft, #40556b); cursor: pointer;
+        padding: .45rem .7rem; border: 1px solid var(--line, #e7edf3);
+        border-radius: 10px; background: var(--field, #f6f9fc);
+    }
+
+    .mine input { accent-color: var(--teal, #17c3b2); cursor: pointer; }
+
+    .edited {
+        margin-inline-start: auto; align-self: center;
+        font-size: .7rem; color: var(--muted, #7c8da0);
+    }
+
+    .txt { height: auto; min-height: 130px; padding: .7rem .85rem; resize: vertical; line-height: 1.75; }
+    .hint-inline { font-size: .78rem; color: var(--muted, #7c8da0); }
+    .opt { font-size: .74rem; color: var(--muted, #7c8da0); font-weight: 400; }
+
+    .counter {
+        margin-inline-start: auto; font-size: .72rem; color: var(--muted, #7c8da0);
+        font-family: "Inter", sans-serif;
+    }
+    .counter.warn { color: #9a5b00; }
+    .lbl { display: flex; align-items: center; gap: .35rem; }
+
+    .spin-btn {
+        width: 14px; height: 14px; border: 2px solid rgba(5,42,42,.3);
+        border-top-color: #052a2a; border-radius: 50%;
+        animation: spin .7s linear infinite; display: inline-block;
+    }
+</style>

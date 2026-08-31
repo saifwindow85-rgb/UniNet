@@ -1,0 +1,79 @@
+.lbx {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    background: rgba(9, 18, 30, .82);
+    backdrop-filter: blur(10px);
+    display: grid;
+    place-items: center;
+    padding: clamp(1rem, 4vw, 3rem);
+    animation: lbx-in .16s ease-out;
+}
+
+@keyframes lbx-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.lbx-figure {
+    margin: 0;
+    max-width: min(1100px, 100%);
+    max-height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: .7rem;
+    animation: lbx-rise .2s cubic-bezier(.2, .9, .3, 1);
+}
+
+@keyframes lbx-rise {
+    from { transform: scale(.97); opacity: 0; }
+    to   { transform: scale(1); opacity: 1; }
+}
+
+/* الصورة تُعرض كاملة لا مقصوصة — عكس بطاقة الخلاصة */
+.lbx-figure ::deep .aimg {
+    border-radius: 14px;
+    background: transparent;
+    max-height: 78vh;
+}
+
+.lbx-figure ::deep .aimg img {
+    object-fit: contain;
+    max-height: 78vh;
+}
+
+.lbx-figure figcaption {
+    color: #e8eef6;
+    font-size: .88rem;
+    text-align: center;
+    line-height: 1.6;
+}
+
+.lbx-x {
+    position: absolute;
+    inset-block-start: clamp(.8rem, 2vw, 1.4rem);
+    inset-inline-end: clamp(.8rem, 2vw, 1.4rem);
+    width: 42px;
+    height: 42px;
+    border: 0;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .12);
+    color: #fff;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: background .16s ease;
+}
+
+.lbx-x:hover {
+    background: rgba(255, 255, 255, .22);
+}
+
+.lbx-x svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+}

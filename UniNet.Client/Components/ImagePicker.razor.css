@@ -1,0 +1,220 @@
+.ipk {
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+}
+
+/* منطقة الإفلات: مساحة كبيرة واضحة الهدف بدل زرّ ملف صغير مبهم */
+.ipk-drop {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .4rem;
+    min-height: 150px;
+    padding: 1.2rem;
+    border: 1.5px dashed var(--line, #e7edf3);
+    border-radius: 12px;
+    background: var(--field, #f6f9fc);
+    cursor: pointer;
+    text-align: center;
+    transition: border-color .16s ease, background .16s ease;
+}
+
+.ipk-drop:hover {
+    border-color: var(--teal, #17c3b2);
+    background: #f2fbfa;
+}
+
+.ipk-drop.off {
+    opacity: .55;
+    cursor: not-allowed;
+}
+
+/* الـ input يغطّي المنطقة كلها فيعمل السحب والإفلات وليس النقر فقط */
+.ipk-drop ::deep input[type=file] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.ipk-drop-ic {
+    width: 30px;
+    height: 30px;
+    fill: none;
+    stroke: var(--teal, #17c3b2);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.ipk-drop-main {
+    font-size: .86rem;
+    color: var(--ink-soft, #40556b);
+    font-weight: 500;
+}
+
+.ipk-drop-sub {
+    font-size: .74rem;
+    color: var(--muted, #7c8da0);
+}
+
+/* غلاف المعاينة */
+.ipk-shell {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--line, #e7edf3);
+    background: var(--line-soft, #eef2f7);
+    height: 180px;
+}
+
+.ipk-shell img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.ipk-badge {
+    position: absolute;
+    inset-block-start: 8px;
+    inset-inline-start: 8px;
+    padding: .22rem .55rem;
+    border-radius: 7px;
+    font-size: .7rem;
+    font-weight: 600;
+    background: rgba(15, 30, 48, .6);
+    color: #fff;
+    backdrop-filter: blur(4px);
+}
+
+.ipk-badge.new {
+    background: var(--teal, #17c3b2);
+    color: #052a2a;
+}
+
+.ipk-drop-x {
+    position: absolute;
+    inset-block-start: 8px;
+    inset-inline-end: 8px;
+    width: 30px;
+    height: 30px;
+    border: 0;
+    border-radius: 8px;
+    background: rgba(15, 30, 48, .6);
+    color: #fff;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    backdrop-filter: blur(4px);
+}
+
+.ipk-drop-x svg {
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+}
+
+.ipk-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: .6rem;
+    font-size: .76rem;
+    color: var(--muted, #7c8da0);
+}
+
+.ipk-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ipk-actions {
+    display: flex;
+    gap: .45rem;
+    flex-wrap: wrap;
+}
+
+/* زرّ الاستبدال هو label يحوي input مخفيًّا — يبدو زرًّا ويعمل كمُنتقي ملف */
+.ipk-replace {
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.ipk-replace ::deep input[type=file] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.ipk-actions svg,
+.ipk-removed > svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.ipk-removed {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding: .75rem .85rem;
+    border-radius: 11px;
+    background: var(--danger-bg, #fdf1f3);
+    border: 1px solid #f3d6db;
+    color: var(--danger, #c8394a);
+}
+
+.ipk-removed > svg {
+    width: 20px;
+    height: 20px;
+    flex: none;
+}
+
+.ipk-removed div {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    gap: .1rem;
+}
+
+.ipk-removed strong {
+    font-size: .82rem;
+}
+
+.ipk-removed span {
+    font-size: .74rem;
+    opacity: .8;
+}
+
+.ipk-err {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    font-size: .78rem;
+    color: var(--danger, #c8394a);
+}
+
+.ipk-err svg {
+    width: 15px;
+    height: 15px;
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+}
