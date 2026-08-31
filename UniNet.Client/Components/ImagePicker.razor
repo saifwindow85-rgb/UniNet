@@ -1,4 +1,4 @@
-@* اختيار صورة المحتوى: منطقة إفلات + معاينة فورية + الحالات الثلاث للتعديل.
+﻿@* اختيار صورة المحتوى: منطقة إفلات + معاينة فورية + الحالات الثلاث للتعديل.
 
    المعاينة تُقرأ من الملف محلّيًا (بلا رفع) عبر Object URL — فيرى المستخدم صورته
    قبل الإرسال لا بعده.
@@ -83,8 +83,8 @@
     private const string Accept = "image/jpeg,image/png,image/webp";
     private static readonly string[] AllowedTypes = { "image/jpeg", "image/png", "image/webp" };
 
-    [Parameter] public IBrowserFile? File { get; set; }
-    [Parameter] public EventCallback<IBrowserFile?> FileChanged { get; set; }
+    [Parameter] public SelectedImage? File { get; set; }
+    [Parameter] public EventCallback<SelectedImage?> FileChanged { get; set; }
 
     [Parameter] public bool RemoveImage { get; set; }
     [Parameter] public EventCallback<bool> RemoveImageChanged { get; set; }
@@ -120,6 +120,10 @@
 
         await ReleasePreviewAsync();
 
+        // القراءة تحدث الآن وليس عند الحفظ، وهذا شرط لا تحسين:
+        // مرجع IBrowserFile مفتاحٌ في جدول معلَّق على عنصر InputFile في الـ DOM،
+        // والواجهة تستبدل منطقة الإفلات بالمعاينة فور الاختيار فيُزال العنصر.
+        // تأجيل القراءة إلى وقت الرفع كان يسقط بـ _blazorFilesById is null.
         var bytes = new byte[file.Size];
         await using (var stream = file.OpenReadStream(MaxBytes))
             await stream.ReadExactlyAsync(bytes);
@@ -130,7 +134,7 @@
 
         // اختيار صورة جديدة يُلغي نية الإزالة — القراران متناقضان.
         if (RemoveImage) await SetRemoveAsync(false);
-        await FileChanged.InvokeAsync(file);
+        await FileChanged.InvokeAsync(new SelectedImage(bytes, file.Name, file.ContentType));
     }
 
     private async Task ClearSelectionAsync()

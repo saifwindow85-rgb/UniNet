@@ -1,4 +1,4 @@
-@page "/content/manage"
+﻿@page "/content/manage"
 @attribute [Authorize(Roles = "Super Admin,UniversityAdmin,CollegeAdmin,DepartmentAdmin,BatchAdmin")]
 @using System.ComponentModel.DataAnnotations
 @inject ContentApiService ContentApi
@@ -171,7 +171,7 @@ else
     private ContentItemDTO? _editing;
     private EnContentType _newType = EnContentType.Post;
     private readonly ContentForm _form = new();
-    private IBrowserFile? _image;
+    private SelectedImage? _image;
     private string _editingAudience = "—";
     private string? _formError;
 

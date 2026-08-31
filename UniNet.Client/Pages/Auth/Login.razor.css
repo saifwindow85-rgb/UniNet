@@ -1,4 +1,4 @@
-/* ===== Login — بنية لوحتين + هوية بصرية حديثة ===== */
+﻿/* ===== Login — بنية لوحتين + هوية بصرية حديثة ===== */
 .auth {
     --brand-900: #0b2138;
     --brand-800: #0f2a43;
@@ -342,7 +342,9 @@
 .demo .demo-role { font-size: .74rem; color: var(--muted); }
 .demo.k-sys { border-inline-start-color: #2aa6d6; }
 .demo.k-emp { border-inline-start-color: var(--accent-strong); }
-.demo.k-stu { border-inline-start-color: #e08a1e; }
+.demo.k-col { border-inline-start-color: #7a5cd6; }
+.demo.k-dep { border-inline-start-color: #e08a1e; }
+.demo.k-lec { border-inline-start-color: #94a3b4; }
 
 @media (max-width: 460px) { .demos-grid { grid-template-columns: 1fr; } }
 
