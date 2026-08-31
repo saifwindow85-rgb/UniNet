@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccessLayer.Migrations
 {
     [DbContext(typeof(AppDbcontext))]
-    [Migration("20260821070837_add SeedBatchAdminRole")]
-    partial class addSeedBatchAdminRole
+    [Migration("20260830153217_InitialCleanSchema")]
+    partial class InitialCleanSchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -304,9 +304,15 @@ namespace DataAccessLayer.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ContentItemId"));
 
+                    b.Property<int?>("BatchId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Body")
                         .IsRequired()
                         .HasColumnType("NVARCHAR(MAX)");
+
+                    b.Property<int?>("CollegeId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -314,6 +320,9 @@ namespace DataAccessLayer.Migrations
                         .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<int>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DepartmentId")
                         .HasColumnType("int");
 
                     b.Property<byte>("Scope")
@@ -326,6 +335,9 @@ namespace DataAccessLayer.Migrations
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
+                    b.Property<int?>("UniversityId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -334,11 +346,22 @@ namespace DataAccessLayer.Migrations
 
                     b.HasKey("ContentItemId");
 
+                    b.HasIndex("BatchId");
+
+                    b.HasIndex("CollegeId");
+
                     b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("DepartmentId");
+
+                    b.HasIndex("UniversityId");
 
                     b.HasIndex("UpdatedByUserId");
 
-                    b.ToTable("ContentItems", (string)null);
+                    b.ToTable("ContentItems", null, t =>
+                        {
+                            t.HasCheckConstraint("CK_ContentItems_ScopeTargets", "([Scope] = 1 AND [UniversityId] IS NULL AND [CollegeId] IS NULL AND [DepartmentId] IS NULL AND [BatchId] IS NULL) OR ([Scope] = 5 AND [UniversityId] IS NOT NULL AND [CollegeId] IS NULL AND [DepartmentId] IS NULL AND [BatchId] IS NULL) OR ([Scope] = 4 AND [UniversityId] IS NOT NULL AND [CollegeId] IS NOT NULL AND [DepartmentId] IS NULL AND [BatchId] IS NULL) OR ([Scope] = 3 AND [UniversityId] IS NOT NULL AND [CollegeId] IS NOT NULL AND [DepartmentId] IS NOT NULL AND [BatchId] IS NULL) OR ([Scope] = 2 AND [UniversityId] IS NOT NULL AND [CollegeId] IS NOT NULL AND [DepartmentId] IS NOT NULL AND [BatchId] IS NOT NULL)");
+                        });
 
                     b.HasDiscriminator<int>("Type");
 
@@ -562,43 +585,50 @@ namespace DataAccessLayer.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ImageId"));
 
-                    b.Property<int?>("ContentItemId")
+                    b.Property<int>("ContentItemId")
                         .HasColumnType("int");
 
-                    b.Property<string>("FileName")
+                    b.Property<string>("ContentType")
                         .IsRequired()
-                        .HasColumnType("NVARCHAR(250)");
+                        .HasColumnType("NVARCHAR(100)");
 
-                    b.Property<string>("FilePath")
-                        .IsRequired()
-                        .HasColumnType("NVARCHAR(500)");
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<int>("CreatedByUserId")
+                        .HasColumnType("int");
 
                     b.Property<long>("FileSize")
                         .HasColumnType("bigint");
 
-                    b.Property<DateTime>("UpdatedAt")
+                    b.Property<string>("OriginalFileName")
+                        .IsRequired()
+                        .HasColumnType("NVARCHAR(250)");
+
+                    b.Property<string>("RelativePath")
+                        .IsRequired()
+                        .HasColumnType("NVARCHAR(400)");
+
+                    b.Property<string>("StoredFileName")
+                        .IsRequired()
+                        .HasColumnType("NVARCHAR(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<int?>("UpdatedByUserId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("UploadedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<int>("UploadedByUserId")
-                        .HasColumnType("int");
-
                     b.HasKey("ImageId");
 
                     b.HasIndex("ContentItemId")
-                        .IsUnique()
-                        .HasFilter("[ContentItemId] IS NOT NULL");
+                        .IsUnique();
+
+                    b.HasIndex("CreatedByUserId");
 
                     b.HasIndex("UpdatedByUserId");
-
-                    b.HasIndex("UploadedByUserId");
 
                     b.ToTable("Images", (string)null);
                 });
@@ -893,9 +923,9 @@ namespace DataAccessLayer.Migrations
                             StudentResultId = 1,
                             CreatedAt = new DateTime(2025, 12, 25, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedByUserId = 1,
-                            Final = 40m,
-                            Midterm = 45m,
-                            Practical = 10m,
+                            Final = 45m,
+                            Midterm = 27m,
+                            Practical = 16m,
                             SectionSubjectId = 1,
                             StudentId = 1,
                             Total = 0m
@@ -1019,10 +1049,10 @@ namespace DataAccessLayer.Migrations
                 {
                     b.HasBaseType("Domain.Entities.Content.ContentItem");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasIndex("UserId");
+                    b.ToTable(t =>
+                        {
+                            t.HasCheckConstraint("CK_ContentItems_ScopeTargets", "([Scope] = 1 AND [UniversityId] IS NULL AND [CollegeId] IS NULL AND [DepartmentId] IS NULL AND [BatchId] IS NULL) OR ([Scope] = 5 AND [UniversityId] IS NOT NULL AND [CollegeId] IS NULL AND [DepartmentId] IS NULL AND [BatchId] IS NULL) OR ([Scope] = 4 AND [UniversityId] IS NOT NULL AND [CollegeId] IS NOT NULL AND [DepartmentId] IS NULL AND [BatchId] IS NULL) OR ([Scope] = 3 AND [UniversityId] IS NOT NULL AND [CollegeId] IS NOT NULL AND [DepartmentId] IS NOT NULL AND [BatchId] IS NULL) OR ([Scope] = 2 AND [UniversityId] IS NOT NULL AND [CollegeId] IS NOT NULL AND [DepartmentId] IS NOT NULL AND [BatchId] IS NOT NULL)");
+                        });
 
                     b.HasDiscriminator().HasValue(2);
                 });
@@ -1031,15 +1061,9 @@ namespace DataAccessLayer.Migrations
                 {
                     b.HasBaseType("Domain.Entities.Content.ContentItem");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("ContentItems", t =>
+                    b.ToTable(t =>
                         {
-                            t.Property("UserId")
-                                .HasColumnName("Post_UserId");
+                            t.HasCheckConstraint("CK_ContentItems_ScopeTargets", "([Scope] = 1 AND [UniversityId] IS NULL AND [CollegeId] IS NULL AND [DepartmentId] IS NULL AND [BatchId] IS NULL) OR ([Scope] = 5 AND [UniversityId] IS NOT NULL AND [CollegeId] IS NULL AND [DepartmentId] IS NULL AND [BatchId] IS NULL) OR ([Scope] = 4 AND [UniversityId] IS NOT NULL AND [CollegeId] IS NOT NULL AND [DepartmentId] IS NULL AND [BatchId] IS NULL) OR ([Scope] = 3 AND [UniversityId] IS NOT NULL AND [CollegeId] IS NOT NULL AND [DepartmentId] IS NOT NULL AND [BatchId] IS NULL) OR ([Scope] = 2 AND [UniversityId] IS NOT NULL AND [CollegeId] IS NOT NULL AND [DepartmentId] IS NOT NULL AND [BatchId] IS NOT NULL)");
                         });
 
                     b.HasDiscriminator().HasValue(1);
@@ -1169,18 +1193,46 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("Domain.Entities.Content.ContentItem", b =>
                 {
+                    b.HasOne("Domain.Entities.Academic_Structure.Batch", "Batch")
+                        .WithMany()
+                        .HasForeignKey("BatchId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Domain.Entities.Academic_Structure.College", "College")
+                        .WithMany()
+                        .HasForeignKey("CollegeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Domain.Entities.Identity.User", "CreatedByUser")
                         .WithMany()
                         .HasForeignKey("CreatedByUserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Domain.Entities.Academic_Structure.Department", "Department")
+                        .WithMany()
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Domain.Entities.Academic_Structure.University", "University")
+                        .WithMany()
+                        .HasForeignKey("UniversityId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("Domain.Entities.Identity.User", "UpdatedByUser")
                         .WithMany()
                         .HasForeignKey("UpdatedByUserId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.Navigation("Batch");
+
+                    b.Navigation("College");
+
                     b.Navigation("CreatedByUser");
+
+                    b.Navigation("Department");
+
+                    b.Navigation("University");
 
                     b.Navigation("UpdatedByUser");
                 });
@@ -1266,24 +1318,25 @@ namespace DataAccessLayer.Migrations
                     b.HasOne("Domain.Entities.Content.ContentItem", "ContentItem")
                         .WithOne("Image")
                         .HasForeignKey("Domain.Entities.Images.Image", "ContentItemId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.HasOne("Domain.Entities.Identity.User", "UpdatedByUser")
-                        .WithMany("UpdatedImages")
-                        .HasForeignKey("UpdatedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Domain.Entities.Identity.User", "UploadedByUser")
-                        .WithMany("UploadedImages")
-                        .HasForeignKey("UploadedByUserId")
+                    b.HasOne("Domain.Entities.Identity.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("Domain.Entities.Identity.User", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("ContentItem");
 
-                    b.Navigation("UpdatedByUser");
+                    b.Navigation("CreatedByUser");
 
-                    b.Navigation("UploadedByUser");
+                    b.Navigation("UpdatedByUser");
                 });
 
             modelBuilder.Entity("Domain.Entities.Students.Student", b =>
@@ -1459,20 +1512,6 @@ namespace DataAccessLayer.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Domain.Entities.Content.Announcement", b =>
-                {
-                    b.HasOne("Domain.Entities.Identity.User", null)
-                        .WithMany("Announcements")
-                        .HasForeignKey("UserId");
-                });
-
-            modelBuilder.Entity("Domain.Entities.Content.Post", b =>
-                {
-                    b.HasOne("Domain.Entities.Identity.User", null)
-                        .WithMany("Posts")
-                        .HasForeignKey("UserId");
-                });
-
             modelBuilder.Entity("Domain.Entities.Academic_Structure.Batch", b =>
                 {
                     b.Navigation("Sections");
@@ -1526,23 +1565,15 @@ namespace DataAccessLayer.Migrations
 
             modelBuilder.Entity("Domain.Entities.Identity.User", b =>
                 {
-                    b.Navigation("Announcements");
-
                     b.Navigation("CreatedUsers");
 
                     b.Navigation("Employee");
-
-                    b.Navigation("Posts");
 
                     b.Navigation("RefreshTokens");
 
                     b.Navigation("Student");
 
-                    b.Navigation("UpdatedImages");
-
                     b.Navigation("UpdatedUsers");
-
-                    b.Navigation("UploadedImages");
 
                     b.Navigation("UserRoles");
                 });

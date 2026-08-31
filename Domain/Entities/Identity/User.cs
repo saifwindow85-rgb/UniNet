@@ -50,13 +50,6 @@ namespace Domain.Entities.Identity
         public ICollection<UserRole> UserRoles { get; set; }
             = new List<UserRole>();
         public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
-        public ICollection<Post> Posts { get; set; }
-    = new List<Post>();
-
-        public ICollection<Announcement> Announcements { get; set; }
-            = new List<Announcement>();
-        public ICollection<Image> UploadedImages { get; set; } = new List<Image>();
-        public ICollection<Image> UpdatedImages { get; set; } = new List<Image>();
 
     }
 }

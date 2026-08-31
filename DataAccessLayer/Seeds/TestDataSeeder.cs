@@ -1,4 +1,4 @@
-using Contracts.Enums;
+﻿using Contracts.Enums;
 using DataAccessLayer.Dbcontext;
 using Domain.Entities.Academic_Structure;
 using Domain.Entities.Content;
@@ -215,19 +215,79 @@ namespace DataAccessLayer.Seeds
                 await db.SaveChangesAsync();
             }
 
-            // ---- Content & Images (a couple of each) ----
-            var img1 = new Image { FileName = "welcome.jpg", FilePath = "/uploads/welcome.jpg", FileSize = 102400, UploadedAt = now, UploadedByUserId = creatorId, UpdatedAt = now };
-            var img2 = new Image { FileName = "library.jpg", FilePath = "/uploads/library.jpg", FileSize = 204800, UploadedAt = now, UploadedByUserId = creatorId, UpdatedAt = now };
-            await db.Images.AddRangeAsync(img1, img2);
-            await db.SaveChangesAsync();
+            // ---- Content: one item per Scope level, to exercise every branch of CK_ContentItems_ScopeTargets ----
+            // سلسلة الأجداد تُملأ كاملة حتى المستوى المستهدف: Public لا شيء، University واحد، College اثنان، وهكذا.
+            var scopeCollege = await db.Colleges.FirstAsync(c => c.UniversityId == hadhramout.UniversityId);
+            var scopeDept = await db.Departments.FirstAsync(d => d.CollegeId == scopeCollege.CollegeId);
+            var scopeBatch = await db.Batches.FirstAsync(b => b.DepartmentId == scopeDept.DepartmentId);
 
             await db.Posts.AddRangeAsync(
-                new Post { Title = "Welcome to Fall 2025", Body = "We welcome all students to the new academic year.", Type = EncontentType.Post,Scope = EnContentScope.Public,CreatedAt = now, CreatedByUserId = creatorId },
-                new Post { Title = "Library Hours", Body = "The library is open 8 AM – 8 PM daily.", Type = EncontentType.Post,Scope = EnContentScope.Public,  CreatedAt = now, CreatedByUserId = creatorId });
+                new Post
+                {
+                    Title = "Welcome to Fall 2025",
+                    Body = "We welcome all students to the new academic year.",
+                    Type = EncontentType.Post,
+                    Scope = EnContentScope.Public,
+                    CreatedAt = now,
+                    CreatedByUserId = creatorId
+                },
+                new Post
+                {
+                    Title = "Engineering Lab Renovation",
+                    Body = "The engineering labs will be closed for renovation next week.",
+                    Type = EncontentType.Post,
+                    Scope = EnContentScope.College,
+                    UniversityId = hadhramout.UniversityId,
+                    CollegeId = scopeCollege.CollegeId,
+                    CreatedAt = now,
+                    CreatedByUserId = creatorId
+                },
+                new Post
+                {
+                    Title = "Batch 2025 Orientation",
+                    Body = "Orientation for Batch 2025 starts Sunday at 9 AM.",
+                    Type = EncontentType.Post,
+                    Scope = EnContentScope.Batch,
+                    UniversityId = hadhramout.UniversityId,
+                    CollegeId = scopeCollege.CollegeId,
+                    DepartmentId = scopeDept.DepartmentId,
+                    BatchId = scopeBatch.BatchId,
+                    CreatedAt = now,
+                    CreatedByUserId = creatorId
+                });
 
             await db.Announcements.AddRangeAsync(
-                new Announcement { Title = "Midterm Schedule", Body = "Midterm exams begin December 1st.", Type = EncontentType.Announcement,Scope = EnContentScope.Public, CreatedAt = now, CreatedByUserId = creatorId },
-                new Announcement { Title = "Holiday Notice", Body = "The university will be closed for the national holiday.", Type = EncontentType.Announcement,Scope = EnContentScope.Public, CreatedAt = now, CreatedByUserId = creatorId });
+                new Announcement
+                {
+                    Title = "Holiday Notice",
+                    Body = "The university will be closed for the national holiday.",
+                    Type = EncontentType.Announcement,
+                    Scope = EnContentScope.Public,
+                    CreatedAt = now,
+                    CreatedByUserId = creatorId
+                },
+                new Announcement
+                {
+                    Title = "Midterm Schedule",
+                    Body = "Midterm exams begin December 1st.",
+                    Type = EncontentType.Announcement,
+                    Scope = EnContentScope.University,
+                    UniversityId = hadhramout.UniversityId,
+                    CreatedAt = now,
+                    CreatedByUserId = creatorId
+                },
+                new Announcement
+                {
+                    Title = "Applied Sciences Seminar",
+                    Body = "A departmental seminar will be held on Thursday.",
+                    Type = EncontentType.Announcement,
+                    Scope = EnContentScope.Department,
+                    UniversityId = hadhramout.UniversityId,
+                    CollegeId = scopeCollege.CollegeId,
+                    DepartmentId = scopeDept.DepartmentId,
+                    CreatedAt = now,
+                    CreatedByUserId = creatorId
+                });
 
             await db.SaveChangesAsync();
         }

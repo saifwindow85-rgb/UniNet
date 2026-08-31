@@ -1,4 +1,5 @@
-﻿using Domain.Entities.Content;
+﻿using Domain.Entities.Common;
+using Domain.Entities.Content;
 using Domain.Entities.Identity;
 using System;
 using System.Collections.Generic;
@@ -8,24 +9,15 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities.Images
 {
-    public class Image
+    public class Image : BaseEntity
     {
         public int ImageId { get; set; }
-
-        public string FileName { get; set; } = null!;
-
+        public string OriginalFileName { get; set; } = null!;
+        public string StoredFileName { get; set; } = null!;
         public long FileSize { get; set; }
-        public string FilePath { get; set; } = null!;
-
-        public DateTime UploadedAt { get; set; }
-        public int UploadedByUserId { get; set; }
-        public User UploadedByUser { get; set; } = null!;
-
-       public  DateTime UpdatedAt { get; set; }
-        public int ?UpdatedByUserId { get; set; }
-        public User ?UpdatedByUser { get; set; }
-
-        public int? ContentItemId { get; set; }
-        public ContentItem?ContentItem { get; set; }
+        public string RelativePath { get; set; } = null!;
+        public string ContentType { get; set; } = null!;
+        public int ContentItemId { get; set; }
+        public ContentItem ContentItem { get; set; } = null!;
     }
 }
