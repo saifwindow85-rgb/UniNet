@@ -53,5 +53,14 @@ namespace DataAccessLayer.Repos.ImageRepository
         {
             return await _context.Images.SingleOrDefaultAsync(i => i.ContentItemId == contentItemId);
         }
+
+        public bool Delete(Image image)
+        {
+            if (image == null)
+                return false;
+
+            _context.Images.Remove(image);
+            return true;
+        }
     }
 }

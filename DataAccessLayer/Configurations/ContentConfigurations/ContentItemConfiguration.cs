@@ -22,10 +22,14 @@ namespace DataAccessLayer.Configurations.ContentConfigurations
             builder.Property(c => c.Body).HasColumnType("NVARCHAR(MAX)").IsRequired();
 
             builder.HasDiscriminator(c => c.Type)
-                .HasValue<Post>(EncontentType.Post)
-                .HasValue<Announcement>(EncontentType.Announcement);
+                .HasValue<Post>(EnContentType.Post)
+                .HasValue<Announcement>(EnContentType.Announcement);
 
             builder.Property(c => c.Scope).HasConversion<byte>().HasColumnType("TINYINT").IsRequired();
+
+            // عمود المميّز كان INT بينما Scope التوأم له TINYINT — تفاوت بلا سبب على أعرض جدول.
+            // يُنفَّذ الآن قبل وجود أي فهرس يشمله: ALTER COLUMN على عمود مفهرس يعني إعادة بناء الفهرس.
+            builder.Property(c => c.Type).HasConversion<byte>().HasColumnType("TINYINT").IsRequired();
 
             //Releation : ContentItem(1) => Image(1)
             builder.HasOne(c => c.Image)

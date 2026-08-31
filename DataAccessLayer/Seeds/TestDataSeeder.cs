@@ -239,7 +239,7 @@ namespace DataAccessLayer.Seeds
                 {
                     Title = "Welcome to Fall 2025",
                     Body = "We welcome all students to the new academic year.",
-                    Type = EncontentType.Post,
+                    Type = EnContentType.Post,
                     Scope = EnContentScope.Public,
                     CreatedAt = now,
                     CreatedByUserId = creatorId,
@@ -261,7 +261,7 @@ namespace DataAccessLayer.Seeds
                 {
                     Title = "Engineering Lab Renovation",
                     Body = "The engineering labs will be closed for renovation next week.",
-                    Type = EncontentType.Post,
+                    Type = EnContentType.Post,
                     Scope = EnContentScope.College,
                     UniversityId = hadhramout.UniversityId,
                     CollegeId = scopeCollege.CollegeId,
@@ -272,7 +272,7 @@ namespace DataAccessLayer.Seeds
                 {
                     Title = "Batch 2025 Orientation",
                     Body = "Orientation for Batch 2025 starts Sunday at 9 AM.",
-                    Type = EncontentType.Post,
+                    Type = EnContentType.Post,
                     Scope = EnContentScope.Batch,
                     UniversityId = hadhramout.UniversityId,
                     CollegeId = scopeCollege.CollegeId,
@@ -287,7 +287,7 @@ namespace DataAccessLayer.Seeds
                 {
                     Title = "Holiday Notice",
                     Body = "The university will be closed for the national holiday.",
-                    Type = EncontentType.Announcement,
+                    Type = EnContentType.Announcement,
                     Scope = EnContentScope.Public,
                     CreatedAt = now,
                     CreatedByUserId = creatorId
@@ -296,7 +296,7 @@ namespace DataAccessLayer.Seeds
                 {
                     Title = "Midterm Schedule",
                     Body = "Midterm exams begin December 1st.",
-                    Type = EncontentType.Announcement,
+                    Type = EnContentType.Announcement,
                     Scope = EnContentScope.University,
                     UniversityId = hadhramout.UniversityId,
                     CreatedAt = now,
@@ -306,7 +306,7 @@ namespace DataAccessLayer.Seeds
                 {
                     Title = "Applied Sciences Seminar",
                     Body = "A departmental seminar will be held on Thursday.",
-                    Type = EncontentType.Announcement,
+                    Type = EnContentType.Announcement,
                     Scope = EnContentScope.Department,
                     UniversityId = hadhramout.UniversityId,
                     CollegeId = scopeCollege.CollegeId,
@@ -370,6 +370,13 @@ namespace DataAccessLayer.Seeds
             {
                 // The HasData seed used a fake hash — overwrite it with a real one so login works.
                 admin.PasswordHash = HashPassword();
+
+                // صفّ HasData يُنشأ بلا Type (User.Type قابل للعدم)، و JwtTokenFactory يرفض
+                // إصدار توكن لمستخدم بلا نوع — فكان المسؤول العام الوحيد عاجزًا عن تسجيل الدخول،
+                // وكل فرع IsGlobal في التفويض غير قابل للاختبار أصلًا.
+                admin.Type ??= UserType.SystemAdmin;
+                admin.IsActive = true;
+
                 await db.SaveChangesAsync();
             }
             return admin.UserId;

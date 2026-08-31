@@ -56,11 +56,8 @@ namespace Application.Services.ImageServices
 
         public void Delete(string relativePath)
         {
-            var absolutePath = GetAbsolutePath(relativePath);
-
-            // حارس أخير ضد Path Traversal: لا نحذف شيئًا خارج جذر التخزين مهما كان محتوى العمود.
-            var root = Path.GetFullPath(_options.RootPath);
-            if (!absolutePath.StartsWith(root, StringComparison.OrdinalIgnoreCase))
+            var absolutePath = ResolveWithinRoot(relativePath);
+            if (absolutePath == null)
                 return;
 
             if (File.Exists(absolutePath))
@@ -69,7 +66,23 @@ namespace Application.Services.ImageServices
 
         public string GetAbsolutePath(string relativePath)
         {
-            return Path.GetFullPath(Path.Combine(_options.RootPath, relativePath));
+            // كانت هذه بلا حارس بينما Delete لها واحد — والقراءة تُسرّب مثلما يُتلف الحذف.
+            // المسار يأتي من عمودنا في قاعدة البيانات، فخروجه عن الجذر يعني عبثًا بالبيانات:
+            // نرفض بصوت عالٍ بدل تسليم مسار عشوائي إلى PhysicalFile.
+            return ResolveWithinRoot(relativePath)
+                ?? throw new InvalidOperationException("The stored image path resolves outside the configured storage root.");
+        }
+
+        /// <summary>
+        /// يحوّل المسار النسبي إلى مطلق، ويُعيد null إن خرج عن جذر التخزين.
+        /// حارس واحد مشترك بدل نسختين تفترقان مع الوقت.
+        /// </summary>
+        private string? ResolveWithinRoot(string relativePath)
+        {
+            var root = Path.GetFullPath(_options.RootPath);
+            var absolutePath = Path.GetFullPath(Path.Combine(root, relativePath));
+
+            return absolutePath.StartsWith(root, StringComparison.OrdinalIgnoreCase) ? absolutePath : null;
         }
     }
 }

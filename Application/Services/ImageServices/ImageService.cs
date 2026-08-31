@@ -69,6 +69,11 @@ namespace Application.Services.ImageServices
             _imageStorage.Delete(image.RelativePath);
         }
 
+        public void DeletePhysicalFile(string relativePath)
+        {
+            _imageStorage.Delete(relativePath);
+        }
+
         public async Task<ImageFileDTO?> GetFileInfoByContentItemIdAsync(int contentItemId)
         {
             return await _unitOfWorkRepository.ImageRepository.GetFileInfoByContentItemIdAsync(contentItemId);

@@ -16,7 +16,7 @@ namespace Domain.Entities.Content
         public string Title { get; set; } = null!;
         public string Body { get; set; } = null!;
         public EnContentScope Scope { get; set; }
-        public EncontentType Type { get; set; }
+        public EnContentType Type { get; set; }
         public Image? Image { get; set; }
 
         // ----------------------------------------------------------------------------

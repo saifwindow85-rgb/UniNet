@@ -27,6 +27,13 @@ namespace Domain.Interfaces.ImageInterfaces
         /// </summary>
         void DeletePhysicalFile(Image image);
 
+        /// <summary>
+        /// نفس العملية انطلاقًا من المسار النسبي وحده.
+        /// يحتاجها مسارا الاستبدال والحذف: كلاهما يلتقط المسار قبل أن يُعلَّم الصف محذوفًا،
+        /// فالتعويض من نصٍّ ملتقَط أسلم من الإمساك بكيان قد يكون EF أزاله من المتتبِّع.
+        /// </summary>
+        void DeletePhysicalFile(string relativePath);
+
         Task<ImageFileDTO?> GetFileInfoByContentItemIdAsync(int contentItemId);
 
         /// <summary>يحوّل المسار النسبي المخزَّن إلى مسار مطلق — يحتاجه PhysicalFile في الـ Controller.</summary>

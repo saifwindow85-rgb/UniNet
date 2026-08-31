@@ -103,8 +103,24 @@ namespace DataAccessLayer.Repos
             // وبلا احتمال سقوط صامت كما كان يحدث سابقاً.
             catch (DbUpdateException ex) when (ex.InnerException is SqlException { Number: 547 })
             {
-                throw new DeleteRestrictedException(
-                    "Cannot delete this resource because it has related resources.", ex);
+                // 547 ليس خطأ حذف بالضرورة: SQL Server يُطلقه أيضًا على INSERT/UPDATE
+                // يخالف CHECK أو مفتاحًا أجنبيًا. التمييز الموثوق ليس بنصّ الرسالة
+                // (يتغيّر باللغة) بل بحالة الكيانات المتأثرة: وجود كيان محذوف يعني قيد حذف.
+                if (ex.Entries.Any(e => e.State == EntityState.Deleted))
+                {
+                    throw new DeleteRestrictedException(
+                        "Cannot delete this resource because it has related resources.", ex);
+                }
+
+                throw new ConstraintViolationException(
+                    "The operation violates a data constraint. Check that every referenced record exists and that the values are consistent.", ex);
+            }
+            // 2601/2627 = فهرس فريد. يصطدم بها مسار استبدال صورة المحتوى تحديدًا
+            // (IX_Images_ContentItemId فريد)، وبلا هذا الفرع تخرج كـ 500 عارٍ.
+            catch (DbUpdateException ex) when (ex.InnerException is SqlException { Number: 2601 or 2627 })
+            {
+                throw new DuplicateResourceException(
+                    "A record with the same unique value already exists.", ex);
             }
         }
 
