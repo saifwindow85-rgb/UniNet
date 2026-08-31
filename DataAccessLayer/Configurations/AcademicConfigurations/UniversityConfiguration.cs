@@ -24,7 +24,7 @@ namespace DataAccessLayer.Configurations.Academic_Structure
 
             builder.ToTable("Universities");
 
-            //builder.HasData(SeedData.GetUniversities());
+            builder.HasData(SeedData.GetUniversities());
         }
     }
 }

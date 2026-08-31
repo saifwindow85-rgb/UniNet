@@ -9,7 +9,11 @@ namespace Contracts.Requests.RequestParameters
 {
     public class PagedResultParameters
     {
-        [Range(1, int.MaxValue, ErrorMessage = "PageSize  Format!/PageSize Must Be > 0")]
+        // حدّ أعلى لا حدّ أدنى فقط. ToPagedResultAsync يُنفِّذ Take(pageSize) مجردًا،
+        // وخلاصة المحتوى أول نقطة سرد في المشروع بلا قائمة أدوار — يبلغها كل مستخدم
+        // مُصادَق عليه. و ContentFeedItemDTO يحمل Body كاملًا وهو NVARCHAR(MAX)،
+        // فـ PageSize=100000 كان يُجسّد كل نصوص المحتوى المرئي في طلب واحد.
+        [Range(1, 100, ErrorMessage = "PageSize  Format!/PageSize Must Be between 1 and 100")]
         public int PageSize { get; set; }
 
 
@@ -100,5 +104,11 @@ namespace Contracts.Requests.RequestParameters
     {
         [Range(1, int.MaxValue, ErrorMessage = "StudentResultId  Format!/StudentResultId Must Be > 0")]
         public int StudentResultId { get; set; }
+    }
+
+    public class ContentItemIdParameter
+    {
+        [Range(1, int.MaxValue, ErrorMessage = "ContentItemId  Format!/ContentItemId Must Be > 0")]
+        public int ContentItemId { get; set; }
     }
 }

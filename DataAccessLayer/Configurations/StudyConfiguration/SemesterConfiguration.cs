@@ -31,7 +31,7 @@ namespace DataAccessLayer.Configurations.Study_Configuration
                 .HasForeignKey(s => s.UniversityId).IsRequired().OnDelete(DeleteBehavior.Restrict);
 
             builder.ToTable("Semesters");
-            //builder.HasData(SeedData.GetSemesters());
+            builder.HasData(SeedData.GetSemesters());
         }
     }
 }

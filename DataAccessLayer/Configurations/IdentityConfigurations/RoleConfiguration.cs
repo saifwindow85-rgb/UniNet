@@ -22,7 +22,7 @@ namespace DataAccessLayer.Configurations.Academic_Configurations.Identity_Config
 
             builder.ToTable("Roles");
 
-            //builder.HasData(SeedData.GetRoles());
+            builder.HasData(SeedData.GetRoles());
         }
     }
 }

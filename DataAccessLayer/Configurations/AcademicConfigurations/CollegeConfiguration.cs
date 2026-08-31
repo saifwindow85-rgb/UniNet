@@ -28,7 +28,7 @@ namespace DataAccessLayer.Configurations.Academic_Structure
 
             builder.ToTable("Colleges");
 
-            //builder.HasData(SeedData.GetColleges());
+            builder.HasData(SeedData.GetColleges());
         }
     }
 }
