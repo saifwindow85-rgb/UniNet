@@ -9,15 +9,18 @@ using System.Threading.Tasks;
 namespace Domain.Interfaces.ImageInterfaces
 {
     /// <summary>
-    /// عمليتا قراءة فقط — وهذا مقصود:
-    /// • لا Add: الصورة تُربَط بإسناد ContentItem.Image فيتولّى EF الإدراج والمفتاح الأجنبي معًا.
-    /// • لا Delete: العلاقة Cascade، فحذف المحتوى يحذف صف الصورة في نفس الأمر.
-    /// إضافة الطريقتين "للاكتمال" كانت ستُنتج كودًا ميتًا لا يستدعيه أحد.
+    /// لا Add: الصورة تُربَط بإسناد ContentItem.Image فيتولّى EF الإدراج والمفتاح الأجنبي معًا.
+    ///
+    /// Delete موجود — والتعليل السابق ("العلاقة Cascade فلا حاجة له") كان صحيحًا لحذف المحتوى
+    /// وخاطئًا لاستبدال الصورة أو إزالتها، حيث يبقى ContentItem حيًّا ويجب أن يزول صف الصورة وحده.
+    /// وبدونه يصطدم إدراج الصورة الجديدة بالفهرس الفريد IX_Images_ContentItemId.
     /// </summary>
     public interface IImageRepository
     {
         Task<ImageFileDTO?> GetFileInfoByContentItemIdAsync(int contentItemId);
 
         Task<Image?> GetByContentItemIdAsync(int contentItemId);
+
+        bool Delete(Image image);
     }
 }
