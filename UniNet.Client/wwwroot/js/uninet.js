@@ -15,6 +15,14 @@ window.uninet = {
         if (url) { URL.revokeObjectURL(url); }
     },
 
+    // يُعيد جسم النافذة إلى أعلاه. الحاجة إليه ظهرت بعد جعل الجسم قابلًا للتمرير:
+    // زرّا الحفظ والإلغاء مثبَّتان في التذييل، بينما رسالة الخطأ في أعلى الجسم —
+    // فيضغط المستخدم «نشر» وهو أسفل النموذج، ويعود الخطأ إلى منطقة خارج مجال رؤيته.
+    scrollModalToTop: function () {
+        const body = document.querySelector('.modal-body');
+        if (body) { body.scrollTo({ top: 0, behavior: 'smooth' }); }
+    },
+
     // قفل تمرير الصفحة خلف عارض الصورة المكبَّر.
     lockScroll: function (locked) {
         document.body.style.overflow = locked ? 'hidden' : '';

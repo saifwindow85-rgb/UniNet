@@ -6,6 +6,7 @@
    وفي وضع التعديل تُعرض الحالات الثلاث صراحةً: إبقاء الصورة الحالية، أو استبدالها،
    أو إزالتها — لأن غياب الملف وحده غامض بين "أبقِها" و"احذفها" في الـ API نفسه. *@
 
+@using System.IO
 @implements IAsyncDisposable
 @inject IJSRuntime JS
 
@@ -79,8 +80,13 @@
 </div>
 
 @code {
-    // القائمة البيضاء نفسها المضبوطة في ImageStorageOptions على الخادم.
-    private const string Accept = "image/jpeg,image/png,image/webp";
+    // القائمة البيضاء نفسها المضبوطة في ImageStorageOptions على الخادم — الامتدادات والأنواع معًا.
+    //
+    // accept يحمل الامتدادات قبل أنواع MIME عن قصد: حوار ملفات ويندوز يحترم الامتدادات
+    // احترامًا موثوقًا، بينما نوع MIME وحده كثيرًا ما يُترجم إلى «كل الملفات» فيرى المستخدم
+    // كل شيء ويختار ما سيرفضه الخادم.
+    private const string Accept = ".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp";
+    private static readonly string[] AllowedExtensions = { ".jpg", ".jpeg", ".png", ".webp" };
     private static readonly string[] AllowedTypes = { "image/jpeg", "image/png", "image/webp" };
 
     [Parameter] public SelectedImage? File { get; set; }
@@ -104,17 +110,30 @@
         var file = e.File;
         _error = null;
 
-        // الحجم والنوع يُفحصان هنا قبل أي رحلة شبكة — الخادم يفحصهما ثانيةً
-        // (ومعهما توقيع البايتات)، لكن ردّ الفعل الفوري أفضل من انتظار 400.
+        // ثلاثة فحوص تُطابق ما يفرضه الخادم بالضبط، فلا يصل إليه ملف يعرف العميل أنه مرفوض.
+        // كل فحص يسبقه كان يُنتج 400 غامضًا: الرسالة تعود من الخادم صحيحة لكنها تظهر
+        // في أعلى النموذج بينما المستخدم أسفله.
         if (file.Size > MaxBytes)
         {
             _error = $"حجم الصورة {FormatSize(file.Size)} — الحد الأقصى {FormatSize(MaxBytes)}.";
             return;
         }
 
+        // ① الامتداد. الخادم يرفض .jfif و .jpe و .avif رغم أن المتصفح يُبلغ عنها image/jpeg،
+        //    ففحص النوع وحده كان يمرّرها ثم يردّها الخادم.
+        var extension = Path.GetExtension(file.Name);
+        if (!AllowedExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase))
+        {
+            var shown = string.IsNullOrWhiteSpace(extension) ? "بلا امتداد" : extension;
+            _error = $"الامتداد ({shown}) غير مدعوم. المسموح: JPG · JPEG · PNG · WEBP.";
+            return;
+        }
+
+        // ② نوع MIME الذي أبلغ عنه المتصفح.
         if (!AllowedTypes.Contains(file.ContentType, StringComparer.OrdinalIgnoreCase))
         {
-            _error = "نوع غير مدعوم. المسموح: JPG أو PNG أو WEBP.";
+            var shown = string.IsNullOrWhiteSpace(file.ContentType) ? "غير معروف" : file.ContentType;
+            _error = $"نوع الملف ({shown}) غير مدعوم. المسموح: JPG · PNG · WEBP.";
             return;
         }
 
@@ -127,6 +146,16 @@
         var bytes = new byte[file.Size];
         await using (var stream = file.OpenReadStream(MaxBytes))
             await stream.ReadExactlyAsync(bytes);
+
+        // ③ توقيع البايتات — نفس فحص ImageSignatures على الخادم.
+        //    يُمسك ملفًا أُعيدت تسميته إلى .png وهو ليس صورة: الامتداد والنوع كلاهما
+        //    يُشتقّان من الاسم فيُخدَعان معًا، والبايتات وحدها لا تكذب.
+        //    والبايتات مقروءة هنا أصلًا للمعاينة، فالفحص بلا تكلفة إضافية.
+        if (!MatchesSignature(bytes, extension))
+        {
+            _error = "محتوى الملف لا يطابق امتداده — لا يبدو صورةً حقيقية.";
+            return;
+        }
 
         _preview = await JS.InvokeAsync<string>("uninet.createObjectUrl", bytes, file.ContentType);
         _fileName = file.Name;
@@ -166,6 +195,26 @@
         try { await JS.InvokeVoidAsync("uninet.revokeObjectUrl", _preview); }
         catch (JSDisconnectedException) { }
         _preview = null;
+    }
+
+    // يطابق Application/Services/ImageServices/ImageSignatures.cs — أيّ تعديل هناك يُنسخ هنا.
+    private static bool MatchesSignature(byte[] b, string extension)
+    {
+        if (b.Length < 12) return false;
+
+        return extension.ToLowerInvariant() switch
+        {
+            ".jpg" or ".jpeg" => b[0] == 0xFF && b[1] == 0xD8 && b[2] == 0xFF,
+
+            ".png" => b[0] == 0x89 && b[1] == 0x50 && b[2] == 0x4E && b[3] == 0x47
+                   && b[4] == 0x0D && b[5] == 0x0A && b[6] == 0x1A && b[7] == 0x0A,
+
+            // WEBP توقيعه ليس بادئة متصلة: RIFF في 0..3 ثم الحجم ثم WEBP في 8..11
+            ".webp" => b[0] == 0x52 && b[1] == 0x49 && b[2] == 0x46 && b[3] == 0x46
+                    && b[8] == 0x57 && b[9] == 0x45 && b[10] == 0x42 && b[11] == 0x50,
+
+            _ => false,
+        };
     }
 
     private static string FormatSize(long bytes) =>

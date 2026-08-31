@@ -4,6 +4,7 @@
 @inject ContentApiService ContentApi
 @inject ScopeLookups Lookups
 @inject NavigationManager Nav
+@inject IJSRuntime JS
 
 <PageTitle>إدارة المحتوى · UniNet</PageTitle>
 
@@ -84,7 +85,14 @@ else
        Subtitle="@FormSubtitle"
        OnClose="CloseForm">
     <ChildContent>
-        <Alert Message="@_formError" Kind="err" OnClose="() => _formError = null" />
+        @* لاصق في أعلى الجسم المتمرِّر: الزرّان مثبَّتان في التذييل، فالمستخدم يضغط «نشر»
+           وهو أسفل النموذج — ورسالةٌ في الأعلى وحده كانت تصل إلى منطقة لا يراها. *@
+        @if (_formError is not null)
+        {
+            <div class="form-alert">
+                <Alert Message="@_formError" Kind="err" OnClose="() => _formError = null" />
+            </div>
+        }
 
         <EditForm Model="_form" OnValidSubmit="SaveAsync" id="contentForm">
             <DataAnnotationsValidator />
@@ -283,7 +291,7 @@ else
         // حارس محلّي يوفّر رحلة شبكة تنتهي بـ 400: الخادم يفرض القاعدة نفسها.
         if (_editing is null && _form.Scope != EnContentScope.Public && _form.TargetId is null)
         {
-            _formError = "اختر الجهة المستهدفة.";
+            await ShowFormErrorAsync("اختر الجهة المستهدفة.");
             return;
         }
 
@@ -321,7 +329,7 @@ else
         }
         else
         {
-            _formError = res.Error ?? "تعذّر الحفظ.";
+            await ShowFormErrorAsync(res.Error ?? "تعذّر الحفظ.");
         }
     }
 
@@ -339,6 +347,14 @@ else
     }
 
     private void Notify(string message, string kind) { _notice = message; _noticeKind = kind; }
+
+    // اللصق يكفي لإبقاء الرسالة مرئية، والتمرير يضمن رؤيتها فورًا لا بعد أن يبحث عنها المستخدم.
+    private async Task ShowFormErrorAsync(string message)
+    {
+        _formError = message;
+        try { await JS.InvokeVoidAsync("uninet.scrollModalToTop"); }
+        catch (JSException) { /* التمرير تحسين لا شرط */ }
+    }
 
     private sealed class ContentForm
     {
@@ -413,6 +429,17 @@ else
     .edited {
         margin-inline-start: auto; align-self: center;
         font-size: .7rem; color: var(--muted, #7c8da0);
+    }
+
+    /* اللاصق يحتاج خلفية معتمة وإلا مرّ نصّ النموذج تحته أثناء التمرير،
+       وحواف سالبة ليمتدّ إلى حافتَي الجسم بدل أن يترك شريطين شفافين. */
+    .form-alert {
+        position: sticky;
+        top: -1.35rem;
+        z-index: 5;
+        margin: -1.35rem -1.35rem .55rem;
+        padding: 1.35rem 1.35rem .35rem;
+        background: #fff;
     }
 
     .txt { height: auto; min-height: 130px; padding: .7rem .85rem; resize: vertical; line-height: 1.75; }
