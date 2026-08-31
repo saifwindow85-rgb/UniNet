@@ -36,6 +36,11 @@ namespace UniNet.Extensions
                 {
                     options.AddPolicy(policyName, policy => policy.Requirements.Add(new OwnershipRequirement()));
                 }
+
+                // خارج الحلقة لأنه المتطلَّب الوحيد غير OwnershipRequirement:
+                // إدارة المحتوى لا يجوز أن تُرضى بحارس المشاهدة (انظر ContentManagementRequirement).
+                options.AddPolicy("ContentManagePolicy",
+                    policy => policy.Requirements.Add(new ContentManagementRequirement()));
             });
 
             return services;

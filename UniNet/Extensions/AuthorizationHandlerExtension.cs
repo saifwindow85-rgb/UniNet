@@ -28,6 +28,7 @@ namespace UniNet.Extensions
             services.AddScoped<IAuthorizationHandler, StudentResultOwnerHandler>();
             // Content Authorization Handlers
             services.AddScoped<IAuthorizationHandler, ContentViewHandler>();
+            services.AddScoped<IAuthorizationHandler, ContentManageHandler>();
 
             return services;
         }
