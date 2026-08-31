@@ -1,5 +1,5 @@
 ﻿using Domain.Entities.Common;
-using Domain.Entities.Enums;
+using Contracts.Enums;
 using Domain.Entities.Images;
 using System;
 using System.Collections.Generic;

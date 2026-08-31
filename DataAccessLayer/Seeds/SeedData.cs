@@ -2,7 +2,7 @@
 using Domain.Entities.Academic_Structure;
 using Domain.Entities.Content;
 using Domain.Entities.Employees;
-using Domain.Entities.Enums;
+using Contracts.Enums;
 using Domain.Entities.Identity;
 using Domain.Entities.Images;
 using Domain.Entities.Students;

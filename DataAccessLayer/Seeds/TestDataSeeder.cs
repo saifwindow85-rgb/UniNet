@@ -2,13 +2,13 @@
 using DataAccessLayer.Dbcontext;
 using Domain.Entities.Academic_Structure;
 using Domain.Entities.Content;
-using Domain.Entities.Enums;
 using Domain.Entities.Employees;
 using Domain.Entities.Identity;
 using Domain.Entities.Images;
 using Domain.Entities.Students;
 using Domain.Entities.Study;
 using Microsoft.EntityFrameworkCore;
+using System.IO;
 
 namespace DataAccessLayer.Seeds
 {
@@ -33,7 +33,12 @@ namespace DataAccessLayer.Seeds
         private static int _nameCounter; // deterministic name cycling
         private static int _studentCounter; // unique student numbering across the run
 
-        public static async Task SeedAsync(AppDbcontext db)
+        // صورة PNG صالحة بحجم 1x1 (69 بايت) — تُكتب على القرص فعليًا مع البذور،
+        // فتصير نقطة api/content/{id}/image قابلة للاختبار من طرف إلى طرف قبل وجود مسار الرفع.
+        private const string SeedPngBase64 =
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR42mPQy+4BAAHwASbSvKr3AAAAAElFTkSuQmCC";
+
+        public static async Task SeedAsync(AppDbcontext db, string imageRootPath)
         {
             // ---- Sentinel: skip if our test data already exists ----
             if (await db.Universities.AnyAsync(u => u.Name == "Sana'a University"))
@@ -221,6 +226,14 @@ namespace DataAccessLayer.Seeds
             var scopeDept = await db.Departments.FirstAsync(d => d.CollegeId == scopeCollege.CollegeId);
             var scopeBatch = await db.Batches.FirstAsync(b => b.DepartmentId == scopeDept.DepartmentId);
 
+            // صورة بذور حقيقية: الملف على القرص أولًا ثم الصف — نفس ترتيب مسار الرفع الحقيقي.
+            var seedImageBytes = Convert.FromBase64String(SeedPngBase64);
+            var seedRelativeFolder = Path.Combine("content", now.ToString("yyyy"), now.ToString("MM"));
+            Directory.CreateDirectory(Path.Combine(imageRootPath, seedRelativeFolder));
+            var seedStoredFileName = $"{Guid.NewGuid():N}.png";
+            await File.WriteAllBytesAsync(
+                Path.Combine(imageRootPath, seedRelativeFolder, seedStoredFileName), seedImageBytes);
+
             await db.Posts.AddRangeAsync(
                 new Post
                 {
@@ -229,7 +242,20 @@ namespace DataAccessLayer.Seeds
                     Type = EncontentType.Post,
                     Scope = EnContentScope.Public,
                     CreatedAt = now,
-                    CreatedByUserId = creatorId
+                    CreatedByUserId = creatorId,
+
+                    // إسناد الملاحية فقط: EF يُدرج المنشور وصورته في SaveChanges واحد
+                    // ويملأ ContentItemId تلقائيًا — نفس المفصل الذي سيستعمله PostService.
+                    Image = new Image
+                    {
+                        OriginalFileName = "welcome.png",
+                        StoredFileName = seedStoredFileName,
+                        RelativePath = $"{seedRelativeFolder.Replace(Path.DirectorySeparatorChar, '/')}/{seedStoredFileName}",
+                        ContentType = "image/png",
+                        FileSize = seedImageBytes.Length,
+                        CreatedAt = now,
+                        CreatedByUserId = creatorId,
+                    }
                 },
                 new Post
                 {
