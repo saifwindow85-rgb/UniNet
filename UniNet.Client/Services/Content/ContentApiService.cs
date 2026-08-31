@@ -1,15 +1,25 @@
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using Contracts.Enums;
 using Contracts.Requests.ContentRequests;
 using Contracts.Responses.ContentResponses;
 using Contracts.Results;
-using Microsoft.AspNetCore.Components.Forms;
 using UniNet.Client.Services.Http;
 
 namespace UniNet.Client.Services.Content;
 
 // بايتات صورة + نوعها — ما يحتاجه AuthImage ليبني Object URL.
 public record ImageBytes(byte[] Bytes, string ContentType);
+
+/// <summary>
+/// صورة مُختارة، محمولةً كبايتات لا كـ IBrowserFile.
+///
+/// السبب ليس أسلوبيًّا: مرجع IBrowserFile لا يصلح إلا ما دام عنصر InputFile الذي أنتجه
+/// معروضًا في الـ DOM — فهو مجرّد مفتاح في جدول _blazorFilesById المعلَّق على ذلك العنصر.
+/// ومنتقي الصورة يستبدل منطقة الإفلات بمعاينة فور الاختيار، فيُزال العنصر ويموت المرجع،
+/// ثم يسقط OpenReadStream وقت الرفع بالرسالة: Cannot read properties of null (reading _blazorFilesById).
+/// نقرأ البايتات مرّة واحدة لحظة الاختيار — وهي مقروءة أصلًا لبناء المعاينة — فلا نعود إليه.
+/// </summary>
+public sealed record SelectedImage(byte[] Bytes, string FileName, string ContentType);
 
 public class ContentApiService : ApiServiceBase
 {
@@ -69,7 +79,7 @@ public class ContentApiService : ApiServiceBase
 
     // النوع يُحدَّد بالمسار لا بحقل في النموذج — نفس ما يفرضه الخادم.
     public Task<ApiResult<DetaieldContentItemDTO>> AddAsync(
-        EnContentType type, AddContentDTO dto, IBrowserFile? image)
+        EnContentType type, AddContentDTO dto, SelectedImage? image)
     {
         var route = type == EnContentType.Announcement ? "announcement" : "post";
 
@@ -86,7 +96,7 @@ public class ContentApiService : ApiServiceBase
 
     // RemoveImage هو الحالة الثالثة: بدونه يبقى غياب الملف غامضًا بين إبقاء الصورة وحذفها.
     public Task<ApiResult<DetaieldContentItemDTO>> UpdateAsync(
-        int contentItemId, UpdateContentDTO dto, IBrowserFile? image)
+        int contentItemId, UpdateContentDTO dto, SelectedImage? image)
     {
         return Send(api =>
         {
@@ -99,7 +109,7 @@ public class ContentApiService : ApiServiceBase
     public Task<ApiResult<bool>> DeleteAsync(int contentItemId) =>
         Send(api => api.DeleteAsync($"api/Content/{contentItemId}"), ApiResponse.ReadOkAsync);
 
-    private static MultipartFormDataContent BuildForm(string title, string body, IBrowserFile? image)
+    private static MultipartFormDataContent BuildForm(string title, string body, SelectedImage? image)
     {
         var form = new MultipartFormDataContent
         {
@@ -109,9 +119,11 @@ public class ContentApiService : ApiServiceBase
 
         if (image is not null)
         {
-            var stream = new StreamContent(image.OpenReadStream(MaxImageBytes));
-            stream.Headers.ContentType = new MediaTypeHeaderValue(image.ContentType);
-            form.Add(stream, "Image", image.Name);
+            // ByteArrayContent لا StreamContent: البايتات في الذاكرة أصلًا،
+            // ولا يوجد عنصر DOM حيّ يمكن القراءة منه وقت الإرسال.
+            var bytes = new ByteArrayContent(image.Bytes);
+            bytes.Headers.ContentType = new MediaTypeHeaderValue(image.ContentType);
+            form.Add(bytes, "Image", image.FileName);
         }
 
         return form;

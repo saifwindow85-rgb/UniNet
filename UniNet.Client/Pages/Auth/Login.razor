@@ -1,4 +1,4 @@
-@page "/login"
+﻿@page "/login"
 @layout EmptyLayout
 @using System.ComponentModel.DataAnnotations
 @inject AuthApiService Auth
@@ -123,17 +123,25 @@
     private bool _showPassword;
     private string? _error;
 
-    // حسابات مزروعة (TestDataSeeder) — تغطّي كل الأنواع/الأدوار وجامعات مختلفة، كلمة المرور موحّدة.
+    // حسابات مزروعة فعلًا في TestDataSeeder — كلّها مُختبَرة بتسجيل دخول حقيقي.
+    //
+    // لا توجد حسابات طلاب: استدعاء CreateStudentsAsync مُعلَّق في المُغذّي
+    // (TestDataSeeder.cs السطر 195)، فكان الحسابان student1 و student45 المعروضان
+    // هنا سابقًا يفشلان دائمًا. لإعادتهما: أزِل التعليق ثم أسقِط قاعدة البيانات،
+    // لأن حارس المُغذّي (وجود "Sana&#39;a University") يمنع إعادة التشغيل على قاعدة مُغذّاة.
+    //
+    // الأزواج متعمَّدة: جامعتان مختلفتان، وكليتان مختلفتان، وقسمان في كليتين مختلفتين —
+    // فيمكن التحقق من عزل نطاق المحتوى بتبديل الحساب لا بقراءة الكود.
     private readonly Demo[] _demos =
     {
-        new("Ahmed.HU",         "مسؤول النظام · Super Admin",           "sys"),
-        new("univadmin.had",    "مسؤول جامعة حضرموت · UniversityAdmin", "emp"),
-        new("univadmin.sanaa",  "مسؤول جامعة صنعاء · UniversityAdmin",  "emp"),
-        new("colladmin.had.0",  "مسؤول كلية · CollegeAdmin",            "emp"),
-        new("deptadmin.had.00", "مسؤول قسم · DepartmentAdmin",          "emp"),
-        new("lecturer1",        "محاضِر · Lecturer",                    "emp"),
-        new("student45",        "مدير دفعة · BatchAdmin",               "stu"),
-        new("student1",         "طالب · Student",                       "stu"),
+        new("Ahmed.HU",         "مسؤول النظام · بلا نطاق",            "sys"),
+        new("univadmin.had",    "جامعة حضرموت · UniversityAdmin",     "emp"),
+        new("univadmin.sanaa",  "جامعة صنعاء · UniversityAdmin",      "emp"),
+        new("colladmin.had.0",  "كلية #2 · CollegeAdmin",             "col"),
+        new("colladmin.had.1",  "كلية #3 · CollegeAdmin",             "col"),
+        new("deptadmin.had.00", "قسم #2 (كلية 2) · DepartmentAdmin",  "dep"),
+        new("deptadmin.had.10", "قسم #5 (كلية 3) · DepartmentAdmin",  "dep"),
+        new("lecturer0",        "محاضِر · Lecturer",                  "lec"),
     };
     private const string DemoPassword = "P@ssw0rd123!";
 
