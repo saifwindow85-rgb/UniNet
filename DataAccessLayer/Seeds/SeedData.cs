@@ -242,47 +242,6 @@ namespace DataAccessLayer.Seeds
         // 6. المحتوى والصور (Content & Images)
         // ----------------------------------------------------------
 
-        public static List<Image> GetImages() => new()
-        {
-            new Image
-            {
-                ImageId = 1,
-                FileName = "default-banner.jpg",
-                FilePath = "/uploads/default-banner.jpg",
-                FileSize = 204800,
-                UploadedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
-                UploadedByUserId = 1
-                // UpdatedAt و UpdatedByUserId تبقى null في البذور الأولية
-            }
-        };
-
-        public static List<Post> GetPosts() => new()
-        {
-            new Post
-            {
-                ContentItemId = 1,
-                Title = "Welcome to the New Academic Year",
-                Body = "We are excited to announce the start of the Fall 2025 semester. All students are encouraged to check their schedules.",
-                Type = EncontentType.Post,
-                Scope = EnContentScope.Public,
-                CreatedAt = new DateTime(2025, 9, 1, 0, 0, 0, DateTimeKind.Utc),
-                CreatedByUserId = 1
-            }
-        };
-
-        public static List<Announcement> GetAnnouncements() => new()
-        {
-            new Announcement
-            {
-                ContentItemId = 2,
-                Title = "Important: Final Exam Schedule",
-                Body = "Final exams for Fall 2025 will start on December 22nd. Please check the official schedule.",
-                Type = EncontentType.Announcement,
-                Scope = EnContentScope.Public,
-                CreatedAt = new DateTime(2025, 11, 1, 0, 0, 0, DateTimeKind.Utc),
-                CreatedByUserId = 1
-            }
-        };
 
 
         // ----------------------------------------------------------

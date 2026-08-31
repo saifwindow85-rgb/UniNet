@@ -27,13 +27,46 @@ namespace DataAccessLayer.Configurations.ContentConfigurations
 
             builder.Property(c => c.Scope).HasConversion<byte>().HasColumnType("TINYINT").IsRequired();
 
+            //Releation : ContentItem(1) => Image(1)
             builder.HasOne(c => c.Image)
                      .WithOne(i => i.ContentItem)
                      .HasForeignKey<Image>(i => i.ContentItemId)
-                     .IsRequired(false)
-                     .OnDelete(DeleteBehavior.Restrict);
+                     .IsRequired()
+                     .OnDelete(DeleteBehavior.Cascade);
 
-            builder.ToTable("ContentItems");
+            // ----------------------------------------------------------------------------
+            // نطاق النشر — أربع علاقات اختيارية تمثّل سلسلة الأجداد.
+            // WithMany() بلا ملاحية عكسية عن قصد: university.ContentItems مجموعة لن تُحمَّل أبدًا
+            // (عشرات الآلاف من الصفوف)، وإضافتها تُلوّث كيانات الهيكل الأكاديمي بلا فائدة.
+            // نفس ما يفعله ConfigureBaseEntity مع CreatedByUser.
+            // Restrict في الأربع: لا مسارات حذف متتالية متعددة، ومحتوى الجامعة لا يختفي بحذفها صامتًا.
+            // ----------------------------------------------------------------------------
+            builder.HasOne(c => c.University).WithMany()
+                .HasForeignKey(c => c.UniversityId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(c => c.College).WithMany()
+                .HasForeignKey(c => c.CollegeId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(c => c.Department).WithMany()
+                .HasForeignKey(c => c.DepartmentId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(c => c.Batch).WithMany()
+                .HasForeignKey(c => c.BatchId).IsRequired(false).OnDelete(DeleteBehavior.Restrict);
+
+            // ----------------------------------------------------------------------------
+            // القيد الذي يجعل التنزيل (denormalization) آمنًا:
+            // يربط Scope بالأعمدة المسموح لها أن تكون NOT NULL، فيصير الصف المتناقض
+            // (Scope = Batch بلا BatchId، أو Public ومعه CollegeId) مستحيل الإدراج —
+            // لا اعتمادًا على انضباط طبقة الخدمة، بل على قاعدة البيانات نفسها.
+            // القيم: Public=1, Batch=2, Department=3, College=4, University=5
+            // ----------------------------------------------------------------------------
+            builder.ToTable("ContentItems", t => t.HasCheckConstraint(
+                "CK_ContentItems_ScopeTargets",
+                "([Scope] = 1 AND [UniversityId] IS NULL AND [CollegeId] IS NULL AND [DepartmentId] IS NULL AND [BatchId] IS NULL)" +
+                " OR ([Scope] = 5 AND [UniversityId] IS NOT NULL AND [CollegeId] IS NULL AND [DepartmentId] IS NULL AND [BatchId] IS NULL)" +
+                " OR ([Scope] = 4 AND [UniversityId] IS NOT NULL AND [CollegeId] IS NOT NULL AND [DepartmentId] IS NULL AND [BatchId] IS NULL)" +
+                " OR ([Scope] = 3 AND [UniversityId] IS NOT NULL AND [CollegeId] IS NOT NULL AND [DepartmentId] IS NOT NULL AND [BatchId] IS NULL)" +
+                " OR ([Scope] = 2 AND [UniversityId] IS NOT NULL AND [CollegeId] IS NOT NULL AND [DepartmentId] IS NOT NULL AND [BatchId] IS NOT NULL)"));
         }
     }
 }
