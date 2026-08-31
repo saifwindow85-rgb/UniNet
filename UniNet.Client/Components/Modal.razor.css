@@ -13,6 +13,16 @@
 
 .modal-card {
     width: 100%;
+
+    /* سقف الارتفاع + عمود مرن: بدونهما تنمو البطاقة خارج الشاشة من الأعلى والأسفل معًا
+       (الغلاف fixed و place-items:center)، فلا يوجد شريط تمرير في أي مكان
+       ويصير التذييل — أي زرّا الإلغاء والحفظ — خارج متناول المستخدم. */
+    max-height: calc(100vh - 2rem);
+    max-height: calc(100dvh - 2rem);   /* dvh لا vh: على الجوال يتمدّد شريط المتصفح ويتقلّص،
+                                          و vh يقيس أطول حالة فيبقى التذييل تحت الحافة. */
+    display: flex;
+    flex-direction: column;
+
     background: #fff;
     border-radius: 16px;
     box-shadow: 0 30px 70px -25px rgba(8, 20, 34, .55);
@@ -21,7 +31,9 @@
 }
 @keyframes pop { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: none; } }
 
+/* الترويسة ثابتة: لا تنكمش ولا تتمرّر */
 .modal-head {
+    flex: none;
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -36,5 +48,40 @@
 .x:hover { background: #e9eef4; color: var(--ink); }
 .x svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
 
-.modal-body { padding: 1.35rem; }
-.modal-foot { display: flex; justify-content: flex-end; gap: .6rem; padding: 1rem 1.35rem 1.25rem; border-top: 1px solid var(--line-soft); background: #fafcfe; }
+/* الجسم وحده هو ما يتمرّر */
+.modal-body {
+    flex: 1 1 auto;
+
+    /* min-height:0 ليست زائدة: عنصر flex لا ينكمش دون حجم محتواه افتراضيًا،
+       فبدونها يتمدّد الجسم ويدفع التذييل خارج البطاقة رغم وجود overflow. */
+    min-height: 0;
+
+    overflow-y: auto;
+    overscroll-behavior: contain;   /* بلوغ نهاية التمرير لا يُحرّك الصفحة خلف النافذة */
+    padding: 1.35rem;
+}
+
+/* التذييل ثابت أسفل النافذة مهما طال المحتوى */
+.modal-foot {
+    flex: none;
+    display: flex;
+    justify-content: flex-end;
+    gap: .6rem;
+    padding: 1rem 1.35rem 1.25rem;
+    border-top: 1px solid var(--line-soft);
+    background: #fafcfe;
+
+    /* ظلّ خفيف لأعلى: يوحي بأن تحته محتوى يتمرّر، فلا يظنّ المستخدم أنه بلغ النهاية */
+    box-shadow: 0 -6px 14px -10px rgba(8, 20, 34, .28);
+}
+
+/* شريط تمرير رفيع داخل النافذة بدل الشريط النظامي العريض */
+.modal-body::-webkit-scrollbar { width: 9px; }
+.modal-body::-webkit-scrollbar-track { background: transparent; }
+.modal-body::-webkit-scrollbar-thumb {
+    background: #d7e0e9;
+    border-radius: 99px;
+    border: 2px solid #fff;
+}
+.modal-body::-webkit-scrollbar-thumb:hover { background: #c2cfdb; }
+.modal-body { scrollbar-width: thin; scrollbar-color: #d7e0e9 transparent; }
