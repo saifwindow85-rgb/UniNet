@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using UniNet.Authorization.AuthorizationHandlers.AcademicAuthorizationHandlers;
+using UniNet.Authorization.AuthorizationHandlers.ContentHandlers;
 using UniNet.Authorization.AuthorizationHandlers.EmployeeHandlers;
 using UniNet.Authorization.AuthorizationHandlers.StudentHandler;
 using UniNet.Authorization.AuthorizationHandlers.StudyHandlers;
@@ -25,6 +26,8 @@ namespace UniNet.Extensions
             services.AddScoped<IAuthorizationHandler, SemesterOwnerHandler>();
             services.AddScoped<IAuthorizationHandler, SectionSubjectOwnerHandler>();
             services.AddScoped<IAuthorizationHandler, StudentResultOwnerHandler>();
+            // Content Authorization Handlers
+            services.AddScoped<IAuthorizationHandler, ContentViewHandler>();
 
             return services;
         }

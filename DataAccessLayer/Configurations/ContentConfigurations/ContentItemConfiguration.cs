@@ -1,5 +1,5 @@
 ﻿using Domain.Entities.Content;
-using Domain.Entities.Enums;
+using Contracts.Enums;
 using Domain.Entities.Images;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;

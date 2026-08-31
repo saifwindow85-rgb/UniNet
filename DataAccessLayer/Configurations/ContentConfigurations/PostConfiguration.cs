@@ -1,7 +1,7 @@
 ﻿// Keep it for future review 
 //using DataAccessLayer.Seeds;
 //using Domain.Entities.Content;
-//using Domain.Entities.Enums;
+//using Contracts.Enums;
 //using Microsoft.EntityFrameworkCore;
 //using Microsoft.EntityFrameworkCore.Metadata.Builders;
 //using System;

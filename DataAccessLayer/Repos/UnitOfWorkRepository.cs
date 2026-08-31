@@ -13,6 +13,7 @@ using Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces;
 using Domain.Interfaces.AcademicStructureInterfaces.SectionInterfaces;
 using Domain.Interfaces.AcademicStructureInterfaces.UniversityInterfaces;
 using Domain.Interfaces.EmployeeInterfaces;
+using Domain.Interfaces.ImageInterfaces;
 using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserRoleInterfaces;
@@ -67,6 +68,7 @@ namespace DataAccessLayer.Repos
         public ISemesterRepository SemesterRepository { get; private set; }
         public ISectionSubjectRepository SectionSubjectRepository { get; private set; }
         public IStudentResultRepository StudentResultRepository { get; private set; }
+        public IImageRepository ImageRepository { get; private set; }
 
         public UnitOfWorkRepository(AppDbcontext context)
         {
@@ -88,6 +90,7 @@ namespace DataAccessLayer.Repos
             SemesterRepository = new SemesterRepository(context);
             SectionSubjectRepository = new SectionSubjectRepository(context);
             StudentResultRepository = new StudentResultRepository(context);
+            ImageRepository = new ImageRepository.ImageRepository(context);
         }
         public async Task<int> CompleteAsync()
         {
