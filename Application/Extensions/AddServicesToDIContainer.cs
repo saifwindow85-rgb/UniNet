@@ -65,6 +65,10 @@ using Application.Validators.StudyValidators.StudentResultValidators;
 using Domain.Interfaces.StudyInterfaces.StudentResultInterfaces;
 using Application.Services.StudyServices;
 using Application.Services.ImageServices;
+using Application.Services.ContentServices;
+using Application.Validators.ContentValidators;
+using Contracts.Requests.ContentRequests;
+using Domain.Interfaces.ContentInterfaces;
 using Application.Validators.ImageValidators;
 using Contracts.Requests.ImageRequests;
 using Domain.Interfaces.ImageInterfaces;
@@ -95,6 +99,8 @@ namespace Application.Extensions
             //Image Services
             services.AddScoped<IImageStorage, LocalImageStorage>();
             services.AddScoped<IImageService, ImageService>();
+            //Content Services
+            services.AddScoped<IContentService, ContentService>();
             return services;
         }
         public static IServiceCollection Validators(this IServiceCollection services)
@@ -138,6 +144,9 @@ namespace Application.Extensions
             services.AddScoped<IValidator<UpdateStudentResultDTO>, UpdateStudentResultValidator>();
             //Image Validators
             services.AddScoped<IValidator<UploadedFileDTO>, UploadedFileValidator>();
+            //Content Validators
+            services.AddScoped<IValidator<AddContentDTO>, AddContentValidator>();
+            services.AddScoped<IValidator<UpdateContentDTO>, UpdateContentValidator>();
             return services;
         }
     }
