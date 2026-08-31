@@ -139,7 +139,9 @@ builder.Configuration.GetConnectionString("DefaultConnection")));
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+
+            // كان AddSwaggerGen يُستدعى مرتين: الأولى بلا إعدادات فتُسجِّل الخدمة
+            // ثم تُهمَل، والثانية تحمل تعريف الأمان. استدعاء واحد يكفي.
             builder.Services.AddSwaggerGen(options =>
             {
                 // 1. Define the security scheme for JWT Bearer
