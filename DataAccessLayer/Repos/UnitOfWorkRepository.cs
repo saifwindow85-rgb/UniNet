@@ -104,6 +104,13 @@ namespace DataAccessLayer.Repos
             // شرط "when" لا يلتقط الاستثناء إلا حين يتحقق فعلاً؛ فشل الشرط يجعل .NET
             // يتجاهل هذا الـ catch تماماً ويستمر بالبحث للأعلى — بلا حاجة لـ throw يدوي،
             // وبلا احتمال سقوط صامت كما كان يحدث سابقاً.
+            // قبل مُرشِّحات SqlException: DbUpdateConcurrencyException يرث DbUpdateException
+            // لكن استثناءه الداخلي ليس SqlException، فلا يطابق أيًّا منها ويتسرّب كـ 500.
+            catch (DbUpdateConcurrencyException ex)
+            {
+                throw new ConcurrentModificationException(
+                    "This resource was modified by another request. Reload it and try again.", ex);
+            }
             catch (DbUpdateException ex) when (ex.InnerException is SqlException { Number: 547 })
             {
                 // 547 ليس خطأ حذف بالضرورة: SQL Server يُطلقه أيضًا على INSERT/UPDATE

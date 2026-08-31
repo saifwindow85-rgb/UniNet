@@ -224,6 +224,23 @@ namespace DataAccessLayer.Repos.ContentRepository
             // من لا يستطيع إدارته لا يُدرَج له في قائمة الإدارة.
             if (!actor.IsGlobal)
             {
+                // فشل مغلق. الحارس ليس زائدًا: الفروع الأربعة أدناه كلها مشروطة، ففاعلٌ
+                // ليس عامًّا وبلا أي مطالبة نطاق لا يُفعِّل أيًّا منها — فلا يُطبَّق أي Where
+                // ويعود جدول ContentItems كاملًا. اليوم لا يصل إلى هنا إلا حاملو أدوار
+                // لهم مطالبات فعلية، لكن العيب كامنٌ لا غائب: إضافة دور بلا نطاق إلى
+                // ContentManagerRoles تُفعّله فورًا وبلا أي رسالة خطأ.
+                if (!actor.UniversityId.HasValue && !actor.CollegeId.HasValue
+                    && !actor.DepartmentId.HasValue && !actor.BatchId.HasValue)
+                {
+                    return new PagedResult<ContentItemDTO>
+                    {
+                        Data = new List<ContentItemDTO>(),
+                        TotalRecords = 0,
+                        TotalPages = 0,
+                        CurrentPage = pageNumber,
+                    };
+                }
+
                 if (actor.UniversityId.HasValue)
                     query = query.Where(c => c.UniversityId == actor.UniversityId);
 

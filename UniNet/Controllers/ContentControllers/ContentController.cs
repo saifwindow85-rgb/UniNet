@@ -48,14 +48,17 @@ namespace UniNet.Controllers.ContentControllers
         private readonly IImageService _imageService;
         private readonly ICurrentUserService _currentUserService;
         private readonly IAuthorizationService _authorizationService;
+        private readonly ILogger<ContentController> _logger;
 
         public ContentController(IContentService contentService, IImageService imageService,
-            ICurrentUserService currentUserService, IAuthorizationService authorizationService)
+            ICurrentUserService currentUserService, IAuthorizationService authorizationService,
+            ILogger<ContentController> logger)
         {
             _contentService = contentService;
             _imageService = imageService;
             _currentUserService = currentUserService;
             _authorizationService = authorizationService;
+            _logger = logger;
         }
 
         // -------------------------------------------------------------- reads
@@ -130,10 +133,24 @@ namespace UniNet.Controllers.ContentControllers
             // صف موجود وملف مفقود = بيانات غير متسقة، لا غياب صلاحية. 404 بلا كشف السبب.
             // System.IO.File صراحةً لتفادي التصادم مع ControllerBase.File
             if (!System.IO.File.Exists(absolutePath))
+            {
+                // يُسجَّل ولا يُكشف: الردّ يبقى 404 مطابقًا لردّ منع الصلاحية كي لا يُسرَّب
+                // وجود المورد، لكن بلا هذا السطر يصير استرجاعُ قاعدةٍ على جهاز فارغ
+                // App_Data صامتًا تمامًا — صفوف سليمة وصور مفقودة بلا أي أثر يُميّزها.
+                _logger.LogWarning("Image row {ImageId} for content {ContentItemId} points at a missing file: {RelativePath}",
+                    imageInfo.ImageId, contentItemId, imageInfo.RelativePath);
+
                 return NotFound();
+            }
 
             // private لا public: المحتوى مُفوَّض، فلا يجوز لأي وسيط مشترك تخزينه
             Response.Headers.CacheControl = "private, max-age=86400";
+
+            // النقطة الوحيدة في التطبيق التي تُعيد بايتات رفعها مستخدم إلى المتصفح
+            // تحت أصل التطبيق نفسه. بلا nosniff يحقّ للمتصفح تجاهل ContentType المعلن
+            // ويستنتج نوعًا آخر — و ContentType مخزَّن كما أرسله العميل، بينما فحص
+            // التوقيع يقارن البايتات بالامتداد لا بالترويسة، فالاثنان غير متقاطعَين.
+            Response.Headers["X-Content-Type-Options"] = "nosniff";
 
             // PhysicalFile يستعمل SendFileAsync فلا يُحمَّل الملف في الذاكرة إطلاقًا
             return PhysicalFile(absolutePath, imageInfo.ContentType, enableRangeProcessing: true);
