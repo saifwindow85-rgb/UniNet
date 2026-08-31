@@ -5,6 +5,7 @@ using Domain.Interfaces.AcademicStructureInterfaces.DepartmentInterfaces;
 using Domain.Interfaces.AcademicStructureInterfaces.SectionInterfaces;
 using Domain.Interfaces.AcademicStructureInterfaces.UniversityInterfaces;
 using Domain.Interfaces.EmployeeInterfaces;
+using Domain.Interfaces.ContentInterfaces;
 using Domain.Interfaces.ImageInterfaces;
 using Domain.Interfaces.IdentityInterfaces.RoleInterfaces;
 using Domain.Interfaces.IdentityInterfaces.UserInterfaces;
@@ -45,6 +46,7 @@ namespace Domain.Interfaces.UnitOfWork
         public ISectionSubjectRepository SectionSubjectRepository { get; }
         public IStudentResultRepository StudentResultRepository { get; }
         public IImageRepository ImageRepository { get; }
+        public IContentRepository ContentRepository { get; }
         public Task<int> CompleteAsync();
         public Task BeginTransactionAsync();
         public Task CommitTransactionAsync();
