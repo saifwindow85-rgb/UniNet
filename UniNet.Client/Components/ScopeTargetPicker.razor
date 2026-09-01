@@ -1,4 +1,4 @@
-@* منتقي جمهور المحتوى: مستوى النطاق + الكيان المستهدف عنده.
+﻿@* منتقي جمهور المحتوى: مستوى النطاق + الكيان المستهدف عنده.
 
    بدل أن يكتب المستخدم رقم TargetId يدويًا — وهو ما يفرضه الـ API نظريًا —
    يختار مستوى النطاق فتُجلَب تلقائيًا كيانات ذلك المستوى **ضمن نطاقه هو**:
@@ -69,7 +69,19 @@
 
                 @if (!_targetsLoading && _targets.Count == 0)
                 {
-                    <span class="stp-warn">لا توجد عناصر متاحة على هذا المستوى ضمن نطاقك.</span>
+                    @* التمييز بين "فشل التحميل" و"لا يوجد" ليس تجميلًا: كان الفشل يظهر
+                       كقائمة فارغة، فيقرؤها المستخدم على أنها نقص صلاحية لا عطل شبكة. *@
+                    @if (_loadError is not null)
+                    {
+                        <span class="stp-warn">
+                            تعذّر تحميل القائمة: @_loadError
+                            <button type="button" class="stp-retry" @onclick="LoadTargetsAsync">إعادة المحاولة</button>
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="stp-warn">لا توجد عناصر متاحة على هذا المستوى ضمن نطاقك.</span>
+                    }
                 }
             }
         </div>
@@ -95,6 +107,7 @@
     private List<EnContentScope> _allowed = new();
     private List<Combobox.ComboItem> _targets = new();
     private bool _scopesLoading = true, _targetsLoading;
+    private string? _loadError;
 
     protected override async Task OnInitializedAsync()
     {
@@ -133,7 +146,9 @@
         _targetsLoading = true;
         StateHasChanged();
 
+        Lookups.ClearError();
         _targets = await Lookups.TargetItemsAsync(Scope);
+        _loadError = _targets.Count == 0 ? Lookups.LastError : null;
         _targetsLoading = false;
 
         // هدف وحيد ⇒ يُمرَّر تلقائيًا؛ لا فائدة من قائمة بخيار واحد.
