@@ -226,9 +226,7 @@ namespace DataAccessLayer.Repos.ContentRepository
             {
                 // فشل مغلق. الحارس ليس زائدًا: الفروع الأربعة أدناه كلها مشروطة، ففاعلٌ
                 // ليس عامًّا وبلا أي مطالبة نطاق لا يُفعِّل أيًّا منها — فلا يُطبَّق أي Where
-                // ويعود جدول ContentItems كاملًا. اليوم لا يصل إلى هنا إلا حاملو أدوار
-                // لهم مطالبات فعلية، لكن العيب كامنٌ لا غائب: إضافة دور بلا نطاق إلى
-                // ContentManagerRoles تُفعّله فورًا وبلا أي رسالة خطأ.
+                // ويعود جدول ContentItems كاملًا.
                 if (!actor.UniversityId.HasValue && !actor.CollegeId.HasValue
                     && !actor.DepartmentId.HasValue && !actor.BatchId.HasValue)
                 {
@@ -241,17 +239,27 @@ namespace DataAccessLayer.Repos.ContentRepository
                     };
                 }
 
-                if (actor.UniversityId.HasValue)
-                    query = query.Where(c => c.UniversityId == actor.UniversityId);
+                // مرآة CanManageContent في SQL، وشرط الملكية جزء منها لا إضافة:
+                // بعد أن صار الفاعل ينشر لمستوى أعلى من مستواه (جمهور لا سقف)، تحمل
+                // سلسلة منشوره null في الأعمدة الأعمق من هدفه — فيُقصيه التضييق التراكمي
+                // عن قائمته هو نفسه. الخيار (أ): الكاتب يُدير ما كتب، ومن فوق مستوى
+                // المنشور يُديره أيضًا، ومن دونه لا.
+                bool hasUniversity = actor.UniversityId.HasValue;
+                bool hasCollege = actor.CollegeId.HasValue;
+                bool hasDepartment = actor.DepartmentId.HasValue;
+                bool hasBatch = actor.BatchId.HasValue;
 
-                if (actor.CollegeId.HasValue)
-                    query = query.Where(c => c.CollegeId == actor.CollegeId);
+                int universityId = actor.UniversityId ?? 0;
+                int collegeId = actor.CollegeId ?? 0;
+                int departmentId = actor.DepartmentId ?? 0;
+                int batchId = actor.BatchId ?? 0;
 
-                if (actor.DepartmentId.HasValue)
-                    query = query.Where(c => c.DepartmentId == actor.DepartmentId);
-
-                if (actor.BatchId.HasValue)
-                    query = query.Where(c => c.BatchId == actor.BatchId);
+                query = query.Where(c =>
+                       c.CreatedByUserId == currentUserId
+                    || ((!hasUniversity || c.UniversityId == universityId)
+                     && (!hasCollege || c.CollegeId == collegeId)
+                     && (!hasDepartment || c.DepartmentId == departmentId)
+                     && (!hasBatch || c.BatchId == batchId)));
             }
             else
             {
