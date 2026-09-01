@@ -319,7 +319,8 @@ namespace Application.Services.ContentServices
         /// <summary>
         /// أعمق قاعدة عمل في الميزة، وثلاث مهام في استدعاء واحد لكل مستوى:
         ///   (أ) إثبات وجود الكيان المستهدف،
-        ///   (ب) إثبات وقوعه داخل نطاق الفاعل — فلا يُنشئ مسؤول قسمٍ محتوى لقسم آخر،
+        ///   (ب) إثبات أن الهدف أبٌ للفاعل أو كيانه نفسه — فمسؤول القسم ينشر لقسمه
+        ///       أو لكليته أو لجامعته، ولا ينشر لقسم آخر ولا لكلية أخرى،
         ///   (ج) إرجاع سلسلة الأجداد كاملة لتُملأ أعمدة ContentItem الأربعة.
         ///
         /// المهام الثلاث موجودة أصلًا في المشروع: أربع دوال GetXxxAuthorizationInfo تُرجع
@@ -354,7 +355,7 @@ namespace Application.Services.ContentServices
                             return AddUpdateServiceResponse<GeneralAuthorizationInfo>.ResourceDoesntExist<University>();
 
                         var target = info.ToUniversityInfo();
-                        if (!scope.IsWithinScope(target))
+                        if (!scope.IsAncestorOfActor(EnContentScope.University, target))
                             return AddUpdateServiceResponse<GeneralAuthorizationInfo>.ResourceDoesntExist<University>();
 
                         return AddUpdateServiceResponse<GeneralAuthorizationInfo>.Success(target);
@@ -368,7 +369,7 @@ namespace Application.Services.ContentServices
                             return AddUpdateServiceResponse<GeneralAuthorizationInfo>.ResourceDoesntExist<College>();
 
                         var target = info.ToCollegeInfo();
-                        if (!scope.IsWithinScope(target))
+                        if (!scope.IsAncestorOfActor(EnContentScope.College, target))
                             return AddUpdateServiceResponse<GeneralAuthorizationInfo>.ResourceDoesntExist<College>();
 
                         return AddUpdateServiceResponse<GeneralAuthorizationInfo>.Success(target);
@@ -381,7 +382,7 @@ namespace Application.Services.ContentServices
                             return AddUpdateServiceResponse<GeneralAuthorizationInfo>.ResourceDoesntExist<Department>();
 
                         var target = info.ToDepartmentInfo();
-                        if (!scope.IsWithinScope(target))
+                        if (!scope.IsAncestorOfActor(EnContentScope.Department, target))
                             return AddUpdateServiceResponse<GeneralAuthorizationInfo>.ResourceDoesntExist<Department>();
 
                         return AddUpdateServiceResponse<GeneralAuthorizationInfo>.Success(target);
@@ -394,7 +395,7 @@ namespace Application.Services.ContentServices
                             return AddUpdateServiceResponse<GeneralAuthorizationInfo>.ResourceDoesntExist<Batch>();
 
                         var target = info.ToBatchInfo();
-                        if (!scope.IsWithinScope(target))
+                        if (!scope.IsAncestorOfActor(EnContentScope.Batch, target))
                             return AddUpdateServiceResponse<GeneralAuthorizationInfo>.ResourceDoesntExist<Batch>();
 
                         return AddUpdateServiceResponse<GeneralAuthorizationInfo>.Success(target);
