@@ -1,4 +1,5 @@
-﻿using Contracts.Common.AuthorizationInfos.ContentAuthorizationInfo;
+﻿using Contracts.Common.AuthorizationInfos;
+using Contracts.Common.AuthorizationInfos.ContentAuthorizationInfo;
 using Contracts.Enums;
 using Contracts.Requests.RequestParameters;
 using System;
@@ -11,6 +12,43 @@ namespace Contracts.Common.Extensions
 {
     public static class ContentScopeExtension
     {
+        /// <summary>
+        /// هل الجهة المستهدَفة أبٌ للفاعل — أو هي كيانه نفسه عند ذلك المستوى؟
+        ///
+        /// هذا مُسنَد الكتابة، ومعكوس IsWithinScope عمدًا:
+        ///   IsWithinScope     : "هل المورد داخل نطاقي؟"  ← يصلح لإدارة مورد قائم
+        ///   IsAncestorOfActor : "هل الهدف يحويني؟"       ← يصلح لاختيار جمهور منشور
+        ///
+        /// الفرق ليس تجميليًّا. النطاق يعني «مَن يُسمح له بالرؤية» لا «سقف ما يملكه الكاتب»:
+        /// فمسؤول الدفعة قد يكتب خبرًا يخصّ قسمه كلّه أو كليته أو جامعته. IsWithinScope
+        /// كانت تقارن عند أعمق مطالبة للفاعل، فترفض هدفًا أعلى منه لأن عموده يكون null
+        /// في سلسلة الهدف — أي تحبس كل مسؤول في مستواه وحده.
+        ///
+        /// هنا تقع المقارنة عند المستوى المطلوب وحده، فيُقبل «كليتي» ويُرفض «كلية أخرى».
+        /// </summary>
+        public static bool IsAncestorOfActor(this UserScope? actor, EnContentScope scope, GeneralAuthorizationInfo target)
+        {
+            // فشل مغلق — بخلاف IsWithinScope التي تُرجع true عند غياب النطاق.
+            if (actor == null)
+                return false;
+
+            if (actor.IsGlobal)
+                return true;
+
+            // المقارنة عند المستوى المطلوب فقط: الأعمدة الأعمق من الهدف تكون null في سلسلته،
+            // فمقارنتها بمطالبة الفاعل كانت هي بالضبط سبب الحبس في المستوى الواحد.
+            return scope switch
+            {
+                EnContentScope.University => actor.UniversityId is not null && target.UniversityId == actor.UniversityId,
+                EnContentScope.College => actor.CollegeId is not null && target.CollegeId == actor.CollegeId,
+                EnContentScope.Department => actor.DepartmentId is not null && target.DepartmentId == actor.DepartmentId,
+                EnContentScope.Batch => actor.BatchId is not null && target.BatchId == actor.BatchId,
+
+                // Public أوسع من أي نطاق، فلا أحد دون المسؤول العام أبٌ له.
+                _ => false,
+            };
+        }
+
         /// <summary>
         /// هل يقع المُشاهِد داخل الجمهور المستهدف بهذا المحتوى؟
         ///
