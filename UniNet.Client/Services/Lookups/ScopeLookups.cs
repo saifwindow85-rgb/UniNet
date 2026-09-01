@@ -194,56 +194,38 @@ public class ScopeLookups
     public async Task<List<Combobox.ComboItem>> BatchItemsAsync() =>
         (await BatchesAsync()).Select(b => new Combobox.ComboItem(b.BatchId, b.BatchName, b.DepartmentName)).ToList();
 
-    // ------------------------------------------------------------------ مستوى الفاعل نفسه
+    // ------------------------------------------------------------------ الكيان من المطالبات
 
-    /// <summary>أعمق مطالبة نطاق يحملها الفاعل. null لمسؤول النظام (بلا نطاق).</summary>
-    public async Task<EnContentScope?> OwnScopeAsync()
+    /// <summary>
+    /// كيان الفاعل عند مستوًى بعينه، مبنيًّا من مطالباته بلا أي نداء سرد.
+    ///
+    /// النطاق جمهورٌ لا سقف: مسؤول الدفعة يخاطب دفعته أو قسمه أو كليته أو جامعته.
+    /// وعند كل مستوى من هذه لا يملك إلا كيانًا واحدًا — أباه هناك — ومعرّفه في مطالبته.
+    /// فلا قائمة تُعرض ولا اختيار يُطلب، ولا نداء يرتدّ 403: نقاط السرد الأكاديمية
+    /// مقصورة كلٌّ منها على الأدوار الأعلى من مستواها، فهي تسرد "أبناءك" لا "أجدادك".
+    /// </summary>
+    public async Task<Combobox.ComboItem?> ClaimItemAsync(EnContentScope scope)
     {
         await _scope.EnsureAsync();
 
-        if (_scope.IsSuperAdmin) return null;
-        if (_scope.BatchId is not null) return EnContentScope.Batch;
-        if (_scope.DepartmentId is not null) return EnContentScope.Department;
-        if (_scope.CollegeId is not null) return EnContentScope.College;
-        if (_scope.UniversityId is not null) return EnContentScope.University;
-
-        return null;
-    }
-
-    /// <summary>
-    /// الكيان الوحيد عند مستوى الفاعل، مبنيًّا من مطالباته بلا أي نداء سرد.
-    ///
-    /// هذا ليس تحسين أداء بل الإصلاح نفسه: نقاط السرد الأكاديمية مقصورة كلٌّ منها على
-    /// الأدوار الأعلى من مستواها — فهي تسرد "أبناءك" لا "مستواك". النتيجة أن كل مسؤول
-    /// كان يتلقّى 403 عند طلب قائمة مستواه هو تحديدًا:
-    ///   CollegeAdmin  → College/by-universityId  403
-    ///   DepartmentAdmin → Department/collegeId    403
-    ///   BatchAdmin    → Batch/by-departmentId     403
-    /// وعند مستواه لا يوجد ما يُختار أصلًا: كيان واحد يحمل معرّفه في مطالبته.
-    /// </summary>
-    public async Task<Combobox.ComboItem?> OwnLevelItemAsync()
-    {
-        var own = await OwnScopeAsync();
-        if (own is null) return null;
-
-        int? id = own switch
+        int? id = scope switch
         {
-            EnContentScope.Batch => _scope.BatchId,
-            EnContentScope.Department => _scope.DepartmentId,
-            EnContentScope.College => _scope.CollegeId,
             EnContentScope.University => _scope.UniversityId,
+            EnContentScope.College => _scope.CollegeId,
+            EnContentScope.Department => _scope.DepartmentId,
+            EnContentScope.Batch => _scope.BatchId,
             _ => null,
         };
 
         if (id is not int value) return null;
 
-        return new Combobox.ComboItem(value, await OwnLevelNameAsync(own.Value, value));
+        return new Combobox.ComboItem(value, await ClaimNameAsync(scope, value));
     }
 
     // اسم كيان الفاعل. نقاط by-id هي الأخرى مقصورة على أدوار أعلى في بعض المستويات
     // (College/by-id لمسؤول الجامعة فأعلى)، فالفشل هنا قيد صلاحية مقصود لا عطل —
     // نسقط إلى تسمية مفهومة بدل ترك الحقل بلا اسم أو إظهار خطأ لا حيلة للمستخدم فيه.
-    private async Task<string> OwnLevelNameAsync(EnContentScope scope, int id)
+    private async Task<string> ClaimNameAsync(EnContentScope scope, int id)
     {
         switch (scope)
         {
@@ -271,14 +253,17 @@ public class ScopeLookups
     // الموزّع: يُعيد عناصر المستوى المطلوب — نقطة واحدة يستدعيها منتقي النطاق.
     public async Task<List<Combobox.ComboItem>> TargetItemsAsync(EnContentScope scope)
     {
-        // مستوى الفاعل نفسه: كيان واحد من مطالباته، بلا نداء سرد يرتدّ 403.
-        if (await OwnScopeAsync() == scope)
+        await _scope.EnsureAsync();
+
+        // غير مسؤول النظام: كل مستوى مسموح له هو أحد أجداده — كيان واحد من مطالبته.
+        // صفر رحلات سرد، وصفر 403، ولا قائمة بخيار واحد يُطلب من المستخدم فتحها.
+        if (!_scope.IsSuperAdmin)
         {
-            var own = await OwnLevelItemAsync();
-            return own is null ? new() : new List<Combobox.ComboItem> { own };
+            var mine = await ClaimItemAsync(scope);
+            return mine is null ? new() : new List<Combobox.ComboItem> { mine };
         }
 
-        // المستويات الأعمق: نقاط السرد مسموحة له فيها، فتُجلب فعلًا.
+        // مسؤول النظام وحده يختار فعلًا، فله قوائم حقيقية.
         return scope switch
         {
             EnContentScope.University => await UniversityItemsAsync(),
@@ -291,9 +276,14 @@ public class ScopeLookups
 
     // ------------------------------------------------------------------ مستويات النطاق المسموحة
 
-    // لا تُعرض للمستخدم مستوياتٌ يعرف مسبقًا أن الخادم سيرفضها:
-    //   • Public لمسؤول النظام وحده (ResolveScopeTargetAsync يفرض ذلك).
-    //   • ولا يُعرض مستوى أعلى من نطاق الفاعل — مسؤول القسم لا ينشر لكليته.
+    // النطاق جمهورٌ لا سقف — والقائمة تفتح لأعلى لا لأسفل.
+    //
+    // كانت تُرجع مستوى الفاعل وما دونه، فتحبس مسؤول الدفعة في دفعته. والصواب أن
+    // مسؤول الدفعة قد يكتب خبرًا يخصّ قسمه كلّه أو كليته أو جامعته — فتُعرض له سلسلة
+    // أجداده كاملة. ولا يُعرض ما دون مستواه: من يملك الدفعة 7 لا يخاطب الدفعة 9.
+    //
+    // Public يبقى لمسؤول النظام وحده: أوسع من أي نطاق، ولا أحد دونه أبٌ له
+    // (يفرض ذلك IsAncestorOfActor في الخادم أيضًا).
     public async Task<List<EnContentScope>> AllowedScopesAsync()
     {
         await _scope.EnsureAsync();
@@ -302,20 +292,14 @@ public class ScopeLookups
             return new() { EnContentScope.Public, EnContentScope.University, EnContentScope.College,
                            EnContentScope.Department, EnContentScope.Batch };
 
-        if (_scope.BatchId is not null)
-            return new() { EnContentScope.Batch };
+        var allowed = new List<EnContentScope>();
 
-        if (_scope.DepartmentId is not null)
-            return new() { EnContentScope.Department, EnContentScope.Batch };
+        if (_scope.BatchId is not null) allowed.Add(EnContentScope.Batch);
+        if (_scope.DepartmentId is not null) allowed.Add(EnContentScope.Department);
+        if (_scope.CollegeId is not null) allowed.Add(EnContentScope.College);
+        if (_scope.UniversityId is not null) allowed.Add(EnContentScope.University);
 
-        if (_scope.CollegeId is not null)
-            return new() { EnContentScope.College, EnContentScope.Department, EnContentScope.Batch };
-
-        if (_scope.UniversityId is not null)
-            return new() { EnContentScope.University, EnContentScope.College,
-                           EnContentScope.Department, EnContentScope.Batch };
-
-        return new();
+        return allowed;
     }
 
     public static string ScopeLabel(EnContentScope scope) => scope switch
