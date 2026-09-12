@@ -8,7 +8,7 @@ namespace Contracts.Results
 {
     public class PagedResult<T>
     {
-        public List<T>? Data { get; set; }
+        public IReadOnlyList<T>? Data { get; set; }
         public int TotalRecords { get; set; }
         public int TotalPages { get; set; }
         public int CurrentPage { get; set; }
